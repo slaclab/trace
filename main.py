@@ -4,7 +4,7 @@ from qtpy import QtCore
 from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
                             QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
                             QLineEdit)
-from pydm.widgets import PyDMLabel, PyDMLineEdit, PyDMArchiverTimePlot, PyDMWaveformPlot
+from pydm.widgets import PyDMLineEdit, PyDMArchiverTimePlot, PyDMWaveformPlot
 from pvTable import PyDMPVTable
 
 
