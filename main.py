@@ -1,11 +1,12 @@
+import typing
 from pydm import Display
-
 from qtpy import QtCore
 from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
                             QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
-                            QLineEdit)
-from pydm.widgets import PyDMLineEdit, PyDMArchiverTimePlot, PyDMWaveformPlot
-from pvTable import PyDMPVTable
+                            QLineEdit, QSpacerItem)
+from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
+from pv_table import PyDMPVTable
+from functools import partial
 
 
 class ArchiveViewer(Display):
@@ -16,6 +17,48 @@ class ArchiveViewer(Display):
         super(ArchiveViewer, self).__init__(parent=parent, args=args, macros=macros)
         self.app = QApplication.instance()
         self.setup_ui()
+
+    def fetch_data_from_table(self):
+        columns = self.input_table.table.columnCount()
+        rows = self.input_table.table.rowCount()
+
+        print(self.input_table.data[0]())
+        print(rows, columns)
+
+        for row_index in range(0, rows):
+            for column_index in range(0, columns):
+                print(row_index, column_index)
+                #print(self.input_table.table.cellWidget(row_index, column_index))
+
+                if column_index == 0:
+                    print(self.input_table.table.cellWidget(row_index, column_index).text)
+
+    def update_plot(self):
+        print("landing here")
+        print(self.input_table.data[0][7](), self.input_table.data[0][0]())
+        print(len(self.input_table.data))
+
+        try:
+            for index in range(0, len(self.input_table.data)):
+                print(self.input_table.data[index][0])
+                self.time_plots.addYChannel(
+                    y_channel=self.input_table.data[index][0](),
+                    lineWidth=self.input_table.data[index][7]()
+                )
+        except Exception:
+            print("error")
+
+
+
+        '''
+        color=self.input_table.data[index][5],
+
+        lineStyle=self.input_table.data[index][6],
+
+        self.input_table.data[index][2](),
+        self.input_table.data[index][3](),
+        self.input_table.data[index][4]()
+        '''
 
     def minimumSizeHint(self):
         """
@@ -32,32 +75,30 @@ class ArchiveViewer(Display):
         self.setLayout(main_layout)
 
         # plot widgets
-        time_plots = PyDMArchiverTimePlot()
-        waveforms = PyDMWaveformPlot()
-        correlations = PyDMWaveformPlot()  # needs changing
+        self.time_plots = PyDMArchiverTimePlot()
+        self.waveforms = PyDMWaveformPlot()
+        self.correlations = PyDMWaveformPlot()  # needs changing
 
         # tab widget to hold plots
         plot_tab_widget = QTabWidget()
-        plot_tab_widget.addTab(time_plots, "Time Plots")
-        plot_tab_widget.addTab(waveforms, "Waveforms")
-        plot_tab_widget.addTab(correlations, "Correlations")
-        #plot_tab_widget.setLayoutDirection(QtCore.Qt.RightToLeft)
+        plot_tab_widget.addTab(self.time_plots, "Time Plots")
+        plot_tab_widget.addTab(self.waveforms, "Waveforms")
+        plot_tab_widget.addTab(self.correlations, "Correlations")
 
-        # layout to hold the input and plot settings containers
-        settings_boxes_layout = QHBoxLayout()
-
-        # containers for the input data and the
-        plot_settings_box = QGroupBox("Archive Plot Settings")
-        plot_input_box = QGroupBox("Archive Plot Input Data")
-        # plot_input_box.setContentsMargins(0, 0, 0, 0)
-        # plot_settings_box.setContentsMargins(0, 0, 0, 0)
-        plot_input_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        settings_boxes_layout.addWidget(plot_settings_box)
-        settings_boxes_layout.addWidget(plot_input_box, 1)
+        #Data Table 
+        self.input_table = PyDMPVTable(
+            table_headers=["PV NAME", "TIME AXIS", "RANGE AXIS", "VISIBLE", "RAW", "COLOR", "TYPE", "WIDTH"],
+            number_columns=8,
+            col_widths=[100])
+        
+        self.input_data_tab = QWidget()
+        self.input_data_layout = QHBoxLayout()
+        self.input_data_layout.addWidget(self.input_table)
+        self.input_data_layout.setContentsMargins(0, 0, 0, 0)
 
         # Range Menu
-        min_label = QLabel("Min")
-        max_label = QLabel("Max")
+        min_label = QLabel("Min:")
+        max_label = QLabel("Max:")
         min_input = QLineEdit()
         max_input = QLineEdit()
         keep_range_label = QLabel("Keep Ranges")
@@ -66,36 +107,92 @@ class ArchiveViewer(Display):
 
         range_tab = QWidget()
         range_layout = QGridLayout()
+        range_layout.setVerticalSpacing(0)
         range_layout.addWidget(min_label)
         range_layout.addWidget(min_input,  0, 1)
         range_layout.addWidget(max_label)
         range_layout.addWidget(max_input,  1, 1)
-        range_layout.addWidget(keep_range_label)
         range_layout.addWidget(keep_range_check_box)
+        range_layout.addWidget(keep_range_label)
         range_layout.addWidget(type_lable, 1, 2)
 
+        # time Menu
+        min_label_time = QLabel("Start:")
+        max_label_time = QLabel("End:")
+        min_input_time = QLineEdit()
+        max_input_time = QLineEdit()
+        keep_range_label_time = QLabel("Keep Ranges")
+        keep_range_check_box_time = QCheckBox()
+        type_label_time = QLabel("Type")
+
+
+        time_tab = QWidget()
+        time_layout = QGridLayout()
+        time_layout.addWidget(min_label_time)
+        time_layout.addWidget(min_input_time,  0, 1)
+        time_layout.addWidget(max_label_time)
+        time_layout.addWidget(max_input_time,  1, 1)
+        time_layout.addWidget(keep_range_check_box_time)
+        time_layout.addWidget(keep_range_label_time)
+        time_layout.addWidget(type_label_time, 1, 2)
+        
+        self.input_data_tab.setLayout(self.input_data_layout)
         range_tab.setLayout(range_layout)
-        settings_tab_widget = QTabWidget()
-        settings_tab_widget.addTab(range_tab, "Range")
-        #settings_tab_widget.addTab(max_label, "Time Axis")
+        time_tab.setLayout(time_layout)
 
-        plot_setting_box_layout = QVBoxLayout()
-        plot_setting_box_layout.addWidget(settings_tab_widget)
-        plot_settings_box.setLayout(plot_setting_box_layout)
+        self.settings_tab_widget = QTabWidget()
+        self.settings_tab_widget.addTab(self.input_data_tab, "Input Data")
+        self.settings_tab_widget.addTab(range_tab, "Range")
+        self.settings_tab_widget.addTab(time_tab, "Time Axis")
+        
 
-        #data_scroll_area = QScrollArea()
-        input_table = PyDMPVTable(
-            table_headers=["PV NAME", "TIME AXIS", "RANGE AXIS", "VISIBLE", "RAW", "COLOR", "TYPE", "WIDTH"],
-            number_columns=8,
-            col_widths=[100],
-            widget_list=[PyDMLineEdit(), QComboBox(),
-                         QComboBox(), QCheckBox(),
-                         QCheckBox(), QPushButton(),
-                         QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)])
-        input_data_box_layout = QHBoxLayout()
-        input_data_box_layout.addWidget(input_table)
-        input_data_box_layout.setContentsMargins(0, 0, 0, 0)
+        #set up time toggle buttons 
+        self.time_toggle_buttons = []
+        time_toggle_layout = QHBoxLayout()
 
-        plot_input_box.setLayout(input_data_box_layout)
+        #horizontal spacer for toggle buttons
+        horizontal_spacer = QSpacerItem(100, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        time_toggle_layout.addItem(horizontal_spacer)
+
+        self.time_toggle = [('30s', None), ('1m', None), ('1h', None), ('1w', None), ('1m', None)]
+        for index in range(0, len(self.time_toggle)):
+            self.time_toggle_buttons.append(QPushButton(self.time_toggle[index][0], self))
+            self.time_toggle_buttons[index].setGeometry(200, 150, 100, 40)
+            self.time_toggle_buttons[index].setCheckable(True)
+            self.time_toggle_buttons[index].clicked.connect(partial(self.time_toggle_button_action, index))
+            time_toggle_layout.addWidget(self.time_toggle_buttons[index])
+
+        #set up misc toggle buttons 
+        self.misc_button = []
+        misc_toggle_layout = QHBoxLayout()
+
+        self.misc_toggle = [('curser', None), ('Y axis autoscale', None), ('Live', None)]
+        for index in range(0, len(self.misc_toggle)):
+            self.misc_button.append(QPushButton(self.misc_toggle[index][0], self))
+            self.misc_button[index].setGeometry(200, 150, 100, 40)
+            self.misc_button[index].setCheckable(True)
+            self.misc_button[index].clicked.connect(partial(self.misc_toggle_button_action, index))
+            misc_toggle_layout.addWidget(self.misc_button[index])
+
+        time_misc_boxes_layout = QHBoxLayout()
+        time_misc_boxes_layout.addLayout(time_toggle_layout)
+        time_misc_boxes_layout.addLayout(misc_toggle_layout)
+
+        main_layout.addLayout(time_misc_boxes_layout)
         main_layout.addWidget(plot_tab_widget)
-        main_layout.addLayout(settings_boxes_layout)
+        main_layout.addWidget(self.settings_tab_widget)
+
+        self.input_table.send_data_change_signal.connect(self.update_plot)
+
+    def time_toggle_button_action(self, index):            
+        for i in range(0, len(self.time_toggle_buttons)):
+            if i != index: 
+                self.time_toggle_buttons[i].setChecked(False)
+
+        #self.time_toggle[index][1]
+    
+    def misc_toggle_button_action(self, index):            
+        pass
+
+        #self.misc_toggle[index][1]
+    

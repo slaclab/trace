@@ -1,18 +1,17 @@
 import os
 import epics
+import copy
 import pandas as pd
 import typing
+from archive_search import ArchiveSearchWidget
 from functools import partial
 from datetime import datetime
 from qtpy import QtCore, QtGui
-from qtpy.QtGui import QColor, QImage, QPixmap
+from pydm.widgets import PyDMLineEdit
 from qtpy.QtWidgets import (QWidget, QFrame, QLabel, QHBoxLayout, QVBoxLayout,
                             QLineEdit, QPushButton, QTableWidget, QSpinBox,
                             QComboBox, QMessageBox, QFileDialog, QTableWidgetItem,
-                            QSpacerItem, QSizePolicy)
-from pydm.widgets import PyDMLabel, PyDMLineEdit, PyDMRelatedDisplayButton
-from pydm.widgets.channel import PyDMChannel
-
+                            QSpacerItem, QSizePolicy, QCheckBox, QSlider, QHeaderView)
 
 ## Test PV: SIOC:SYS0:MG01:HEARTBEAT
 class PyDMPVTable(QWidget):
@@ -32,16 +31,20 @@ class PyDMPVTable(QWidget):
       number_columns : int, optional
         number of columns in the table
       """
-    def __init__(self, parent=None, macros=None, table_headers=[], max_rows=200, number_columns=10, col_widths=[50],
-                 widget_list=[]):
+
+    send_data_change_signal = QtCore.Signal()
+
+    def __init__(self, macros=None, table_headers=[], max_rows=1, number_columns=10, col_widths=[50]):
         super().__init__()
+        self.data = []
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
         #self.setMinimumSize(1155, 517)
 
         self.spacer = QSpacerItem(100, 10, QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-        self.widget_list = widget_list
+        self.widget_list = [PyDMLineEdit(), QComboBox(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
+                            QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
         self.table_headers = table_headers
         self.table = None
         self.number_columns = number_columns
@@ -126,7 +129,7 @@ class PyDMPVTable(QWidget):
 
     def setup_table(self):
         self.table = QTableWidget()
-        self.table.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.table.setRowCount(self.max_rows)
         self.table.setColumnCount(self.number_columns)
 
@@ -140,8 +143,11 @@ class PyDMPVTable(QWidget):
         for i in range(self.table.columnCount()):
             self.table.setColumnWidth(i, self.col_widths[i])
 
-        print(self.table_headers)
         self.table.setHorizontalHeaderLabels(self.table_headers)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
+        #self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
         for i in range(self.table.rowCount()):
             self.setupRow(i)
@@ -149,19 +155,67 @@ class PyDMPVTable(QWidget):
         self.table_frame[1].addWidget(self.table)
 
     def setupRow(self, index):
-        self.table.setCellWidget(index, 0, QLineEdit())
-        self.table.cellWidget(index, 0).editingFinished.connect(partial(self.passPV, index))
-        self.table.cellWidget(index, 0).textChanged.connect(partial(self.passPV, index))
-        self.resetRow(index)
+        for i in range(0, self.table.columnCount()):
+            obj = [QLineEdit(), QComboBox(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
+                            QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
+
+            self.table.setCellWidget(index, i, obj[i])
+
+        # establish signals
+        self.table.cellWidget(index, 0).textChanged.connect(partial(partial(self.update_data, index, 0,
+                                                                                self.table.cellWidget(index, 0).text)))
+
+        self.table.cellWidget(index, 1).currentIndexChanged.connect(partial(self.update_data, index, 1,
+                                                                    self.table.cellWidget(index, 1).currentText()))
+        self.table.cellWidget(index, 2).currentIndexChanged.connect(partial(self.update_data, index, 2,
+                                                                    self.table.cellWidget(index, 2).currentText()))
+        self.table.cellWidget(index, 3).stateChanged.connect(partial(self.update_data, index, 3,
+                                                             self.table.cellWidget(index, 3).checkState))
+        self.table.cellWidget(index, 4).stateChanged.connect(partial(self.update_data, index, 4,
+                                                             self.table.cellWidget(index, 4).checkState))
+        # self.table.cellWidget(index, 5).clicked.connect(partial(self.update_data, index, 5,
+        #                                                self.table.cellWidget(index, 5)))
+        self.table.cellWidget(index, 6).currentIndexChanged.connect(partial(self.update_data, index, 6,
+                                                                    self.table.cellWidget(index, 6).currentText()))
+        self.table.cellWidget(index, 7).valueChanged.connect(partial(self.update_data, index, 7,
+                                                                     self.table.cellWidget(index, 7).value))
+
+        self.data.append([self.table.cellWidget(index, 0).text(),
+                          self.table.cellWidget(index, 1).currentText(),
+                          self.table.cellWidget(index, 2).currentText(),
+                          self.table.cellWidget(index, 3).checkState(),
+                          self.table.cellWidget(index, 4).checkState(),
+                          0,
+                          self.table.cellWidget(index, 6).currentText(),
+                          self.table.cellWidget(index, 7).value])
+
+    def update_data(self, index, position, value):
+        print(index, position, value)
+        self.add_Row(index)
+        try:
+            self.data[index][position] = value
+            self.send_data_change_signal.emit()
+        except IndexError:
+            print("test", self.data)
+
+    def add_Row(self, index):
+        if index != len(self.data) - 1:
+            return
+
+        current_row_count = self.table.rowCount()
+        current_row_count += 1
+        self.table.setRowCount(current_row_count)
+        self.setupRow(current_row_count-1)
 
     def resetRow(self, index):
-
         if not self.widget_list:
             return False
 
+        obj = [PyDMLineEdit(), QComboBox(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
+               QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
+
         for i in range(0, self.table.columnCount()):
-            #print(i)
-            self.table.setCellWidget(index, i, self.widget_list[i])
+            self.table.setCellWidget(index, i, obj[i])
 
         '''
         for j in range(1, self.table.columnCount()):
@@ -179,7 +233,9 @@ class PyDMPVTable(QWidget):
         '''
 
     def passPV(self, index):
-        pv = self.table.cellWidget(index, 0).text()
+        self.data = self.table.cellWidget(index, 0).text()
+
+        '''
         if '#' in pv:
             self.resetRow(index)
             strings = pv.split('#')
@@ -192,7 +248,8 @@ class PyDMPVTable(QWidget):
                     for i in range(4):
                         self.table.cellWidget(index, i).setStyleSheet(style)
                     for i in range(4,5):
-                        self.table.item(index, i).setBackground(QColor(split))
+                        pass
+                        # self.table.item(index, i).setBackground(QColor(split))
                     for i in range(5,7):
                         self.table.cellWidget(index, i).setStyleSheet(style)
                 if split in darkcolors:
@@ -205,8 +262,9 @@ class PyDMPVTable(QWidget):
             for i in range(4):
                 self.table.cellWidget(index, i).setStyleSheet(None)
             for i in range(4,5):
-                self.table.item(index, i).setBackground(QColor('transparent'))
-            for i in range(5,9):
+                pass
+                # self.table.item(index, i).setBackground(QColor('transparent'))
+            for i in range(5, self.number_columns):
                 self.table.cellWidget(index, i).setStyleSheet(None)
             self.table.cellWidget(index, 1).channel = pv + '.DESC'
             self.table.cellWidget(index, 2).channel = pv
@@ -215,7 +273,8 @@ class PyDMPVTable(QWidget):
                                                                                                  foobar=index))
             self.chan1.connect()
             self.chan1.connect()
-            self.table.cellWidget(index, 9).channel = pv
+            self.table.cellWidget(index, self.number_columns).channel = pv
+        '''
 
     def savePV(self, index):
         ## Check that channel is connected
@@ -489,3 +548,49 @@ class PyDMPVTable(QWidget):
                 print('Error with eget command')
         else:
             print('Error: Not an eget command')
+
+    def mousePressEvent(self, mouse_event):
+        """
+        Method to open slider parameters menu with a right click.
+
+        Parameters
+        ----------
+        mouse_event : mousePressEvent
+        """
+        if mouse_event.button() == QtCore.Qt.RightButton and self.rect().contains(mouse_event.pos()):
+            position_of_click = mouse_event.pos()
+            self.data_menu(position_of_click)
+
+    def data_menu(self, position_of_click):
+        """
+        Method that builds a menu to search for PVs:
+        
+        Parameters
+        ----------
+        position_of_click : int
+        """
+
+        type(position_of_click)
+        self.archive_search = ArchiveSearchWidget()
+        #self.archive_search.move(self.input_table.parentWidget().mapToGlobal(position_of_click))
+        self.archive_search.show()
+
+    '''
+    def eventFilter(self, obj, event):
+        """
+                Filters events on this object.
+
+                Params
+                ------
+                object : QObject
+                    The object that is being handled.
+                event : QEvent
+                    The event that is happening.
+
+                Returns
+                -------
+                bool
+                    True to stop the event from being handled further; otherwise
+                    return false.
+                """
+    '''
