@@ -1,4 +1,5 @@
 qtpy
 pydm
+PySide2
 pandas
 pytest
