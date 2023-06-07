@@ -1,3 +1,4 @@
 qtpy
 pydm
 pandas
+pytest
