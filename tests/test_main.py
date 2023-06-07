@@ -1,6 +1,6 @@
 import pytest
 from PySide2.QtWidgets import QApplication
-from Archive-Viewer.main import ArchiveViewer
+from archive_viewer.main import ArchiveViewer
 
 @pytest.fixture
 def app(qtbot):
