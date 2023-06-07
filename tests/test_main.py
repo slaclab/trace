@@ -1,5 +1,5 @@
 import pytest
-from pyqt.QtWidgets import QApplication
+from qtpy.QtWidgets import QApplication
 from archive_viewer.main import ArchiveViewer
 
 @pytest.fixture
