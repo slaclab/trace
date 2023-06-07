@@ -23,9 +23,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install flake8 pytest
           pip install pyqt5-tools
           pip install -r requirements.txt
 
       - name: Run tests
-        run: python -m pytest
+        run: pytest
         

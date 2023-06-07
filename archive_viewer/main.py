@@ -5,7 +5,7 @@ from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGr
                             QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
                             QLineEdit, QSpacerItem)
 from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
-from pv_table import PyDMPVTable
+from archive_viewer import pv_table
 from functools import partial
 
 class ArchiveViewer(Display):
@@ -85,7 +85,7 @@ class ArchiveViewer(Display):
         plot_tab_widget.addTab(self.correlations, "Correlations")
 
         #Data Table 
-        self.input_table = PyDMPVTable(
+        self.input_table = pv_table.PyDMPVTable(
             table_headers=["PV NAME", "TIME AXIS", "RANGE AXIS", "VISIBLE", "RAW", "COLOR", "TYPE", "WIDTH"],
             number_columns=8,
             col_widths=[100])
