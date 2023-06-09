@@ -1,0 +1,32 @@
+name: Formatting
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    defaults:
+        run:
+          shell: bash
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.8]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          miniforge-variant: Mambaforge
+          channels: conda-forge
+          activate-environment: archive-viewer-dev
+          environment-file: environment.yml
+          
+      - name: flake8
+        shell: bash -l {0}
+        run: |
+          flake8 .
