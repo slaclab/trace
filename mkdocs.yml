@@ -1,0 +1,37 @@
+site_name: Archive Viewer
+repo_url: https://github.com/slaclab/Archive-Viewer
+repo_name: slaclab/Archive-Viewer
+
+nav:
+    - Home: index.md
+    - Installation: installation.md
+
+theme:
+  icon:
+    repo: fontawesome/brands/github
+  name: material
+
+  custom_dir: overrides
+  features:
+    - navigation.top
+    - navigation.tabs
+    - navigation.indexes
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+
