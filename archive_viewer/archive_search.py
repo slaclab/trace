@@ -13,6 +13,7 @@ class ArchiveResultsTableModel(QAbstractTableModel):
     """
     This table model holds the results of an archiver appliance PV search. This search is for names matching
     the input search words, and the results are a list of PV names that match that search.
+    
     Parameters
     ----------
     parent : QObject, optional
@@ -90,6 +91,7 @@ class ArchiveSearchWidget(QWidget):
     The ArchiveSearchWidget is a display widget for showing the results of a PV search using an instance of the
     EPICS archiver appliance. Currently the only type of search supported is for PV names matching an input search
     string, though this can be extended in the future.
+
     Parameters
     ----------
     parent : QObject, optional

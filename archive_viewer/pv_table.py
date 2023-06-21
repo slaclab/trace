@@ -3,7 +3,7 @@ import epics
 import copy
 import pandas as pd
 import typing
-from archive_viewer import archive_search
+from archive_search import ArchiveSearchWidget
 from functools import partial
 from datetime import datetime
 from qtpy import QtCore, QtGui
@@ -571,7 +571,7 @@ class PyDMPVTable(QWidget):
         """
 
         type(position_of_click)
-        self.archive_search = archive_search.ArchiveSearchWidget()
+        self.archive_search = ArchiveSearchWidget()
         #self.archive_search.move(self.input_table.parentWidget().mapToGlobal(position_of_click))
         self.archive_search.show()
 
