@@ -3,7 +3,7 @@ from pydm import Display
 from qtpy import QtCore
 from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
                             QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
-                            QLineEdit, QSpacerItem)
+                            QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSlider, QSpinBox)
 from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
 from pv_table import PyDMPVTable
 from functools import partial
@@ -118,29 +118,61 @@ class ArchiveViewer(Display):
         range_layout.addWidget(keep_range_label)
         range_layout.addWidget(type_lable, 1, 2)
 
-        # time Menu
-        min_label_time = QLabel("Start:")
-        max_label_time = QLabel("End:")
-        min_input_time = QLineEdit()
-        max_input_time = QLineEdit()
-        keep_range_label_time = QLabel("Keep Ranges")
-        keep_range_check_box_time = QCheckBox()
-        type_label_time = QLabel("Type")
+      # Create the time axis table widget
+time_axis_table = QTableWidget()
+time_axis_table.setColumnCount(6)
+time_axis_table.setHorizontalHeaderLabels(["Axis Name", "Start", "End", "Calendar", "Slider", "Position"])
+
+# Add a row to the table
+time_axis_table.insertRow(0)
+
+# Populate the cells with widgets and data
+axis_name_item = QTableWidgetItem("Time Axis 1")
+time_axis_table.setItem(0, 0, axis_name_item)
+
+start_item = QTableWidgetItem("2023-06-21")
+time_axis_table.setItem(0, 1, start_item)
+
+end_item = QTableWidgetItem("2023-06-30")
+time_axis_table.setItem(0, 2, end_item)
+
+calendar_widget = QCalendarWidget()
+time_axis_table.setCellWidget(0, 3, calendar_widget)
+
+slider = QSlider()
+time_axis_table.setCellWidget(0, 4, slider)
+
+position_spinbox = QSpinBox()
+time_axis_table.setCellWidget(0, 5, position_spinbox)
+
+# Add the time axis table to the layout
+time_layout.addWidget(time_axis_table, 2, 0, 1, 3)
+
+        # # time Menu
+        # min_label_time = QLabel("Start:")
+        # max_label_time = QLabel("End:")
+        # min_input_time = QLineEdit()
+        # max_input_time = QLineEdit()
+        # keep_range_label_time = QLabel("Keep Ranges")
+        # keep_range_check_box_time = QCheckBox()
+        # type_label_time = QLabel("Type")
 
 
-        time_tab = QWidget()
-        time_layout = QGridLayout()
-        time_layout.addWidget(min_label_time)
-        time_layout.addWidget(min_input_time,  0, 1)
-        time_layout.addWidget(max_label_time)
-        time_layout.addWidget(max_input_time,  1, 1)
-        time_layout.addWidget(keep_range_check_box_time)
-        time_layout.addWidget(keep_range_label_time)
-        time_layout.addWidget(type_label_time, 1, 2)
+        # time_tab = QWidget()
+        # time_layout = QGridLayout()
+        # time_layout.addWidget(min_label_time)
+        # time_layout.addWidget(min_input_time,  0, 1)
+        # time_layout.addWidget(max_label_time)
+        # time_layout.addWidget(max_input_time,  1, 1)
+        # time_layout.addWidget(keep_range_check_box_time)
+        # time_layout.addWidget(keep_range_label_time)
+        # time_layout.addWidget(type_label_time, 1, 2)
         
-        self.input_data_tab.setLayout(self.input_data_layout)
-        range_tab.setLayout(range_layout)
-        time_tab.setLayout(time_layout)
+        # self.input_data_tab.setLayout(self.input_data_layout)
+        # range_tab.setLayout(range_layout)
+        # time_tab.setLayout(time_layout)
+
+        
 
         self.settings_tab_widget = QTabWidget()
         self.settings_tab_widget.addTab(self.input_data_tab, "Input Data")
