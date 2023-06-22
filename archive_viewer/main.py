@@ -118,35 +118,35 @@ class ArchiveViewer(Display):
         range_layout.addWidget(keep_range_label)
         range_layout.addWidget(type_lable, 1, 2)
 
-      # Create the time axis table widget
-time_axis_table = QTableWidget()
-time_axis_table.setColumnCount(6)
-time_axis_table.setHorizontalHeaderLabels(["Axis Name", "Start", "End", "Calendar", "Slider", "Position"])
-
-# Add a row to the table
-time_axis_table.insertRow(0)
-
-# Populate the cells with widgets and data
-axis_name_item = QTableWidgetItem("Time Axis 1")
-time_axis_table.setItem(0, 0, axis_name_item)
-
-start_item = QTableWidgetItem("2023-06-21")
-time_axis_table.setItem(0, 1, start_item)
-
-end_item = QTableWidgetItem("2023-06-30")
-time_axis_table.setItem(0, 2, end_item)
-
-calendar_widget = QCalendarWidget()
-time_axis_table.setCellWidget(0, 3, calendar_widget)
-
-slider = QSlider()
-time_axis_table.setCellWidget(0, 4, slider)
-
-position_spinbox = QSpinBox()
-time_axis_table.setCellWidget(0, 5, position_spinbox)
-
-# Add the time axis table to the layout
-time_layout.addWidget(time_axis_table, 2, 0, 1, 3)
+        # Create the time axis table widget
+        time_axis_table = QTableWidget()
+        time_axis_table.setColumnCount(6)
+        time_axis_table.setHorizontalHeaderLabels(["Axis Name", "Start", "End", "Calendar", "Slider", "Position"])
+        
+        # Add a row to the table
+        time_axis_table.insertRow(0)
+        
+        # Populate the cells with widgets and data
+        axis_name_item = QTableWidgetItem("Time Axis 1")
+        time_axis_table.setItem(0, 0, axis_name_item)
+        
+        start_item = QTableWidgetItem("2023-06-21")
+        time_axis_table.setItem(0, 1, start_item)
+        
+        end_item = QTableWidgetItem("2023-06-30")
+        time_axis_table.setItem(0, 2, end_item)
+        
+        calendar_widget = QCalendarWidget()
+        time_axis_table.setCellWidget(0, 3, calendar_widget)
+        
+        slider = QSlider()
+        time_axis_table.setCellWidget(0, 4, slider)
+        
+        position_spinbox = QSpinBox()
+        time_axis_table.setCellWidget(0, 5, position_spinbox)
+        
+        # Add the time axis table to the layout
+        time_layout.addWidget(time_axis_table, 2, 0, 1, 3)
 
         # # time Menu
         # min_label_time = QLabel("Start:")
@@ -168,9 +168,9 @@ time_layout.addWidget(time_axis_table, 2, 0, 1, 3)
         # time_layout.addWidget(keep_range_label_time)
         # time_layout.addWidget(type_label_time, 1, 2)
         
-        # self.input_data_tab.setLayout(self.input_data_layout)
-        # range_tab.setLayout(range_layout)
-        # time_tab.setLayout(time_layout)
+        self.input_data_tab.setLayout(self.input_data_layout)
+        range_tab.setLayout(range_layout)
+        time_tab.setLayout(time_layout)
 
         
 
