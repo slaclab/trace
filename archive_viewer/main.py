@@ -3,10 +3,12 @@ from pydm import Display
 from qtpy import QtCore
 from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
                             QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
-                            QLineEdit, QSpacerItem)
+                            QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox)
 from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
 from pv_table import PyDMPVTable
+from time_menu_table import TimeMenuWidget
 from functools import partial
+
 
 class ArchiveViewerLogic():
     pass
@@ -119,28 +121,22 @@ class ArchiveViewer(Display):
         range_layout.addWidget(type_lable, 1, 2)
 
         # time Menu
-        min_label_time = QLabel("Start:")
-        max_label_time = QLabel("End:")
-        min_input_time = QLineEdit()
-        max_input_time = QLineEdit()
-        keep_range_label_time = QLabel("Keep Ranges")
-        keep_range_check_box_time = QCheckBox()
-        type_label_time = QLabel("Type")
-
-
         time_tab = QWidget()
-        time_layout = QGridLayout()
-        time_layout.addWidget(min_label_time)
-        time_layout.addWidget(min_input_time,  0, 1)
-        time_layout.addWidget(max_label_time)
-        time_layout.addWidget(max_input_time,  1, 1)
-        time_layout.addWidget(keep_range_check_box_time)
-        time_layout.addWidget(keep_range_label_time)
-        time_layout.addWidget(type_label_time, 1, 2)
+
+        # Create the time menu widget
+        time_menu_widget = TimeMenuWidget()
+
+        # Add the time menu widget to the layout
+        time_layout = QVBoxLayout()
+        time_layout.addWidget(time_menu_widget)
+
+        time_tab.setLayout(time_layout)
+
         
         self.input_data_tab.setLayout(self.input_data_layout)
         range_tab.setLayout(range_layout)
         time_tab.setLayout(time_layout)
+
 
         self.settings_tab_widget = QTabWidget()
         self.settings_tab_widget.addTab(self.input_data_tab, "Input Data")
@@ -193,8 +189,8 @@ class ArchiveViewer(Display):
 
         #self.time_toggle[index][1]
     
-    def misc_toggle_button_action(self, index):            
+    def misc_toggle_button_action(self , index):            
         pass
 
-        #self.misc_toggle[index][1]
+        # self.misc_toggle[index][1]
     
