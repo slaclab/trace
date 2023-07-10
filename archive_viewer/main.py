@@ -6,7 +6,8 @@ from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGr
                             QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox)
 from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
 from pv_table import PyDMPVTable
-from time_menu_table import TimeMenuWidget
+from time_axis_table import TimeMenuWidget
+from range_axis_table import RangeAxisTableWidget
 from functools import partial
 
 
@@ -101,24 +102,14 @@ class ArchiveViewer(Display):
         self.input_data_layout.setContentsMargins(0, 0, 0, 0)
 
         # Range Menu
-        min_label = QLabel("Min:")
-        max_label = QLabel("Max:")
-        min_input = QLineEdit()
-        max_input = QLineEdit()
-        keep_range_label = QLabel("Keep Ranges")
-        keep_range_check_box = QCheckBox()
-        type_lable = QLabel("Type")
-
         range_tab = QWidget()
-        range_layout = QGridLayout()
-        range_layout.setVerticalSpacing(0)
-        range_layout.addWidget(min_label)
-        range_layout.addWidget(min_input,  0, 1)
-        range_layout.addWidget(max_label)
-        range_layout.addWidget(max_input,  1, 1)
-        range_layout.addWidget(keep_range_check_box)
-        range_layout.addWidget(keep_range_label)
-        range_layout.addWidget(type_lable, 1, 2)
+
+        # Create the range axis table widget
+        range_table_widget = RangeAxisTableWidget()
+
+        # Create the main layout
+        range_layout = QVBoxLayout()
+        range_layout.addWidget(range_table_widget)
 
         # time Menu
         time_tab = QWidget()
@@ -129,8 +120,6 @@ class ArchiveViewer(Display):
         # Add the time menu widget to the layout
         time_layout = QVBoxLayout()
         time_layout.addWidget(time_menu_widget)
-
-        time_tab.setLayout(time_layout)
 
         
         self.input_data_tab.setLayout(self.input_data_layout)
@@ -189,7 +178,7 @@ class ArchiveViewer(Display):
 
         #self.time_toggle[index][1]
     
-    def misc_toggle_button_action(self , index):            
+    def misc_toggle_button_action(self, index):            
         pass
 
         # self.misc_toggle[index][1]

@@ -47,7 +47,7 @@ class ArchiveResultsTableModel(QAbstractTableModel):
 
         return self.results_list[index.row()]
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole) -> QVariant:
+    def headerData(self, section,  orientation, role=Qt.DisplayRole) -> QVariant:
         """ Return data associated with the header """
         if role != Qt.DisplayRole:
             return super().headerData(section, orientation, role)
