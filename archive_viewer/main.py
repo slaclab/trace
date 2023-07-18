@@ -19,46 +19,7 @@ from pv_table import PyDMPVTable
 
 
 class ArchiveViewerLogic:
-    def __init__(self, archive_viewer):
-        self.archive_viewer = archive_viewer
-
-    def update_time_axes_options(self, time_axes):
-        self.archive_viewer.time_axes = time_axes
-        self.archive_viewer.input_table.set_time_axes(time_axes)
-
-    def update_plot(self):
-        if self.archive_viewer.input_table is None:
-            return
-
-        self.archive_viewer.time_plots.clearCurves()  # Clear existing curves
-
-        # Fetch data from the table
-        rows = self.archive_viewer.input_table.table.rowCount()
-        for row_index in range(rows):
-            try:
-                pv_name_widget = self.archive_viewer.input_table.table.cellWidget(row_index, 0)
-                line_width_widget = self.archive_viewer.input_table.table.cellWidget(row_index, 7)
-                if pv_name_widget is None or line_width_widget is None:
-                    continue
-
-                pv_name = pv_name_widget.text()
-                line_width = int(line_width_widget.value())
-
-                # Check if required information is present
-                if pv_name and line_width:
-                    # Add the PV as a y-channel to the time plot
-                    self.archive_viewer.time_plots.addYChannel(
-                        y_channel=f"archiver://{pv_name}",
-                        lineWidth=line_width,
-                        symbol='o',
-                        useArchiveData=True
-                    )
-                else:
-                    print(f"Skipping row {row_index + 1} due to missing information.")
-            except Exception as e:
-                print(f"Error processing row {row_index + 1}: {str(e)}")
-
-
+    pass
 
 class ArchiveViewer(Display):
     def __init__(self, parent=None, args=None, macros=None):
@@ -67,7 +28,6 @@ class ArchiveViewer(Display):
         self.setWindowTitle("New Archive Viewer")
         self.archive_search_widget = ArchiveSearchWidget()
         self.time_axes = []  # Array to store the time axes
-        self.logic = ArchiveViewerLogic(self)
         self.setup_ui()
 
     def fetch_data_from_table(self):
@@ -79,37 +39,39 @@ class ArchiveViewer(Display):
                 if column_index == 0:
                     print(self.input_table.table.cellWidget(row_index, column_index).text())
 
-    # def update_plot(self):
-    #     if self.input_table is None:
-    #         return
+    def update_plot(self):
+        if self.input_table is None:
+            return
 
-    #     self.time_plots.clearCurves()  # Clear existing curves
+        self.time_plots.clearCurves()  # Clear existing curves
 
-    #     # Fetch data from the table
-    #     rows = self.input_table.table.rowCount()
-    #     for row_index in range(rows):
-    #         try:
-    #             pv_name_widget = self.input_table.table.cellWidget(row_index, 0)
-    #             line_width_widget = self.input_table.table.cellWidget(row_index, 7)
-    #             if pv_name_widget is None or line_width_widget is None:
-    #                 continue
+        # Fetch data from the table
+        rows = self.input_table.table.rowCount()
+        for row_index in range(rows):
+            try:
+                pv_name_widget = self.input_table.table.cellWidget(row_index, 0)
+                line_width_widget = self.input_table.table.cellWidget(row_index, 7)
+                if pv_name_widget is None or line_width_widget is None:
+                    continue
 
-    #             pv_name = pv_name_widget.text()
-    #             line_width = int(line_width_widget.value())
+                pv_name = pv_name_widget.text()
+                line_width = int(line_width_widget.value())
 
-    #             # Check if required information is present
-    #             if pv_name and line_width:
-    #                 # Add the PV as a y-channel to the time plot
-    #                 self.time_plots.addYChannel(
-    #                     y_channel=f"archiver://{pv_name}",
-    #                     lineWidth=line_width,
-    #                     symbol='o',
-    #                     useArchiveData=True
-    #                 )
-    #             else:
-    #                 print(f"Skipping row {row_index + 1} due to missing information.")
-    #         except Exception as e:
-    #             print(f"Error processing row {row_index + 1}: {str(e)}")
+                # Check if required information is present
+                if pv_name and line_width:
+                    # Add the PV as a y-channel to the time plot
+                    self.time_plots.addYChannel(
+                        y_channel=f"archiver://{pv_name}",
+                        yAxisName= "Name",
+                        color = "red",
+                        lineWidth=line_width,
+                        symbol='o',
+                        useArchiveData=True
+                    )
+                else:
+                    print(f"Skipping row {row_index + 1} due to missing information.")
+            except Exception as e:
+                print(f"Error processing row {row_index + 1}: {str(e)}")
 
     def minimumSizeHint(self):
         return QtCore.QSize(1050, 600)
@@ -159,11 +121,7 @@ class ArchiveViewer(Display):
 
         # Create the time menu widget
         time_axes = []  # Create an empty array to store the time axes
-
         time_menu_widget = TimeAxisTable(self.time_axes)  # Pass the time_axes array as an argument
-        self.logic.update_time_axes_options(time_menu_widget.time_axes)  # Update time axes options
-
-
 
         # Add the time menu widget to the layout
         time_layout = QVBoxLayout()
@@ -214,7 +172,7 @@ class ArchiveViewer(Display):
         main_layout.addWidget(plot_tab_widget)
         main_layout.addWidget(self.settings_tab_widget)
 
-        self.input_table.send_data_change_signal.connect(self.logic.update_plot)
+        self.input_table.send_data_change_signal.connect(self.update_plot)
 
     def time_toggle_button_action(self, index):
         for i in range(len(self.time_toggle_buttons)):
