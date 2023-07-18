@@ -5,121 +5,161 @@ import pandas as pd
 import typing
 from functools import partial
 from datetime import datetime
-from qtpy import QtCore, QtGui
-from qtpy.QtGui import QIcon
+from PyQt5 import QtCore, QtGui, QtWidgets
 from pydm.widgets import PyDMLineEdit
-from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
-                            QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
-                            QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox, QDialog, QVBoxLayout, QHeaderView, QToolButton)
-from qtpy.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
+    QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
+    QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox, QDialog, QVBoxLayout, QHeaderView, QToolButton
+)
 
-class CalendarDialog(QDialog):
-    def __init__(self, parent=None):
-        super(CalendarDialog, self).__init__(parent)
-        self.setWindowTitle("Calendar")
+import sys
+from datetime import datetime
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QHBoxLayout, QVBoxLayout, QTableWidget, QTableWidgetItem,
+    QDateTimeEdit, QSlider, QPushButton
+)
+from archive_search import ArchiveSearchWidget
+from collections.abc import MutableSequence
+from PyQt5 import QtCore
+from qtpy import QtCore, QtGui
+
+class TimeAxisTable(QWidget):
+    
+
+    send_data_change_signal = QtCore.Signal()
+
+    def __init__(self, time_axes):
+        super(TimeAxisTable, self).__init__()
+        self.data = TimeAxisList()
+        self.data.set_callback(self.data_changed_callback) 
+        self.table_headers = ["AXIS NAME", "START", "END", "SLIDER"]
+        self.number_columns = len(self.table_headers)
+        self.max_rows = 1
+        self.col_widths = [200, 200, 200, 200]
         self.setup_ui()
+        self.time_axes = time_axes  # Store the reference to the time axes list
+
 
     def setup_ui(self):
-        # Create the calendar widget
-        self.calendar_widget = QCalendarWidget()
-        self.calendar_widget.clicked.connect(self.selectDate)
+        self.main_layout = QVBoxLayout(self)
+        self.table = QTableWidget()
+        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.table.setColumnCount(self.number_columns)
+        self.table.setHorizontalHeaderLabels(self.table_headers)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
-        # Set layout for the dialog
-        layout = QVBoxLayout()
-        layout.addWidget(self.calendar_widget)
-        self.setLayout(layout)
+        self.main_layout.addWidget(self.table)
 
-    def selectDate(self, date):
-        self.selected_date = date
+        self.add_Row(0)
 
-class TimeMenuWidget(QWidget):
-    def __init__(self, parent=None):
-        super(TimeMenuWidget, self).__init__(parent)
-        self.setup_ui()
+    def add_Row(self, index):
+        current_row_count = self.table.rowCount()
+        self.table.insertRow(current_row_count)
 
-    def setup_ui(self):
-        # Create the time axis table widget
-        self.time_axis_table = QTableWidget()
-        self.time_axis_table.setColumnCount(6)
-        self.time_axis_table.setHorizontalHeaderLabels(["AXIS NAME", "START", "END", "CALENDAR", "SLIDER", "POSITION"])
+        for i in range(self.table.columnCount()):
+            if i == 0:
+                widget = QLineEdit()
+                self.table.setCellWidget(index, i, widget)
+                widget.textChanged.connect(
+                    partial(self.update_data, index, i, widget.text())
+                )
+            elif i in [1, 2]:
+                widget = QDateTimeEdit()
+                widget.setDisplayFormat("MM/dd/yyyy hh:mm:ss.zzz")
+                widget.setCalendarPopup(True)
+                self.table.setCellWidget(index, i, widget)
+                widget.dateTimeChanged.connect(
+                    partial(
+                        self.update_data,
+                        index,
+                        i,
+                        widget.dateTime().toPyDateTime(),
+                    )
+                )
+            elif i == 3:
+                widget = QSlider(Qt.Horizontal)
+                self.table.setCellWidget(index, i, widget)
+                widget.valueChanged.connect(
+                    partial(self.update_data, index, i, widget.value())
+                )
 
-        # Set the default number of rows
-        self.time_axis_table.setRowCount(1)
+        self.data.append(TimeAxisList(
+            [
+                self.get_cell_widget_value(self.table.cellWidget(index, i))
+                for i in range(self.table.columnCount())
+            ]
+        ))
 
-        # Populate the cells with widgets and data
-        self.axis_name_edit = PyDMLineEdit()
-        self.time_axis_table.setCellWidget(0, 0, self.axis_name_edit)
 
-        self.start_edit = PyDMLineEdit()
-        self.time_axis_table.setCellWidget(0, 1, self.start_edit)
+        self.data[-1].set_callback(self.data_changed_callback)
 
-        self.end_edit = PyDMLineEdit()
-        self.time_axis_table.setCellWidget(0, 2, self.end_edit)
+    def update_data(self, index, position, value):
+        self.data[index][position] = value
+        if index == self.table.rowCount() - 1:
+            self.add_Row(index + 1)  # Add a new row dynamically
 
-        calendar_widget = QCalendarWidget()
-        calendar_button = QPushButton()
-        calendar_button.setIcon(QIcon("/Users/fatima-osman/Downloads/calendar.png"))
-        calendar_button.setIconSize(QSize(24, 24))
-        calendar_button.clicked.connect(self.openCalendar)
-        self.time_axis_table.setCellWidget(0, 3, calendar_button)
-
-        slider = QSlider(Qt.Horizontal)
-        self.time_axis_table.setCellWidget(0, 4, slider)
-
-        position_spinbox = QSpinBox()
-        self.time_axis_table.setCellWidget(0, 5, position_spinbox)
-
-        # Customize the table widget
-        self.time_axis_table.verticalHeader().setVisible(False)  # Hide the vertical header
-        self.time_axis_table.setEditTriggers(QTableWidget.NoEditTriggers)  # Disable cell editing
-        self.time_axis_table.setSelectionMode(QTableWidget.NoSelection)  # Disable cell selection
-
-        # # Set column widths
-        # column_widths = [150, 150, 150, 100, 150, 150]
-        # for i, width in enumerate(column_widths):
-        #     self.time_axis_table.setColumnWidth(i, width)
-
-        # Set layout for the widget
-        layout = QHBoxLayout()
-        layout.addWidget(self.time_axis_table)
-        self.setLayout(layout)
-
-    def openCalendar(self):
-        dialog = CalendarDialog()
-        dialog.exec_()
+    def get_cell_widget_value(self, widget):
+        if isinstance(widget, QLineEdit):
+            return widget.text()
+        elif isinstance(widget, QDateTimeEdit):
+            return widget.dateTime().toPyDateTime()
+        elif isinstance(widget, QSlider):
+            return widget.value()
+        return None
 
     def get_time_data(self):
-        # Retrieve the time data from the table
-        axis_name = self.axis_name_edit.text()
-        start = self.start_edit.text()
-        end = self.end_edit.text()
-        calendar_widget = self.time_axis_table.cellWidget(0, 3)
-        slider = self.time_axis_table.cellWidget(0, 4)
-        position_spinbox = self.time_axis_table.cellWidget(0, 5)
+        return self.data
 
-        calendar_date = calendar_widget.selectedDate().toString(Qt.ISODate)
-        slider_value = slider.value()
-        position = position_spinbox.value()
+    # def create_time_axis(self):
+    #     # Placeholder implementation for creating a time axis
+    #     return {
+    #         "axis_name": "Time Axis",
+    #         "start": datetime.now(),
+    #         "end": datetime.now(),
+    #         "slider_value": 0
+    #     }
 
-        return axis_name, start, end, calendar_date, slider_value, position
+    def data_changed_callback(self):
+        print("Data changed!")
+        self.send_data_change_signal.emit()
 
 
-# class MainWidget(QMainWindow):
-#     def __init__(self):
-#         super().__init__()
-#         self.setupUI()
 
-#     def setupUI(self):
-#         self.table_widget = PyDMPVTable()
-#         self.time_menu_widget = TimeMenuWidget()
 
-#         layout = QVBoxLayout()
-#         layout.addWidget(self.table_widget)
-#         layout.addWidget(self.time_menu_widget)
+class TimeAxisList(MutableSequence):
 
-#         central_widget = QWidget()
-#         central_widget.setLayout(layout)
-#         self.setCentralWidget(central_widget)
-# # Connect the time_edit.timeChanged signal from TimeMenuWidget to a method in your PyDMPVTable class that will handle the selected time change.
 
-# By separating the time menu table into its own QWidget, you can easily manage its functionality and appearance independently from other components. It promotes reusability and makes your code more modular and maintainable.
+    def __init__(self, iterable=()):
+        self._list = list(iterable)
+
+    def __getitem__(self, key):
+        return self._list.__getitem__(key)
+
+    def __setitem__(self, key, item):
+        self._list.__setitem__(key, item)
+        # trigger change handler
+        self.callback()
+
+    def __delitem__(self, key):
+        self._list.__delitem__(key)
+        # trigger change handler
+        self.callback()
+
+    def __len__(self):
+        return self._list.__len__()
+
+    def insert(self, index, item):
+        self._list.insert(index, item)
+        # trigger change handler
+        self.callback()
+        
+    def set_callback(self, callback):
+        self.callback = callback
+
+
+
