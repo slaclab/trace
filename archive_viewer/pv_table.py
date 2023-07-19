@@ -11,7 +11,12 @@ from pydm.widgets import PyDMLineEdit
 from qtpy.QtWidgets import (QWidget, QFrame, QLabel, QHBoxLayout, QVBoxLayout,
                             QLineEdit, QPushButton, QTableWidget, QSpinBox,
                             QComboBox, QMessageBox, QFileDialog, QTableWidgetItem,
-                            QSpacerItem, QSizePolicy, QCheckBox, QSlider, QHeaderView)
+                            QSpacerItem, QSizePolicy, QCheckBox, QSlider, QHeaderView, QColorDialog)
+from collections.abc import MutableSequence
+from PyQt5.QtWidgets import QWidget, QCalendarWidget, QMenu, QAction, QVBoxLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QButtonGroup, QGridLayout
+
 
 ## Test PV: SIOC:SYS0:MG01:HEARTBEAT
 class PyDMPVTable(QWidget):
@@ -22,7 +27,7 @@ class PyDMPVTable(QWidget):
       ----------
       parent : QWidget
           The parent widget for the table
-      macros : str, optional
+      macros : str, optionalt
 
       table_headers : list, optional
         list of strings that sets the header names for the table.
@@ -34,14 +39,15 @@ class PyDMPVTable(QWidget):
 
     send_data_change_signal = QtCore.Signal()
 
-    def __init__(self, macros=None, table_headers=[], max_rows=1, number_columns=10, col_widths=[50]):
+
+
+    def __init__(self, time_axes, macros=None, table_headers=[], max_rows=1, number_columns=10, col_widths=[50]):
         super().__init__()
-        self.data = []
+        self.time_axes = time_axes  # Store the reference to the time axes list
+        self.data = PVList()
+        self.data.set_callback(self.data_changed)    
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
-
-        #self.setMinimumSize(1155, 517)
-
         self.spacer = QSpacerItem(100, 10, QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
         self.widget_list = [PyDMLineEdit(), QComboBox(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
                             QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
@@ -51,12 +57,9 @@ class PyDMPVTable(QWidget):
         self.max_rows = max_rows
         self.col_widths = col_widths
         self.makeMainFrames()
-        #self.setupTitle()
         self.setup_table()
-        #self.setupHeader()
-        #self.setupFooter()
-        #self.setupEGET()
-        #self.editRows()
+
+
 
         if macros:
             self.macros = macros
@@ -74,6 +77,35 @@ class PyDMPVTable(QWidget):
         else:
             self.macros = {'PV': '',
                            'CSV': ''}
+
+
+        self.time_axes = time_axes  # Store the reference to the time axes list
+        self.contextMenu = PVContextMenu(self)
+        self.contextMenu.data_changed_signal.connect(self.handle_delete_pv_row)
+
+
+
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.RightButton:
+            if isinstance(self.focusWidget(), QLineEdit):
+                position_of_click = event.pos()
+                self.data_menu(position_of_click)
+
+    def data_menu(self, position_of_click):
+        self.archive_search = ArchiveSearchWidget()
+        self.archive_search.move(self.mapToGlobal(position_of_click))
+        self.archive_search.show()
+
+
+    def handle_delete_pv_row(self, row):
+        if row < 0 or row >= len(self.data):
+            return
+
+        pv_name = self.data[row][0]  # Assuming the PV name is stored at index 0 in the data list (adjust as needed)
+        self.remove_row(row)
+        self.send_data_change_signal.emit()
+
 
     @staticmethod
     def make_frame(orientation):
@@ -127,6 +159,9 @@ class PyDMPVTable(QWidget):
         self.title_frame[0].setMaximumHeight(50)
     '''
 
+
+
+
     def setup_table(self):
         self.table = QTableWidget()
         self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -154,13 +189,22 @@ class PyDMPVTable(QWidget):
 
         self.table_frame[1].addWidget(self.table)
 
+
     def setupRow(self, index):
         for i in range(0, self.table.columnCount()):
             obj = [QLineEdit(), QComboBox(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
-                            QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
+                   QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
 
-            self.table.setCellWidget(index, i, obj[i])
+            if i == 1:  # Time Axis drop-down menu
+                time_axes_names = [axis["axis_name"] for axis in self.time_axes]
+                obj[i].addItems(time_axes_names)
 
+            if i == 5:  # Color column
+                color_button = QPushButton()
+                color_button.clicked.connect(partial(self.openColorPicker, index))
+                self.table.setCellWidget(index, i, color_button)
+            else:
+                self.table.setCellWidget(index, i, obj[i])
         # establish signals
         self.table.cellWidget(index, 0).textChanged.connect(partial(partial(self.update_data, index, 0,
                                                                                 self.table.cellWidget(index, 0).text)))
@@ -180,23 +224,26 @@ class PyDMPVTable(QWidget):
         self.table.cellWidget(index, 7).valueChanged.connect(partial(self.update_data, index, 7,
                                                                      self.table.cellWidget(index, 7).value))
 
-        self.data.append([self.table.cellWidget(index, 0).text(),
+        self.data.append(PVList([self.table.cellWidget(index, 0).text(),
                           self.table.cellWidget(index, 1).currentText(),
                           self.table.cellWidget(index, 2).currentText(),
                           self.table.cellWidget(index, 3).checkState(),
                           self.table.cellWidget(index, 4).checkState(),
                           0,
                           self.table.cellWidget(index, 6).currentText(),
-                          self.table.cellWidget(index, 7).value])
+                          self.table.cellWidget(index, 7).value]))
+
+        self.data[-1].set_callback(self.data_changed)
+
 
     def update_data(self, index, position, value):
         print(index, position, value)
         self.add_Row(index)
         try:
             self.data[index][position] = value
-            self.send_data_change_signal.emit()
         except IndexError:
-            print("test", self.data)
+            print("Error: Invalid index")
+
 
     def add_Row(self, index):
         if index != len(self.data) - 1:
@@ -206,6 +253,7 @@ class PyDMPVTable(QWidget):
         current_row_count += 1
         self.table.setRowCount(current_row_count)
         self.setupRow(current_row_count-1)
+
 
     def resetRow(self, index):
         if not self.widget_list:
@@ -549,31 +597,176 @@ class PyDMPVTable(QWidget):
         else:
             print('Error: Not an eget command')
 
-    def mousePressEvent(self, mouse_event):
-        """
-        Method to open slider parameters menu with a right click.
 
-        Parameters
-        ----------
-        mouse_event : mousePressEvent
-        """
-        if mouse_event.button() == QtCore.Qt.RightButton and self.rect().contains(mouse_event.pos()):
-            position_of_click = mouse_event.pos()
-            self.data_menu(position_of_click)
 
-    def data_menu(self, position_of_click):
-        """
-        Method that builds a menu to search for PVs:
+    def openColorPicker(self, index):
+        color_dialog = QColorDialog()
+        color = color_dialog.getColor()
+
+        if color.isValid():
+            color_button = self.table.cellWidget(index, 5)
+            color_button.setStyleSheet(f"background-color: {color.name()}")
+            self.update_data(index, 5, color.name())
+
+    def contextMenuEvent(self, event):
+        menu = PVContextMenu(self)
+        menu.exec_(event.globalPos())
+
+
+    def data_changed(self):
+        self.send_data_change_signal.emit()
+
+
+
+
+class PVList(MutableSequence):
+
+
+    def __init__(self, iterable=()):
+        self._list = list(iterable)
+
+    def __getitem__(self, key):
+        return self._list.__getitem__(key)
+
+    def __setitem__(self, key, item):
+        self._list.__setitem__(key, item)
+        # trigger change handler
+        self.callback()
+
+    def __delitem__(self, key):
+        self._list.__delitem__(key)
+        # trigger change handler
+        self.callback()
+
+    def __len__(self):
+        return self._list.__len__()
+
+    def insert(self, index, item):
+        self._list.insert(index, item)
+        # trigger change handler
+        self.callback()
         
-        Parameters
-        ----------
-        position_of_click : int
-        """
+    def set_callback(self, callback):
+        self.callback = callback
 
-        type(position_of_click)
-        self.archive_search = ArchiveSearchWidget()
-        #self.archive_search.move(self.input_table.parentWidget().mapToGlobal(position_of_click))
-        self.archive_search.show()
+class PVContextMenu(QMenu):
+    data_changed_signal = QtCore.Signal(int)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Add "SEARCH PV" option
+        search_pv_action = QAction("SEARCH PV", self)
+        search_pv_action.triggered.connect(self.search_pv)
+        self.addAction(search_pv_action)
+
+        # Add "FORMULA" option
+        formula_action = QAction("FORMULA", self)
+        formula_action.triggered.connect(self.open_formula_dialog)
+        self.addAction(formula_action)
+
+        # Add "DELETE PV" option
+        delete_pv_action = QAction("DELETE PV", self)
+        delete_pv_action.triggered.connect(self.delete_pv)
+        self.addAction(delete_pv_action)
+
+    def search_pv(self):
+        # Open the ArchiveSearchWidget
+        archive_search = ArchiveSearchWidget()
+        archive_search.setWindowModality(QtCore.Qt.ApplicationModal)
+        archive_search.show()
+
+    def open_formula_dialog(self):
+        # Create the formula dialog window
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Formula Input")
+        dialog.setWindowModality(Qt.ApplicationModal)
+
+        # Create the layout for the dialog
+        layout = QVBoxLayout(dialog)
+
+        # Create the QLineEdit for formula input
+        formula_input = QLineEdit()
+        layout.addWidget(formula_input)
+
+        # Create the QButtonGroup for calculator buttons
+        button_group = QButtonGroup(dialog)
+
+        # Define the list of calculator buttons
+        buttons = [
+            "7", "8", "9", "+",
+            "4", "5", "6", "-",
+            "1", "2", "3", "*",
+            "0", "(", ")", "/",
+            ".", "PV", "Clear", "="
+        ]
+
+        # Create the calculator buttons and connect them to the input field
+        grid_layout = QGridLayout()
+        row, col = 0, 0
+        for button_text in buttons:
+            button = QPushButton(button_text)
+            button_group.addButton(button)
+            grid_layout.addWidget(button, row, col)
+            col += 1
+            if col > 3:
+                col = 0
+                row += 1
+
+            # Connect the button clicked signal to the appropriate action
+            if button_text == "PV":
+                button.clicked.connect(lambda checked, field=formula_input: field.insert("PV"))
+            elif button_text == "Clear":
+                button.clicked.connect(lambda checked, field=formula_input: field.clear())
+            elif button_text == "=":
+                button.clicked.connect(lambda checked, field=formula_input: self.evaluate_formula(field))
+            else:
+                button.clicked.connect(lambda checked, field=formula_input, text=button_text: field.insert(text))
+
+        layout.addLayout(grid_layout)
+
+        # Add an input field for PV name
+        pv_name_input = QLineEdit()
+        pv_name_input.setPlaceholderText("Enter PV name")
+        layout.addWidget(pv_name_input)
+
+        # Add an "OK" button to accept the formula and close the dialog
+        ok_button = QPushButton("OK")
+        ok_button.clicked.connect(lambda: self.accept_formula(dialog, formula_input, pv_name_input))
+        layout.addWidget(ok_button)
+
+        # Execute the dialog
+        dialog.exec_()
+
+    def evaluate_formula(self, formula_input):
+        # Evaluate the formula expression and update the formula input field
+        formula = formula_input.text()
+        try:
+            result = eval(formula)
+            formula_input.setText(str(result))
+        except (SyntaxError, TypeError):
+            formula_input.setText("Error")
+
+    def accept_formula(self, dialog, formula_input, pv_name_input):
+        # Retrieve the formula and PV name and perform desired actions
+        formula = formula_input.text()
+        pv_name = pv_name_input.text()
+
+        print("Formula:", formula)
+        print("PV Name:", pv_name)
+
+        dialog.accept()
+
+
+    def delete_pv(self):
+        # Get the row index of the selected PV
+        index = self.table.currentRow()
+
+        # Emit the delete_pv_row_requested signal with the row index
+        self.data_changed_signal.emit(index)
+        print("Delete Row")
+
+
+    #         self.time_axis_combo.addItem(time_axis.name, time_axis)
 
     '''
     def eventFilter(self, obj, event):
