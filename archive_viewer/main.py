@@ -8,7 +8,7 @@ from pv_table import PyDMPVTable
 from time_axis_table import TimeAxisTable
 from range_axis_table import RangeAxisTableWidget
 from functools import partial
-#from qdarkstyle import load_stylesheet, DarkPalette
+from qdarkstyle import load_stylesheet, DarkPalette
 from archive_search import ArchiveSearchWidget
 from pydm import Display
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QTabWidget, QWidget
@@ -30,6 +30,7 @@ class ArchiveViewer(Display):
         super(ArchiveViewer, self).__init__(parent=parent, args=args, macros=macros)
         self.app = QApplication.instance()
         self.setWindowTitle("New Archive Viewer")
+        self.app.setStyleSheet(load_stylesheet(palette=DarkPalette))
         self.archive_search_widget = ArchiveSearchWidget()
         self.time_axes = []  # Array to store the time axes
         self.setup_ui()
@@ -67,7 +68,7 @@ class ArchiveViewer(Display):
                     self.time_plots.addYChannel(
                         y_channel=f"archiver://{pv_name}",
                         yAxisName= "Name",
-                        color = "red",
+                      
                         lineWidth=line_width,
                         symbol='o',
                         useArchiveData=True

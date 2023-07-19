@@ -14,57 +14,100 @@ from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGr
 from qtpy.QtCore import Qt, QSize
 
 
+from collections.abc import MutableSequence
+
+
+
 class RangeAxisTableWidget(QWidget):
     def __init__(self, parent=None):
         super(RangeAxisTableWidget, self).__init__(parent)
         self.setup_ui()
 
     def setup_ui(self):
-        # Create the range axis table widget
-        self.range_axis_table = QTableWidget()
-        self.range_axis_table.setColumnCount(6)
-        self.range_axis_table.setHorizontalHeaderLabels(["AXIS NAME", "MAX", "MIN", "TYPE", "KEEP RANGES", "POSITION"])
+        self.main_layout = QVBoxLayout(self)
+        self.table = QTableWidget()
+        self.table.setColumnCount(6)
+        self.table.setHorizontalHeaderLabels(["AXIS NAME", "MAX", "MIN", "TYPE", "KEEP RANGES", "POSITION"])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        # Set the default number of rows
-        self.range_axis_table.setRowCount(1)
+        self.main_layout.addWidget(self.table)
 
-        # Populate the cells with widgets and data
-        self.axis_name_edit = PyDMLineEdit()
-        self.range_axis_table.setCellWidget(0, 0, self.axis_name_edit)
+        self.add_Row(0)
 
-        self.max_edit = PyDMLineEdit()
-        self.range_axis_table.setCellWidget(0, 1, self.max_edit)
+    def add_Row(self, index):
+        current_row_count = self.table.rowCount()
+        self.table.insertRow(current_row_count)
 
-        self.min_edit = PyDMLineEdit()
-        self.range_axis_table.setCellWidget(0, 2, self.min_edit)
-
-        self.type_combo = QComboBox()
-        self.type_combo.addItems(["Normal", "Log"]) 
-        self.range_axis_table.setCellWidget(0, 3, self.type_combo)
-
-        self.keep_ranges_checkbox = QCheckBox()
-        self.range_axis_table.setCellWidget(0, 4, self.keep_ranges_checkbox)
-
-        position_spinbox = QSpinBox()
-        self.range_axis_table.setCellWidget(0, 5, position_spinbox)
-
-        # Customize the table widget
-        self.range_axis_table.verticalHeader().setVisible(False)  # Hide the vertical header
-        self.range_axis_table.setEditTriggers(QTableWidget.NoEditTriggers)  # Disable cell editing
-        self.range_axis_table.setSelectionMode(QTableWidget.NoSelection)  # Disable cell selection
-
-        # Set layout for the widget
-        layout = QHBoxLayout()
-        layout.addWidget(self.range_axis_table)
-        self.setLayout(layout)
+        for i in range(self.table.columnCount()):
+            if i == 0:
+                widget = QLineEdit()
+                self.table.setCellWidget(index, i, widget)
+            elif i in [1, 2]:
+                widget = QLineEdit()
+                self.table.setCellWidget(index, i, widget)
+            elif i == 3:
+                widget = QComboBox()
+                widget.addItems(["Normal", "Log"])
+                self.table.setCellWidget(index, i, widget)
+            elif i == 4:
+                widget = QCheckBox()
+                self.table.setCellWidget(index, i, widget)
+            elif i == 5:
+                widget = QSpinBox()
+                self.table.setCellWidget(index, i, widget)
 
     def get_range_axis_data(self):
-        # Retrieve the range axis data from the table
-        axis_name = self.axis_name_edit.text()
-        max_value = self.max_edit.text()
-        min_value = self.min_edit.text()
-        axis_type = self.type_combo.currentText()
-        keep_ranges = self.keep_ranges_checkbox.isChecked()
+        axis_data = []
+        for row in range(self.table.rowCount()):
+            axis_name = self.get_cell_widget_value(self.table.cellWidget(row, 0))
+            max_value = self.get_cell_widget_value(self.table.cellWidget(row, 1))
+            min_value = self.get_cell_widget_value(self.table.cellWidget(row, 2))
+            axis_type = self.get_cell_widget_value(self.table.cellWidget(row, 3))
+            keep_ranges = self.get_cell_widget_value(self.table.cellWidget(row, 4))
+            position = self.get_cell_widget_value(self.table.cellWidget(row, 5))
+            axis_data.append((axis_name, max_value, min_value, axis_type, keep_ranges, position))
+        return axis_data
 
-        return axis_name, max_value, min_value, axis_type, keep_ranges
+    def get_cell_widget_value(self, widget):
+        if isinstance(widget, QLineEdit):
+            return widget.text()
+        elif isinstance(widget, QComboBox):
+            return widget.currentText()
+        elif isinstance(widget, QCheckBox):
+            return widget.isChecked()
+        elif isinstance(widget, QSpinBox):
+            return widget.value()
+        return None
+
+class RangeAxisList(MutableSequence):
+    def __init__(self, iterable=()):
+        self._list = list(iterable)
+        self.callback = None
+
+    def __getitem__(self, key):
+        return self._list.__getitem__(key)
+
+    def __setitem__(self, key, item):
+        self._list.__setitem__(key, item)
+        # trigger change handler
+        if self.callback:
+            self.callback()
+
+    def __delitem__(self, key):
+        self._list.__delitem__(key)
+        # trigger change handler
+        if self.callback:
+            self.callback()
+
+    def __len__(self):
+        return self._list.__len__()
+
+    def insert(self, index, item):
+        self._list.insert(index, item)
+        # trigger change handler
+        if self.callback:
+            self.callback()
+
+    def set_callback(self, callback):
+        self.callback = callback
 

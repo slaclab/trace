@@ -672,7 +672,6 @@ class PVContextMenu(QMenu):
     def search_pv(self):
         # Open the ArchiveSearchWidget
         archive_search = ArchiveSearchWidget()
-        archive_search.setWindowModality(QtCore.Qt.ApplicationModal)
         archive_search.show()
 
     def open_formula_dialog(self):
