@@ -7,6 +7,8 @@ from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGr
 from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
 from pv_table import PyDMPVTable
 from functools import partial
+from qdarkstyle import load_stylesheet, DarkPalette
+from pv_table_alt import PyDMPVTable_alt
 
 class ArchiveViewerLogic():
     pass
@@ -18,6 +20,7 @@ class ArchiveViewer(Display):
     def __init__(self, parent=None, args=None, macros=None):
         super(ArchiveViewer, self).__init__(parent=parent, args=args, macros=macros)
         self.app = QApplication.instance()
+        #self.app.setStyleSheet(load_stylesheet(palette=DarkPalette))
         self.setup_ui()
 
     def fetch_data_from_table(self):
@@ -88,7 +91,7 @@ class ArchiveViewer(Display):
         plot_tab_widget.addTab(self.correlations, "Correlations")
 
         #Data Table 
-        self.input_table = PyDMPVTable(
+        self.input_table = PyDMPVTable_alt(
             table_headers=["PV NAME", "TIME AXIS", "RANGE AXIS", "VISIBLE", "RAW", "COLOR", "TYPE", "WIDTH"],
             number_columns=8,
             col_widths=[100])
@@ -184,7 +187,7 @@ class ArchiveViewer(Display):
         main_layout.addWidget(plot_tab_widget)
         main_layout.addWidget(self.settings_tab_widget)
 
-        self.input_table.send_data_change_signal.connect(self.update_plot)
+        #self.input_table.send_data_change_signal.connect(self.update_plot)
 
     def time_toggle_button_action(self, index):            
         for i in range(0, len(self.time_toggle_buttons)):
