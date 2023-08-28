@@ -41,9 +41,8 @@ class PyDMPVTable(QWidget):
 
 
 
-    def __init__(self, time_axes, macros=None, table_headers=[], max_rows=1, number_columns=10, col_widths=[50]):
+    def __init__(self, macros=None, table_headers=[], max_rows=1, number_columns=10, col_widths=[50]):
         super().__init__()
-        self.time_axes = time_axes  # Store the reference to the time axes list
         self.data = PVList()
         self.data.set_callback(self.data_changed)    
         self.main_layout = QVBoxLayout()
@@ -58,6 +57,7 @@ class PyDMPVTable(QWidget):
         self.col_widths = col_widths
         self.makeMainFrames()
         self.setup_table()
+        self.last_clicked_index = None  # Add this line
 
 
 
@@ -79,18 +79,33 @@ class PyDMPVTable(QWidget):
                            'CSV': ''}
 
 
-        self.time_axes = time_axes  # Store the reference to the time axes list
+        # self.time_axes = time_axes  # Store the reference to the time axes list
         self.contextMenu = PVContextMenu(self)
         self.contextMenu.data_changed_signal.connect(self.handle_delete_pv_row)
 
 
 
-
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
-            if isinstance(self.focusWidget(), QLineEdit):
-                position_of_click = event.pos()
-                self.data_menu(position_of_click)
+            position = event.pos()
+            index = self.table.indexAt(position)
+
+            if index.isValid():
+                self.last_clicked_index = index  # Store the clicked index
+                self.show_context_menu(index, event.globalPos())
+
+        super().mousePressEvent(event)
+
+    def remove_row(self, index):
+        if 0 <= index < len(self.data):
+            self.data.pop(index)
+            self.table.removeRow(index)
+
+    def show_context_menu(self, index, global_position):
+        context_menu = PVContextMenu(self)
+        context_menu.data_changed_signal.connect(self.handle_delete_pv_row)
+        context_menu.index = index.row()  # Store the row index for deletion
+        context_menu.exec_(global_position)
 
     def data_menu(self, position_of_click):
         self.archive_search = ArchiveSearchWidget()
@@ -169,10 +184,15 @@ class PyDMPVTable(QWidget):
         self.table.setColumnCount(self.number_columns)
 
         if len(self.col_widths) == 1:
-            self.col_widths = self.col_widths*self.table.columnCount()
+            self.col_widths = self.col_widths * self.table.columnCount()
         if len(self.col_widths) < self.table.columnCount():
             pass
-            #self.col_widths.append()
+
+        # Set the row headers with letters
+        for row_index in range(self.table.rowCount()):
+            letter = self.get_letter(row_index)
+            self.table.setVerticalHeaderItem(row_index, QTableWidgetItem(letter))
+
 
         #col_widths = [200, 200, 80, 80, 100, 80, 160, 40, 60, 80]
         for i in range(self.table.columnCount()):
@@ -180,28 +200,44 @@ class PyDMPVTable(QWidget):
 
         self.table.setHorizontalHeaderLabels(self.table_headers)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
-        #self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
         for i in range(self.table.rowCount()):
             self.setupRow(i)
 
         self.table_frame[1].addWidget(self.table)
 
+                    # Set context menu policy for the entire table
+        self.table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+
+        # Connect context menu to the table's customContextMenuRequested signal
+        self.table.customContextMenuRequested.connect(self.show_context_menu)
+
+
+    def show_context_menu(self, point):
+        index = self.table.indexAt(point)
+        if index.isValid():
+            row = index.row()
+            self.contextMenu.index = row  # Update the stored index in the context menu
+            self.contextMenu.exec_(self.table.viewport().mapToGlobal(point))
+
+
 
     def setupRow(self, index):
         for i in range(0, self.table.columnCount()):
-            obj = [QLineEdit(), QComboBox(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
+            obj = [QLineEdit(), QComboBox(),  QCheckBox(), QCheckBox(), QPushButton(),
                    QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
 
-            if i == 1:  # Time Axis drop-down menu
-                time_axes_names = [axis["axis_name"] for axis in self.time_axes]
-                obj[i].addItems(time_axes_names)
+            # if i == 1:  # Time Axis drop-down menu
+            #     time_axes_names = [axis["axis_name"] for axis in self.time_axes]
+            #     obj[i].addItems(time_axes_names)
 
-            if i == 5:  # Color column
+            if i == 4:  # Color column
                 color_button = QPushButton()
-                color_button.clicked.connect(partial(self.openColorPicker, index))
+                color_button.setStyleSheet(f"background-color: white")
+                color_button.clicked.connect(partial(self.openColorPicker, index, color_button))
                 self.table.setCellWidget(index, i, color_button)
             else:
                 self.table.setCellWidget(index, i, obj[i])
@@ -211,38 +247,60 @@ class PyDMPVTable(QWidget):
 
         self.table.cellWidget(index, 1).currentIndexChanged.connect(partial(self.update_data, index, 1,
                                                                     self.table.cellWidget(index, 1).currentText()))
-        self.table.cellWidget(index, 2).currentIndexChanged.connect(partial(self.update_data, index, 2,
-                                                                    self.table.cellWidget(index, 2).currentText()))
+        # self.table.cellWidget(index, 2).currentIndexChanged.connect(partial(self.update_data, index, 2,
+        #                                                             self.table.cellWidget(index, 2).currentText()))
+        self.table.cellWidget(index, 2).stateChanged.connect(partial(self.update_data, index, 2,
+                                                             self.table.cellWidget(index, 2).checkState))
+            # Set the initial state of the "Visible" checkbox to checked
+        self.table.cellWidget(index, 2).setChecked(True)
         self.table.cellWidget(index, 3).stateChanged.connect(partial(self.update_data, index, 3,
                                                              self.table.cellWidget(index, 3).checkState))
-        self.table.cellWidget(index, 4).stateChanged.connect(partial(self.update_data, index, 4,
-                                                             self.table.cellWidget(index, 4).checkState))
-        # self.table.cellWidget(index, 5).clicked.connect(partial(self.update_data, index, 5,
-        #                                                self.table.cellWidget(index, 5)))
-        self.table.cellWidget(index, 6).currentIndexChanged.connect(partial(self.update_data, index, 6,
-                                                                    self.table.cellWidget(index, 6).currentText()))
-        self.table.cellWidget(index, 7).valueChanged.connect(partial(self.update_data, index, 7,
-                                                                     self.table.cellWidget(index, 7).value))
+        #self.table.cellWidget(index, 5).currentIndexChanged.connect(partial(self.update_data, index, 5, 
+                                                                    #self.table.cellWidget(index, 5).currentText()))               
+        self.table.cellWidget(index, 5).currentIndexChanged.connect(partial(self.update_data, index, 5,
+                                                                    self.table.cellWidget(index, 5).currentText()))
+        self.table.cellWidget(index, 6).valueChanged.connect(partial(self.update_data, index, 6,
+                                                                     self.table.cellWidget(index, 6).value))
+
+        letter = self.get_letter(index)
+        self.table.setVerticalHeaderItem(index, QTableWidgetItem(letter))
 
         self.data.append(PVList([self.table.cellWidget(index, 0).text(),
-                          self.table.cellWidget(index, 1).currentText(),
-                          self.table.cellWidget(index, 2).currentText(),
-                          self.table.cellWidget(index, 3).checkState(),
-                          self.table.cellWidget(index, 4).checkState(),
-                          0,
-                          self.table.cellWidget(index, 6).currentText(),
-                          self.table.cellWidget(index, 7).value]))
+                                 self.table.cellWidget(index, 1).currentText(),
+                                 
+                                 self.table.cellWidget(index, 2).checkState(),
+                                 self.table.cellWidget(index, 3).checkState(),
+                                 0,
+                                 self.table.cellWidget(index, 5).currentText(),
+                                 self.table.cellWidget(index, 6).value()]))
 
         self.data[-1].set_callback(self.data_changed)
 
+
+    def get_letter(self, index):
+        if index < 26:
+            return chr(ord('A') + index)
+        else:
+            div = index // 26
+            mod = index % 26
+            return chr(ord('A') + div - 1) + chr(ord('A') + mod)
 
     def update_data(self, index, position, value):
         print(index, position, value)
         self.add_Row(index)
         try:
-            self.data[index][position] = value
+            if isinstance(self.table.cellWidget(index, position), QComboBox):
+                self.data[index][position] = value
+            elif isinstance(self.table.cellWidget(index, position), QPushButton):
+                color_button = self.table.cellWidget(index, position)
+                color_style = color_button.styleSheet()
+                match = re.search(r"background-color: (.*?);", color_style)
+                if match:
+                    color = match.group(1)
+                    self.data[index][position] = color
         except IndexError:
             print("Error: Invalid index")
+
 
 
     def add_Row(self, index):
@@ -252,14 +310,17 @@ class PyDMPVTable(QWidget):
         current_row_count = self.table.rowCount()
         current_row_count += 1
         self.table.setRowCount(current_row_count)
-        self.setupRow(current_row_count-1)
+        self.setupRow(current_row_count - 1)
 
+        # Set the row header for the newly added row
+        letter = self.get_letter(current_row_count - 1)
+        self.table.setVerticalHeaderItem(current_row_count - 1, QTableWidgetItem(letter))
 
     def resetRow(self, index):
         if not self.widget_list:
             return False
 
-        obj = [PyDMLineEdit(), QComboBox(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
+        obj = [PyDMLineEdit(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
                QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
 
         for i in range(0, self.table.columnCount()):
@@ -599,18 +660,23 @@ class PyDMPVTable(QWidget):
 
 
 
-    def openColorPicker(self, index):
+    def openColorPicker(self, index, button_widget):
         color_dialog = QColorDialog()
         color = color_dialog.getColor()
 
         if color.isValid():
-            color_button = self.table.cellWidget(index, 5)
-            color_button.setStyleSheet(f"background-color: {color.name()}")
+            button_widget.setStyleSheet(f"background-color: {color.name()}")
             self.update_data(index, 5, color.name())
 
+
     def contextMenuEvent(self, event):
-        menu = PVContextMenu(self)
-        menu.exec_(event.globalPos())
+        if self.last_clicked_index is not None:
+            index = self.last_clicked_index
+
+            context_menu = PVContextMenu(self)
+            context_menu.data_changed_signal.connect(self.handle_delete_pv_row)
+            context_menu.index = index.row()  # Store the row index for deletion
+            context_menu.exec_(event.globalPos())
 
 
     def data_changed(self):
@@ -654,6 +720,7 @@ class PVContextMenu(QMenu):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+
         # Add "SEARCH PV" option
         search_pv_action = QAction("SEARCH PV", self)
         search_pv_action.triggered.connect(self.search_pv)
@@ -668,6 +735,7 @@ class PVContextMenu(QMenu):
         delete_pv_action = QAction("DELETE PV", self)
         delete_pv_action.triggered.connect(self.delete_pv)
         self.addAction(delete_pv_action)
+
 
     def search_pv(self):
         # Open the ArchiveSearchWidget
@@ -757,12 +825,19 @@ class PVContextMenu(QMenu):
 
 
     def delete_pv(self):
-        # Get the row index of the selected PV
-        index = self.table.currentRow()
+        if self.index is not None and 0 <= self.index < len(self.parentWidget().data):
+            pv_name = self.parentWidget().data[self.index][0]
+            self.parentWidget().remove_row(self.index)
+            self.parentWidget().send_data_change_signal.emit()
+            self.parentWidget().data.pop(self.index)
+            self.data_changed_signal.emit(self.index)
+            print("Delete Row")
+        else:
+            print("Invalid index or index out of range")
 
-        # Emit the delete_pv_row_requested signal with the row index
-        self.data_changed_signal.emit(index)
-        print("Delete Row")
+        
+    def get_letter(self, index):
+        return chr(ord('A') + index)
 
 
     #         self.time_axis_combo.addItem(time_axis.name, time_axis)

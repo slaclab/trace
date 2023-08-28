@@ -16,107 +16,13 @@ from PyQt5.QtWidgets import (
     QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox, QDialog, QVBoxLayout, QHeaderView, QToolButton,
     QDateTimeEdit, QPushButton
 )
+from PyQt5.QtCore import QDate, QDateTime
 from archive_search import ArchiveSearchWidget
 from collections.abc import MutableSequence
 
 
-class TimeAxisTable(QWidget):
-    
-
-    send_data_change_signal = QtCore.Signal()
-
-    def __init__(self, time_axes):
-        super(TimeAxisTable, self).__init__()
-        self.data = TimeAxisList()
-        self.data.set_callback(self.data_changed_callback) 
-        self.table_headers = ["AXIS NAME", "START", "END", "SLIDER"]
-        self.number_columns = len(self.table_headers)
-        self.max_rows = 1
-        self.col_widths = [200, 200, 200, 200]
-        self.setup_ui()
-        self.time_axes = time_axes  # Store the reference to the time axes list
-
-
-    def setup_ui(self):
-        self.main_layout = QVBoxLayout(self)
-        self.table = QTableWidget()
-        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.table.setColumnCount(self.number_columns)
-        self.table.setHorizontalHeaderLabels(self.table_headers)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
-
-        self.main_layout.addWidget(self.table)
-
-        self.add_Row(0)
-
-    def add_Row(self, index):
-        current_row_count = self.table.rowCount()
-        self.table.insertRow(current_row_count)
-
-        for i in range(self.table.columnCount()):
-            if i == 0:
-                widget = QLineEdit()
-                self.table.setCellWidget(index, i, widget)
-                widget.textChanged.connect(
-                    partial(self.update_data, index, i, widget.text())
-                )
-            elif i in [1, 2]:
-                widget = QDateTimeEdit()
-                widget.setDisplayFormat("MM/dd/yyyy hh:mm:ss.zzz")
-                widget.setCalendarPopup(True)
-                self.table.setCellWidget(index, i, widget)
-                widget.dateTimeChanged.connect(
-                    partial(
-                        self.update_data,
-                        index,
-                        i,
-                        widget.dateTime().toPyDateTime(),
-                    )
-                )
-            elif i == 3:
-                widget = QSlider(Qt.Horizontal)
-                self.table.setCellWidget(index, i, widget)
-                widget.valueChanged.connect(
-                    partial(self.update_data, index, i, widget.value())
-                )
-
-        self.data.append(TimeAxisList(
-            [
-                self.get_cell_widget_value(self.table.cellWidget(index, i))
-                for i in range(self.table.columnCount())
-            ]
-        ))
-
-
-        self.data[-1].set_callback(self.data_changed_callback)
-
-    def update_data(self, index, position, value):
-        self.data[index][position] = value
-        if index == self.table.rowCount() - 1:
-            self.add_Row(index + 1)  # Add a new row dynamically
-
-    def get_cell_widget_value(self, widget):
-        if isinstance(widget, QLineEdit):
-            return widget.text()
-        elif isinstance(widget, QDateTimeEdit):
-            return widget.dateTime().toPyDateTime()
-        elif isinstance(widget, QSlider):
-            return widget.value()
-        return None
-
-    def get_time_data(self):
-        return self.data
-
-    def data_changed_callback(self):
-        print("Data changed!")
-        self.send_data_change_signal.emit()
-
-
-
 
 class TimeAxisList(MutableSequence):
-
 
     def __init__(self, iterable=()):
         self._list = list(iterable)
@@ -146,4 +52,79 @@ class TimeAxisList(MutableSequence):
         self.callback = callback
 
 
+class TimeAxisTable(QWidget):
+    
+    send_data_change_signal = QtCore.Signal(TimeAxisList)
 
+    def __init__(self):
+        super(TimeAxisTable, self).__init__()
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.main_layout = QVBoxLayout(self)
+
+        labels = ["Main Time Axis", None, None]  # Labels for each column
+
+        row_layout = QHBoxLayout()
+
+        # Initialize the TimeAxisList with placeholders
+        initial_data = [None] * len(labels)
+        self.data = TimeAxisList(initial_data)
+        self.data.set_callback(self.data_changed_callback)
+
+        for i, label in enumerate(labels):
+            if label is None:
+                if i == 1 or i == 2:
+                    widget = QDateTimeEdit()
+                    widget.setDisplayFormat("MM/dd/yyyy hh:mm:ss.zzz")
+                    widget.setCalendarPopup(True)
+                    widget.setDateTime(QDateTime.currentDateTime())
+                    widget.dateTimeChanged.connect(
+                        partial(
+                            self.update_data,
+                            i,
+                            widget,
+                        )
+                    )
+                    row_layout.addWidget(widget)
+            else:
+                label_widget = QLabel(label)
+                row_layout.addWidget(label_widget)
+
+        self.main_layout.addLayout(row_layout)
+
+    def update_data(self, position, widget):
+        if isinstance(widget, QDateTimeEdit):
+            if position == 1:
+                new_value = widget.dateTime().toPyDateTime()
+                print(f"Updating data at position 1: {new_value}")
+                self.data[1] = new_value
+            elif position == 2:
+                new_value = widget.dateTime().toPyDateTime()
+                print(f"Updating data at position 2: {new_value}")
+                self.data[2] = new_value
+        self.send_data_change_signal.emit(self.data)
+
+    def data_changed_callback(self):
+        print("Data changed!")
+        self.send_data_change_signal.emit(self.data)
+
+    def update_data(self, position, widget):
+        if isinstance(widget, QDateTimeEdit):
+            if position == 1:
+                new_value = widget.dateTime().toPyDateTime()
+                print(f"Updating data at position 1: {new_value}")
+                self.data[1] = new_value
+            elif position == 2:
+                new_value = widget.dateTime().toPyDateTime()
+                print(f"Updating data at position 2: {new_value}")
+                self.data[2] = new_value
+        elif isinstance(widget, QSlider):
+            new_value = widget.value()
+            print(f"Updating data at position 3: {new_value}")
+            self.data[3] = new_value
+        self.send_data_change_signal.emit(self.data)
+
+    def data_changed_callback(self):
+        print("Data changed!")
+        self.send_data_change_signal.emit(self.data)
