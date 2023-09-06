@@ -1,80 +1,125 @@
 import typing
+import numpy as np 
+from numpy import sin 
 from pydm import Display
 from qtpy import QtCore
-from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
-                            QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
-                            QLineEdit, QSpacerItem)
 from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
 from pv_table import PyDMPVTable
+from time_axis_table import TimeAxisTable
+from range_axis_table import RangeAxisTableWidget
 from functools import partial
 from qdarkstyle import load_stylesheet, DarkPalette
-from pv_table_alt import PyDMPVTable_alt
+from archive_search import ArchiveSearchWidget
+from pydm import Display
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QTabWidget, QWidget
+from pv_table import PyDMPVTable
+from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
+                            QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
+                            QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox)
+
 
 class ArchiveViewerLogic():
+    #manipulate pv data with formula
+    #delete pv from everything 
+    #add any new pv row info 
+    #maybe set time span 
     pass
- 
+
+
 class ArchiveViewer(Display):
-    """
-    PyDM version of the Archive Viewer.
-    """
     def __init__(self, parent=None, args=None, macros=None):
         super(ArchiveViewer, self).__init__(parent=parent, args=args, macros=macros)
         self.app = QApplication.instance()
-        #self.app.setStyleSheet(load_stylesheet(palette=DarkPalette))
+        self.setWindowTitle("New Archive Viewer")
+        # self.app.setStyleSheet(load_stylesheet(palette=DarkPalette))
+        self.archive_search_widget = ArchiveSearchWidget()
+        self.pv_names_to_plot = set()
+        self.default_line_width = .05  # Set default line width
+        self.default_color = "white"  # Set default color
         self.setup_ui()
 
     def fetch_data_from_table(self):
         columns = self.input_table.table.columnCount()
         rows = self.input_table.table.rowCount()
 
-        print(self.input_table.data[0]())
-        print(rows, columns)
-
-        for row_index in range(0, rows):
-            for column_index in range(0, columns):
-                print(row_index, column_index)
-                #print(self.input_table.table.cellWidget(row_index, column_index))
-
+        for row_index in range(rows):
+            for column_index in range(columns):
                 if column_index == 0:
-                    print(self.input_table.table.cellWidget(row_index, column_index).text)
+                    print(self.input_table.table.cellWidget(row_index, column_index).text())
+
+        # Dictionary to store the PV names for plotting
+        self.pv_names_to_plot = []
 
     def update_plot(self):
-        print("landing here")
-        print(self.input_table.data[0][7](), self.input_table.data[0][0]())
-        print(len(self.input_table.data))
+        if self.input_table is None:
+            return
 
-        try:
-            for index in range(0, len(self.input_table.data)):
-                print(self.input_table.data[index][0])
-                self.time_plots.addYChannel(
-                    y_channel="archiver://" + self.input_table.data[index][0](),
-                    lineWidth=self.input_table.data[index][7]()
-                )
-        except Exception:
-            print("error")
+        self.time_plots.clearCurves()  # Clear existing curves
+
+        # Fetch data from the table
+        rows = self.input_table.table.rowCount()
+        new_pv_names = set()  # Use a set to store PV names from the current update
+
+        for row_index in range(rows):
+            try:
+                pv_name_widget = self.input_table.table.cellWidget(row_index, 0)
+                line_width_slider = self.input_table.table.cellWidget(row_index, 6)
+                color_widget = self.input_table.table.cellWidget(row_index, 4)
+                color = color_widget.palette().color(QPalette.Background).name()
+                visible_checkbox = self.input_table.table.cellWidget(row_index, 2)
+                is_visible = visible_checkbox.isChecked()
+
+                if pv_name_widget is None or line_width_slider is None:
+                    continue
+
+                pv_name = pv_name_widget.text()
+                line_width = line_width_slider.value() / 8.0  # Adjust line width based on slider values
+
+                # Use the default line width if the user has not set it
+                if line_width == 0:
+                    line_width = self.default_line_width
+
+                if pv_name:
+                        if is_visible:
+                            new_pv_names.add(pv_name)
 
 
+                            # Plot the selected PV row with updated parameters
+                            self.time_plots.addYChannel(
+                                y_channel=f"ca://{pv_name}",
+                                yAxisName="Name",
+                                lineWidth=line_width,
+                                color=color,
+                                useArchiveData=True
+                            )
 
-        '''
-        color=self.input_table.data[index][5],
+                        else:
+                            print(f"Skipping row {row_index + 1} due to missing information.")
+            except Exception as e:
+                print(f"Error processing row {row_index + 1}: {str(e)}")
 
-        lineStyle=self.input_table.data[index][6],
+        # Calculate the PV names to plot that are new since the last update
+        pv_names_to_plot = new_pv_names - self.pv_names_to_plot
 
-        self.input_table.data[index][2](),
-        self.input_table.data[index][3](),
-        self.input_table.data[index][4]()
-        '''
+        # Update the set of PV names to include the new PV names (only for fully valid rows)
+        self.pv_names_to_plot.update(new_pv_names)
+
+
+    def update_x_axis(self, data):
+        print("Update x-axis called")
+        print("Received data:", data)  # Print the received data for debugging
+        start_time, end_time = data[1], data[2]  # Access elements using indexing
+        if start_time and end_time:
+            start_timestamp = start_time.timestamp()
+            end_timestamp = end_time.timestamp()
+            print(f"Updating x-axis: Start={start_timestamp}, End={end_timestamp}")
+            self.time_plots.setXRange(start_timestamp, end_timestamp, padding=0.0, update=True)
+            self.update_plot()
 
     def minimumSizeHint(self):
-        """
-
-        """
         return QtCore.QSize(1050, 600)
 
     def setup_ui(self):
-        """
-
-        """
         # main layout
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
@@ -90,89 +135,59 @@ class ArchiveViewer(Display):
         plot_tab_widget.addTab(self.waveforms, "Waveforms")
         plot_tab_widget.addTab(self.correlations, "Correlations")
 
-        #Data Table 
-        self.input_table = PyDMPVTable_alt(
-            table_headers=["PV NAME", "TIME AXIS", "RANGE AXIS", "VISIBLE", "RAW", "COLOR", "TYPE", "WIDTH"],
-            number_columns=8,
-            col_widths=[100])
-        
+        # Create the PyDMPVTable widget
+        self.input_table = PyDMPVTable(
+            table_headers=["PV NAME", "RANGE AXIS", "VISIBLE", "RAW", "COLOR", "TYPE", "WIDTH"],
+            number_columns=7,
+            col_widths=[100],
+        )
+
         self.input_data_tab = QWidget()
         self.input_data_layout = QHBoxLayout()
         self.input_data_layout.addWidget(self.input_table)
         self.input_data_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Range Menu
-        min_label = QLabel("Min:")
-        max_label = QLabel("Max:")
-        min_input = QLineEdit()
-        max_input = QLineEdit()
-        keep_range_label = QLabel("Keep Ranges")
-        keep_range_check_box = QCheckBox()
-        type_lable = QLabel("Type")
+        # Axes Menu
+        self.axes_tab = QWidget()
 
-        range_tab = QWidget()
-        range_layout = QGridLayout()
-        range_layout.setVerticalSpacing(0)
-        range_layout.addWidget(min_label)
-        range_layout.addWidget(min_input,  0, 1)
-        range_layout.addWidget(max_label)
-        range_layout.addWidget(max_input,  1, 1)
-        range_layout.addWidget(keep_range_check_box)
-        range_layout.addWidget(keep_range_label)
-        range_layout.addWidget(type_lable, 1, 2)
+        # Create the range and time axis table widget on same tab
+        self.axes_table_widget = CombinedAxisTables()
 
-        # time Menu
-        min_label_time = QLabel("Start:")
-        max_label_time = QLabel("End:")
-        min_input_time = QLineEdit()
-        max_input_time = QLineEdit()
-        keep_range_label_time = QLabel("Keep Ranges")
-        keep_range_check_box_time = QCheckBox()
-        type_label_time = QLabel("Type")
+        # Create the main layout
+        self.axes_layout = QVBoxLayout()
+        self.axes_layout.addWidget(self.axes_table_widget)
 
-
-        time_tab = QWidget()
-        time_layout = QGridLayout()
-        time_layout.addWidget(min_label_time)
-        time_layout.addWidget(min_input_time,  0, 1)
-        time_layout.addWidget(max_label_time)
-        time_layout.addWidget(max_input_time,  1, 1)
-        time_layout.addWidget(keep_range_check_box_time)
-        time_layout.addWidget(keep_range_label_time)
-        time_layout.addWidget(type_label_time, 1, 2)
-        
         self.input_data_tab.setLayout(self.input_data_layout)
-        range_tab.setLayout(range_layout)
-        time_tab.setLayout(time_layout)
+        self.axes_tab.setLayout(self.axes_layout)
+
 
         self.settings_tab_widget = QTabWidget()
         self.settings_tab_widget.addTab(self.input_data_tab, "Input Data")
-        self.settings_tab_widget.addTab(range_tab, "Range")
-        self.settings_tab_widget.addTab(time_tab, "Time Axis")
-        
+        self.settings_tab_widget.addTab(self.axes_tab, "Set Axes")
 
-        #set up time toggle buttons 
+
+        # set up time toggle buttons
         self.time_toggle_buttons = []
         time_toggle_layout = QHBoxLayout()
 
-        #horizontal spacer for toggle buttons
+        # horizontal spacer for toggle buttons
         horizontal_spacer = QSpacerItem(100, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         time_toggle_layout.addItem(horizontal_spacer)
 
         self.time_toggle = [('30s', None), ('1m', None), ('1h', None), ('1w', None), ('1m', None)]
-        for index in range(0, len(self.time_toggle)):
+        for index in range(len(self.time_toggle)):
             self.time_toggle_buttons.append(QPushButton(self.time_toggle[index][0], self))
             self.time_toggle_buttons[index].setGeometry(200, 150, 100, 40)
             self.time_toggle_buttons[index].setCheckable(True)
             self.time_toggle_buttons[index].clicked.connect(partial(self.time_toggle_button_action, index))
             time_toggle_layout.addWidget(self.time_toggle_buttons[index])
 
-        #set up misc toggle buttons 
+        # set up misc toggle buttons
         self.misc_button = []
         misc_toggle_layout = QHBoxLayout()
 
         self.misc_toggle = [('curser', None), ('Y axis autoscale', None), ('Live', None)]
-        for index in range(0, len(self.misc_toggle)):
+        for index in range(len(self.misc_toggle)):
             self.misc_button.append(QPushButton(self.misc_toggle[index][0], self))
             self.misc_button[index].setGeometry(200, 150, 100, 40)
             self.misc_button[index].setCheckable(True)
@@ -187,17 +202,16 @@ class ArchiveViewer(Display):
         main_layout.addWidget(plot_tab_widget)
         main_layout.addWidget(self.settings_tab_widget)
 
-        #self.input_table.send_data_change_signal.connect(self.update_plot)
+        self.input_table.send_data_change_signal.connect(self.update_plot)
+        self.axes_table_widget.send_data_change_signal.connect(self.update_x_axis)
 
-    def time_toggle_button_action(self, index):            
-        for i in range(0, len(self.time_toggle_buttons)):
-            if i != index: 
+    def time_toggle_button_action(self, index):
+        for i in range(len(self.time_toggle_buttons)):
+            if i != index:
                 self.time_toggle_buttons[i].setChecked(False)
 
-        #self.time_toggle[index][1]
-    
-    def misc_toggle_button_action(self, index):            
+    def misc_toggle_button_action(self, index):
         pass
 
-        #self.misc_toggle[index][1]
+
     
