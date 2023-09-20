@@ -74,7 +74,7 @@ class TimeAxisTable(QWidget):
 
         self.main_layout.addLayout(row_layout)
 
-    '''
+    """
     def update_data(self, position, widget):
         if isinstance(widget, QDateTimeEdit):
             if position == 1:
@@ -86,11 +86,11 @@ class TimeAxisTable(QWidget):
                 print(f"Updating data at position 2: {new_value}")
                 self.data[2] = new_value
         self.send_data_change_signal.emit(self.data)
- 
+
     def data_changed_callback(self):
         print("Data changed!")
         self.send_data_change_signal.emit(self.data)
-    '''
+    """
 
     def update_data(self, position, widget):
         if isinstance(widget, QDateTimeEdit):

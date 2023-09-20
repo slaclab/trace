@@ -93,7 +93,7 @@ class PVTable(QWidget):
             elif "CSV" in self.macros.keys():
                 try:
                     self.applyCSVFile(macros["CSV"])
-                except Exception: 
+                except Exception:
                     print("Error: File not found")
         else:
             self.macros = {"PV": "", "CSV": ""}
@@ -120,14 +120,14 @@ class PVTable(QWidget):
         context_menu.index = index.row()  # Store the row index for deletion
         context_menu.exec_(global_position)
 
-    '''
+    """
     def show_context_menu(self, point):
         index = self.table.indexAt(point)
         if index.isValid():
             row = index.row()
             self.contextMenu.index = row  # Update the stored index in the context menu
             self.contextMenu.exec_(self.table.viewport().mapToGlobal(point))
-    '''
+    """
 
     def data_menu(self, position_of_click):
         self.archive_search = ArchiveSearchWidget()
