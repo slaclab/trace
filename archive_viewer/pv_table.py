@@ -1,33 +1,30 @@
 import os
 import epics
-import copy
-import pandas as pd
 import typing
+import pandas as pd
 from archive_search import ArchiveSearchWidget
 from functools import partial
 from datetime import datetime
 from qtpy import QtCore, QtGui
 from pydm.widgets import PyDMLineEdit
-from qtpy.QtWidgets import (QWidget, QFrame, QLabel, QHBoxLayout, QVBoxLayout,
-                            QLineEdit, QPushButton, QTableWidget, QSpinBox,
-                            QComboBox, QMessageBox, QFileDialog, QTableWidgetItem,
-                            QSpacerItem, QSizePolicy, QCheckBox, QSlider, QHeaderView, QColorDialog)
 from collections.abc import MutableSequence
-from PyQt5.QtWidgets import QWidget, QCalendarWidget, QMenu, QAction, QVBoxLayout
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QButtonGroup, QGridLayout
+from qtpy.QtWidgets import (QWidget, QFrame, QLabel, QVBoxLayout, QLineEdit, 
+                            QPushButton, QTableWidget, QSpinBox, QComboBox, 
+                            QMessageBox, QFileDialog, QTableWidgetItem,
+                            QSpacerItem, QSizePolicy, QCheckBox, QSlider, 
+                            QHeaderView, QColorDialog, QMenu, QAction, 
+                            QLineEdit, QDialog, QButtonGroup, QGridLayout)
 
 
-## Test PV: SIOC:SYS0:MG01:HEARTBEAT
-class PyDMPVTable(QWidget):
+class PVTable(QWidget):
     """
-      The PyDMPVTable,
+      The PVTable,
 
       Parameters
       ----------
       parent : QWidget
-          The parent widget for the table
-      macros : str, optionalt
+        The parent widget for the table
+      macros : str, optional   
 
       table_headers : list, optional
         list of strings that sets the header names for the table.
@@ -35,13 +32,10 @@ class PyDMPVTable(QWidget):
         max number of rows for the table.
       number_columns : int, optional
         number of columns in the table
-      """
-
+    """
     send_data_change_signal = QtCore.Signal()
 
-
-
-    def __init__(self, macros=None, table_headers=[], max_rows=1, number_columns=10, col_widths=[50]):
+    def __init__(self, macros=None, table_headers=[], max_rows=1, number_columns=8, col_widths=[50]):
         super().__init__()
         self.data = PVList()
         self.data.set_callback(self.data_changed)    
@@ -55,11 +49,11 @@ class PyDMPVTable(QWidget):
         self.number_columns = number_columns
         self.max_rows = max_rows
         self.col_widths = col_widths
-        self.makeMainFrames()
+        self.make_frame()
         self.setup_table()
         self.last_clicked_index = None  # Add this line
-
-
+        self.contextMenu = PVContextMenu(self)
+        self.contextMenu.data_changed_signal.connect(self.handle_delete_pv_row)
 
         if macros:
             self.macros = macros
@@ -77,13 +71,6 @@ class PyDMPVTable(QWidget):
         else:
             self.macros = {'PV': '',
                            'CSV': ''}
-
-
-        # self.time_axes = time_axes  # Store the reference to the time axes list
-        self.contextMenu = PVContextMenu(self)
-        self.contextMenu.data_changed_signal.connect(self.handle_delete_pv_row)
-
-
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
@@ -112,7 +99,6 @@ class PyDMPVTable(QWidget):
         self.archive_search.move(self.mapToGlobal(position_of_click))
         self.archive_search.show()
 
-
     def handle_delete_pv_row(self, row):
         if row < 0 or row >= len(self.data):
             return
@@ -121,61 +107,11 @@ class PyDMPVTable(QWidget):
         self.remove_row(row)
         self.send_data_change_signal.emit()
 
-
-    @staticmethod
-    def make_frame(orientation):
-        frame = QFrame()
-        if orientation == 'H':
-            layout = QHBoxLayout()
-        elif orientation == 'V':
-            layout = QVBoxLayout()
-        frame.setLayout(layout)
-
-        new_frame = (frame, layout)
-
-        return new_frame
-
-    @staticmethod
-    def fill_layout(layout, widgets):
-        for widget in widgets:
-            try:
-                layout.addWidget(widget)
-            except TypeError:
-                layout.addItem(widget)
-
-    def makeMainFrames(self):
-        #self.title_frame = self.make_frame('H')
-        #self.header_frame = self.make_frame('H')
-        #self.eget_frame = self.make_frame('H')
-        self.table_frame = self.make_frame('V')
-        #self.footer_frame = self.make_frame('H')
-
-        #frames = [self.title_frame[0], self.header_frame[0], self.eget_frame[0], self.table_frame[0], self.footer_frame[0]]
-        frames = [self.table_frame[0]]
-        self.fill_layout(self.main_layout, frames)
-
-    '''
-    def setupTitle(self):
-        self.title_frame[0].setStyleSheet('background-color: rgb(127,127,127); color: rgb(242,242,242)')
-        img = QImage()
-        img.load('SLAC_LogoSD_W.png')
-        pixmap = QPixmap.fromImage(img)
-
-        img = QLabel()
-        img.setMaximumHeight(30)
-        img.setPixmap(pixmap.scaled(img.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
-
-        title = QLabel('PV Table')
-        title.setStyleSheet('QLabel {font-size: 24px; font-weight: bold}')
-        self.title_frame[1].addWidget(img)
-        self.title_frame[1].addItem(self.spacer)
-        self.title_frame[1].addWidget(title)
-        self.title_frame[1].addItem(self.spacer)
-        self.title_frame[0].setMaximumHeight(50)
-    '''
-
-
-
+    def make_frame(self) -> None:
+        self.table_frame = QFrame()
+        self.table_frame_layout = QVBoxLayout()
+        self.table_frame.setLayout(self.table_frame_layout)
+        self.main_layout.addWidget(self.table_frame)
 
     def setup_table(self):
         self.table = QTableWidget()
@@ -207,14 +143,13 @@ class PyDMPVTable(QWidget):
         for i in range(self.table.rowCount()):
             self.setupRow(i)
 
-        self.table_frame[1].addWidget(self.table)
+        self.table_frame_layout.addWidget(self.table)
 
-                    # Set context menu policy for the entire table
+        # Set context menu policy for the entire table
         self.table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
         # Connect context menu to the table's customContextMenuRequested signal
         self.table.customContextMenuRequested.connect(self.show_context_menu)
-
 
     def show_context_menu(self, point):
         index = self.table.indexAt(point)
@@ -222,8 +157,6 @@ class PyDMPVTable(QWidget):
             row = index.row()
             self.contextMenu.index = row  # Update the stored index in the context menu
             self.contextMenu.exec_(self.table.viewport().mapToGlobal(point))
-
-
 
     def setupRow(self, index):
         for i in range(0, self.table.columnCount()):
@@ -276,7 +209,6 @@ class PyDMPVTable(QWidget):
 
         self.data[-1].set_callback(self.data_changed)
 
-
     def get_letter(self, index):
         if index < 26:
             return chr(ord('A') + index)
@@ -300,8 +232,6 @@ class PyDMPVTable(QWidget):
                     self.data[index][position] = color
         except IndexError:
             print("Error: Invalid index")
-
-
 
     def add_Row(self, index):
         if index != len(self.data) - 1:
@@ -463,8 +393,6 @@ class PyDMPVTable(QWidget):
 
         #header_widgets = [row_lbl, self.row_spin, self.spacer, fltr_lbl, self.fltr_edit, fltr_btn, fltr_rst_btn, self.spacer, combo_lbl, self.combo_btn]
 
-        #self.fill_layout(self.header_frame[1], header_widgets)
-
     def editRows(self):
         new_num_rows = self.row_spin.value()
         total_num_rows = self.table.rowCount()
@@ -604,7 +532,6 @@ class PyDMPVTable(QWidget):
 
         #footer_widgets = [self.spacer, save_all_btn, restore_all_btn, help_btn]
         #footer_widgets = [self.spacer, save_all_btn, restore_all_btn]
-        #self.fill_layout(self.footer_frame[1], footer_widgets)
 
     #def insertRow(self):
      #   insert_row = self.insert_spin.value()
@@ -614,52 +541,6 @@ class PyDMPVTable(QWidget):
          #   self.setupRow(i)
         #self.row_spin.setValue(num_rows)
 
-    def setupEGET(self):
-        self.eget_edit = QLineEdit()
-        self.eget_edit.setPlaceholderText('Enter eget command')
-        self.eget_edit.returnPressed.connect(self.runEGET)
-
-        self.eget_btn = QPushButton('Run')
-        self.eget_btn.clicked.connect(self.runEGET)
-
-        eget_widgets = [self.spacer, self.eget_edit, self.eget_btn]
-        self.fill_layout(self.eget_frame[1], eget_widgets)
-
-        self.eget_frame[0].setMaximumHeight(40)
-        self.eget_frame[0].hide()
-
-    def showEGETFrame(self):
-        self.eget_frame[0].show()
-
-    def runEGET(self):
-        command = self.eget_edit.text()
-        startswith = command.startswith('eget')
-        if startswith:
-            try:
-                stream = os.popen(command)
-                output = stream.read()
-                split_lines = output.splitlines()
-                new_lines = []
-                for line in split_lines:
-                    line = str(line)
-                    line = ''.join(line.split())
-                    if ':' in line:
-                        new_lines.append(line)
-
-                length = len(new_lines)
-                self.row_spin.setValue(length)
-                self.editRows()
-
-                for i in range(len(new_lines)):
-                    self.table.cellWidget(i, 0).setText(new_lines[i])
-                    self.passPV(i)
-            except:
-                print('Error with eget command')
-        else:
-            print('Error: Not an eget command')
-
-
-
     def openColorPicker(self, index, button_widget):
         color_dialog = QColorDialog()
         color = color_dialog.getColor()
@@ -667,7 +548,6 @@ class PyDMPVTable(QWidget):
         if color.isValid():
             button_widget.setStyleSheet(f"background-color: {color.name()}")
             self.update_data(index, 5, color.name())
-
 
     def contextMenuEvent(self, event):
         if self.last_clicked_index is not None:
@@ -678,16 +558,13 @@ class PyDMPVTable(QWidget):
             context_menu.index = index.row()  # Store the row index for deletion
             context_menu.exec_(event.globalPos())
 
-
     def data_changed(self):
         self.send_data_change_signal.emit()
 
 
-
-
 class PVList(MutableSequence):
-
-
+    """
+    """
     def __init__(self, iterable=()):
         self._list = list(iterable)
 
@@ -716,6 +593,8 @@ class PVList(MutableSequence):
         self.callback = callback
 
 class PVContextMenu(QMenu):
+    """
+    """
     data_changed_signal = QtCore.Signal(int)
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -735,7 +614,6 @@ class PVContextMenu(QMenu):
         delete_pv_action = QAction("DELETE PV", self)
         delete_pv_action.triggered.connect(self.delete_pv)
         self.addAction(delete_pv_action)
-
 
     def search_pv(self):
         # Open the ArchiveSearchWidget
@@ -823,7 +701,6 @@ class PVContextMenu(QMenu):
 
         dialog.accept()
 
-
     def delete_pv(self):
         if self.index is not None and 0 <= self.index < len(self.parentWidget().data):
             pv_name = self.parentWidget().data[self.index][0]
@@ -835,12 +712,8 @@ class PVContextMenu(QMenu):
         else:
             print("Invalid index or index out of range")
 
-        
     def get_letter(self, index):
         return chr(ord('A') + index)
-
-
-    #         self.time_axis_combo.addItem(time_axis.name, time_axis)
 
     '''
     def eventFilter(self, obj, event):

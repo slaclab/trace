@@ -11,10 +11,8 @@ from pydm.widgets import PyDMLineEdit
 from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
                             QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
                             QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox, QDialog,
-                            QVBoxLayout, QHeaderView, QToolButton)
+                            QVBoxLayout, QHeaderView, QToolButton, QCompleter)
 from qtpy.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QLineEdit, QComboBox, QCheckBox, QSpinBox, QHeaderView, \
-    QCompleter
 from collections.abc import MutableSequence
 from time_axis_table import TimeAxisTable, TimeAxisList
 

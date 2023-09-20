@@ -5,18 +5,16 @@ import pandas as pd
 import typing
 from functools import partial
 from datetime import datetime
-from PyQt5 import QtCore, QtGui, QtWidgets
+from qtpy import QtCore, QtGui, QtWidgets
 from pydm.widgets import PyDMLineEdit
-from PyQt5.QtCore import Qt
-from PyQt5 import QtCore
 from qtpy import QtCore, QtGui
-from PyQt5.QtWidgets import (
+from qtpy.QtWidgets import (
     QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
     QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
     QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox, QDialog, QVBoxLayout, QHeaderView, QToolButton,
     QDateTimeEdit, QPushButton
 )
-from PyQt5.QtCore import QDate, QDateTime
+from qtpy.QtCore import QDate, QDateTime
 from archive_search import ArchiveSearchWidget
 from collections.abc import MutableSequence
 

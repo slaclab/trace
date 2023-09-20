@@ -22,13 +22,16 @@ jobs:
         with:
           python-version: '3.8'
       
+      - name: Ruff
+        uses: chartboost/ruff-action@v1
+      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest
           pip install pyqt5-tools
-          pip install -r requirements.txt
-
+          pip install -r requirements.txtcs, 
+      
       - name: Run tests
         run: |
           sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils

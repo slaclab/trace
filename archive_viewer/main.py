@@ -1,29 +1,14 @@
 import typing
-import numpy as np 
-from numpy import sin 
-from pydm import Display
-from qtpy import QtCore
-from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
-from pv_table import PyDMPVTable
-from time_axis_table import TimeAxisTable
-from range_axis_table import RangeAxisTableWidget
 from functools import partial
-from qdarkstyle import load_stylesheet, DarkPalette
-from archive_search import ArchiveSearchWidget
+from qtpy import QtCore
 from pydm import Display
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QTabWidget, QWidget
-from pv_table import PyDMPVTable
+from archive_search import ArchiveSearchWidget
+from range_axis_table import CombinedAxisTables
+from pv_table import PVTable
+from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
 from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
                             QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
                             QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox)
-
-
-class ArchiveViewerLogic():
-    #manipulate pv data with formula
-    #delete pv from everything 
-    #add any new pv row info 
-    #maybe set time span 
-    pass
 
 
 class ArchiveViewer(Display):
@@ -31,7 +16,6 @@ class ArchiveViewer(Display):
         super(ArchiveViewer, self).__init__(parent=parent, args=args, macros=macros)
         self.app = QApplication.instance()
         self.setWindowTitle("New Archive Viewer")
-        # self.app.setStyleSheet(load_stylesheet(palette=DarkPalette))
         self.archive_search_widget = ArchiveSearchWidget()
         self.pv_names_to_plot = set()
         self.default_line_width = .05  # Set default line width
@@ -135,8 +119,8 @@ class ArchiveViewer(Display):
         plot_tab_widget.addTab(self.waveforms, "Waveforms")
         plot_tab_widget.addTab(self.correlations, "Correlations")
 
-        # Create the PyDMPVTable widget
-        self.input_table = PyDMPVTable(
+        # Create the PVTable widget
+        self.input_table = PVTable(
             table_headers=["PV NAME", "RANGE AXIS", "VISIBLE", "RAW", "COLOR", "TYPE", "WIDTH"],
             number_columns=7,
             col_widths=[100],
@@ -213,5 +197,11 @@ class ArchiveViewer(Display):
     def misc_toggle_button_action(self, index):
         pass
 
-
     
+class ArchiveViewerLogic():
+    #manipulate pv data with formula
+    #delete pv from everything 
+    #add any new pv row info 
+    #maybe set time span 
+    pass
+
