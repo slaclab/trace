@@ -1,4 +1,3 @@
-import typing
 from functools import partial
 from qtpy import QtCore
 from pydm import Display
@@ -6,9 +5,17 @@ from archive_search import ArchiveSearchWidget
 from range_axis_table import CombinedAxisTables
 from pv_table import PVTable
 from pydm.widgets import PyDMArchiverTimePlot, PyDMWaveformPlot
-from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
-                            QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
-                            QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox)
+from qtpy.QtGui import QPalette
+from qtpy.QtWidgets import (
+    QApplication,
+    QWidget,
+    QHBoxLayout,
+    QVBoxLayout,
+    QTabWidget,
+    QSizePolicy,
+    QPushButton,
+    QSpacerItem,
+)
 
 
 class ArchiveViewer(Display):
@@ -18,7 +25,7 @@ class ArchiveViewer(Display):
         self.setWindowTitle("New Archive Viewer")
         self.archive_search_widget = ArchiveSearchWidget()
         self.pv_names_to_plot = set()
-        self.default_line_width = .05  # Set default line width
+        self.default_line_width = 0.05  # Set default line width
         self.default_color = "white"  # Set default color
         self.setup_ui()
 
@@ -64,30 +71,28 @@ class ArchiveViewer(Display):
                     line_width = self.default_line_width
 
                 if pv_name:
-                        if is_visible:
-                            new_pv_names.add(pv_name)
+                    if is_visible:
+                        new_pv_names.add(pv_name)
 
+                        # Plot the selected PV row with updated parameters
+                        self.time_plots.addYChannel(
+                            y_channel=f"ca://{pv_name}",
+                            yAxisName="Name",
+                            lineWidth=line_width,
+                            color=color,
+                            useArchiveData=True,
+                        )
 
-                            # Plot the selected PV row with updated parameters
-                            self.time_plots.addYChannel(
-                                y_channel=f"ca://{pv_name}",
-                                yAxisName="Name",
-                                lineWidth=line_width,
-                                color=color,
-                                useArchiveData=True
-                            )
-
-                        else:
-                            print(f"Skipping row {row_index + 1} due to missing information.")
+                    else:
+                        print(f"Skipping row {row_index + 1} due to missing information.")
             except Exception as e:
                 print(f"Error processing row {row_index + 1}: {str(e)}")
 
         # Calculate the PV names to plot that are new since the last update
-        pv_names_to_plot = new_pv_names - self.pv_names_to_plot
+        new_pv_names - self.pv_names_to_plot
 
         # Update the set of PV names to include the new PV names (only for fully valid rows)
         self.pv_names_to_plot.update(new_pv_names)
-
 
     def update_x_axis(self, data):
         print("Update x-axis called")
@@ -144,11 +149,9 @@ class ArchiveViewer(Display):
         self.input_data_tab.setLayout(self.input_data_layout)
         self.axes_tab.setLayout(self.axes_layout)
 
-
         self.settings_tab_widget = QTabWidget()
         self.settings_tab_widget.addTab(self.input_data_tab, "Input Data")
         self.settings_tab_widget.addTab(self.axes_tab, "Set Axes")
-
 
         # set up time toggle buttons
         self.time_toggle_buttons = []
@@ -158,7 +161,7 @@ class ArchiveViewer(Display):
         horizontal_spacer = QSpacerItem(100, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         time_toggle_layout.addItem(horizontal_spacer)
 
-        self.time_toggle = [('30s', None), ('1m', None), ('1h', None), ('1w', None), ('1m', None)]
+        self.time_toggle = [("30s", None), ("1m", None), ("1h", None), ("1w", None), ("1m", None)]
         for index in range(len(self.time_toggle)):
             self.time_toggle_buttons.append(QPushButton(self.time_toggle[index][0], self))
             self.time_toggle_buttons[index].setGeometry(200, 150, 100, 40)
@@ -170,7 +173,7 @@ class ArchiveViewer(Display):
         self.misc_button = []
         misc_toggle_layout = QHBoxLayout()
 
-        self.misc_toggle = [('curser', None), ('Y axis autoscale', None), ('Live', None)]
+        self.misc_toggle = [("curser", None), ("Y axis autoscale", None), ("Live", None)]
         for index in range(len(self.misc_toggle)):
             self.misc_button.append(QPushButton(self.misc_toggle[index][0], self))
             self.misc_button[index].setGeometry(200, 150, 100, 40)
@@ -197,11 +200,10 @@ class ArchiveViewer(Display):
     def misc_toggle_button_action(self, index):
         pass
 
-    
-class ArchiveViewerLogic():
-    #manipulate pv data with formula
-    #delete pv from everything 
-    #add any new pv row info 
-    #maybe set time span 
-    pass
 
+class ArchiveViewerLogic:
+    # manipulate pv data with formula
+    # delete pv from everything
+    # add any new pv row info
+    # maybe set time span
+    pass

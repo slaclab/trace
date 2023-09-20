@@ -1,18 +1,16 @@
-import os
-import epics
-import copy
-import pandas as pd
-import typing
 from functools import partial
-from datetime import datetime
-from qtpy import QtCore, QtGui
-from qtpy.QtGui import QIcon
-from pydm.widgets import PyDMLineEdit
-from qtpy.QtWidgets import (QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
-                            QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
-                            QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox, QDialog,
-                            QVBoxLayout, QHeaderView, QToolButton, QCompleter)
-from qtpy.QtCore import Qt, QSize
+from qtpy import QtCore
+from qtpy.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QCheckBox,
+    QComboBox,
+    QLineEdit,
+    QTableWidget,
+    QSpinBox,
+    QHeaderView,
+    QCompleter,
+)
 from collections.abc import MutableSequence
 from time_axis_table import TimeAxisTable, TimeAxisList
 
@@ -60,7 +58,6 @@ class RangeAxisTableWidget(QWidget):
         self.data.set_callback(self.data_changed_callback)
         self.setup_ui()
 
-
     def setup_ui(self):
         self.main_layout = QVBoxLayout(self)
         self.table = QTableWidget()
@@ -82,52 +79,37 @@ class RangeAxisTableWidget(QWidget):
                 completer = QCompleter(self.data.axis_names)  # Provide existing names for completion
                 line_edit.setCompleter(completer)
                 self.table.setCellWidget(index, i, line_edit)
-                line_edit.textChanged.connect(
-                    partial(self.update_data, index, i, line_edit.text())
-                )
-                completer.activated.connect(
-                    partial(self.update_data, index, i, completer.currentCompletion())
-                )
+                line_edit.textChanged.connect(partial(self.update_data, index, i, line_edit.text()))
+                completer.activated.connect(partial(self.update_data, index, i, completer.currentCompletion()))
             elif i in [1, 2]:
                 widget = QLineEdit()
                 self.table.setCellWidget(index, i, widget)
-                widget.textChanged.connect(
-                    partial(self.update_data, index, i, widget.text())
-                )
+                widget.textChanged.connect(partial(self.update_data, index, i, widget.text()))
             elif i == 3:
                 widget = QComboBox()
                 widget.addItems(["Normal", "Log"])
                 self.table.setCellWidget(index, i, widget)
-                widget.currentIndexChanged.connect(
-                    partial(self.update_data, index, i, widget.currentText())
-                )
+                widget.currentIndexChanged.connect(partial(self.update_data, index, i, widget.currentText()))
             elif i == 4:
                 widget = QCheckBox()
                 self.table.setCellWidget(index, i, widget)
-                widget.stateChanged.connect(
-                    partial(self.update_data, index, i, widget.isChecked())
-                )
+                widget.stateChanged.connect(partial(self.update_data, index, i, widget.isChecked()))
             elif i == 5:
                 widget = QSpinBox()
                 self.table.setCellWidget(index, i, widget)
-                widget.valueChanged.connect(
-                    partial(self.update_data, index, i, widget.value())
-                )
+                widget.valueChanged.connect(partial(self.update_data, index, i, widget.value()))
 
-        self.data.append(RangeAxisList(
-            [
-                self.get_cell_widget_value(self.table.cellWidget(index, i))
-                for i in range(self.table.columnCount())
-            ]
-        ))  
+        self.data.append(
+            RangeAxisList(
+                [self.get_cell_widget_value(self.table.cellWidget(index, i)) for i in range(self.table.columnCount())]
+            )
+        )
         self.data[-1].set_callback(self.data_changed_callback)
-
 
     def update_data(self, index, position, value):
         self.data[index][position] = value
         if index == self.table.rowCount() - 1:
             self.add_Row(index + 1)  # Add a new row dynamically
-
 
     def get_cell_widget_value(self, widget):
         if isinstance(widget, QLineEdit):
@@ -146,6 +128,7 @@ class RangeAxisTableWidget(QWidget):
     def data_changed_callback(self):
         print("Data changed!")
         self.send_data_change_signal.emit()
+
 
 class CombinedAxisTables(QWidget):
     send_data_change_signal = QtCore.Signal(TimeAxisList, RangeAxisList)  # Emit both time and range axis data

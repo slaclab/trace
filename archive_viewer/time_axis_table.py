@@ -1,27 +1,11 @@
-import os
-import epics
-import copy
-import pandas as pd
-import typing
 from functools import partial
-from datetime import datetime
-from qtpy import QtCore, QtGui, QtWidgets
-from pydm.widgets import PyDMLineEdit
-from qtpy import QtCore, QtGui
-from qtpy.QtWidgets import (
-    QApplication, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QTabWidget, QGroupBox,
-    QScrollArea, QSizePolicy, QPushButton, QCheckBox, QColorDialog, QComboBox, QSlider,
-    QLineEdit, QSpacerItem, QTableWidget, QTableWidgetItem, QCalendarWidget, QSpinBox, QDialog, QVBoxLayout, QHeaderView, QToolButton,
-    QDateTimeEdit, QPushButton
-)
-from qtpy.QtCore import QDate, QDateTime
-from archive_search import ArchiveSearchWidget
+from qtpy import QtCore
+from qtpy.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QDateTimeEdit
+from qtpy.QtCore import QDateTime
 from collections.abc import MutableSequence
 
 
-
 class TimeAxisList(MutableSequence):
-
     def __init__(self, iterable=()):
         self._list = list(iterable)
 
@@ -45,13 +29,12 @@ class TimeAxisList(MutableSequence):
         self._list.insert(index, item)
         # trigger change handler
         self.callback()
-        
+
     def set_callback(self, callback):
         self.callback = callback
 
 
 class TimeAxisTable(QWidget):
-    
     send_data_change_signal = QtCore.Signal(TimeAxisList)
 
     def __init__(self):
@@ -91,6 +74,7 @@ class TimeAxisTable(QWidget):
 
         self.main_layout.addLayout(row_layout)
 
+    '''
     def update_data(self, position, widget):
         if isinstance(widget, QDateTimeEdit):
             if position == 1:
@@ -102,10 +86,11 @@ class TimeAxisTable(QWidget):
                 print(f"Updating data at position 2: {new_value}")
                 self.data[2] = new_value
         self.send_data_change_signal.emit(self.data)
-
+ 
     def data_changed_callback(self):
         print("Data changed!")
         self.send_data_change_signal.emit(self.data)
+    '''
 
     def update_data(self, position, widget):
         if isinstance(widget, QDateTimeEdit):

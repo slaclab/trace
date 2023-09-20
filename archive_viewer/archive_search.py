@@ -1,8 +1,17 @@
 from qtpy.QtCore import QAbstractTableModel, QMimeData, QModelIndex, QObject, Qt, QUrl, QVariant
 from qtpy.QtGui import QDrag
 from qtpy.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
-from qtpy.QtWidgets import (QAbstractItemView, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-                            QPushButton, QTableView, QVBoxLayout, QWidget)
+from qtpy.QtWidgets import (
+    QAbstractItemView,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QTableView,
+    QVBoxLayout,
+    QWidget,
+)
 from typing import List, Optional
 import logging
 
@@ -13,7 +22,7 @@ class ArchiveResultsTableModel(QAbstractTableModel):
     """
     This table model holds the results of an archiver appliance PV search. This search is for names matching
     the input search words, and the results are a list of PV names that match that search.
-    
+
     Parameters
     ----------
     parent : QObject, optional
@@ -23,22 +32,22 @@ class ArchiveResultsTableModel(QAbstractTableModel):
     def __init__(self, parent: Optional[QObject] = None):
         super(QAbstractTableModel, self).__init__(parent=parent)
         self.results_list = []
-        self.column_names = ('PV',)
+        self.column_names = ("PV",)
 
     def rowCount(self, parent) -> int:
-        """ Return the row count of the table """
+        """Return the row count of the table"""
         if parent is not None and parent.isValid():
             return 0
         return len(self.results_list)
 
     def columnCount(self, parent) -> int:
-        """ Return the column count of the table """
+        """Return the column count of the table"""
         if parent is not None and parent.isValid():
             return 0
         return len(self.column_names)
 
     def data(self, index: QModelIndex, role: int) -> QVariant:
-        """ Return the data for the associated role. Currently only supporting DisplayRole. """
+        """Return the data for the associated role. Currently only supporting DisplayRole."""
         if not index.isValid():
             return QVariant()
 
@@ -48,40 +57,40 @@ class ArchiveResultsTableModel(QAbstractTableModel):
         return self.results_list[index.row()]
 
     def headerData(self, section, orientation, role=Qt.DisplayRole) -> QVariant:
-        """ Return data associated with the header """
+        """Return data associated with the header"""
         if role != Qt.DisplayRole:
             return super().headerData(section, orientation, role)
 
         return str(self.column_names[section])
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
-        """ Return flags that determine how users can interact with the items in the table """
+        """Return flags that determine how users can interact with the items in the table"""
         if index.isValid():
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
 
     def append(self, pv: str) -> None:
-        """ Appends a row to this table given the PV name as input """
+        """Appends a row to this table given the PV name as input"""
         self.beginInsertRows(QModelIndex(), len(self.results_list), len(self.results_list))
         self.results_list.append(pv)
         self.endInsertRows()
         self.layoutChanged.emit()
 
     def replace_rows(self, pvs: List[str]) -> None:
-        """ Overwrites any existing rows in the table with the input list of PV names """
+        """Overwrites any existing rows in the table with the input list of PV names"""
         self.beginInsertRows(QModelIndex(), 0, len(pvs) - 1)
         self.results_list = pvs
         self.endInsertRows()
         self.layoutChanged.emit()
 
     def clear(self) -> None:
-        """ Clear out all data stored in this table """
+        """Clear out all data stored in this table"""
         self.beginRemoveRows(QModelIndex(), 0, len(self.results_list))
         self.results_list = []
         self.endRemoveRows()
         self.layoutChanged.emit()
 
     def sort(self, col: int, order=Qt.AscendingOrder) -> None:
-        """ Sort the table by PV name """
+        """Sort the table by PV name"""
         self.results_list.sort(reverse=order == Qt.DescendingOrder)
         self.layoutChanged.emit()
 
@@ -97,6 +106,7 @@ class ArchiveSearchWidget(QWidget):
     parent : QObject, optional
         The parent item of this widget
     """
+
     def __init__(self, parent: Optional[QObject] = None):
         super().__init__(parent=parent)
 
@@ -106,18 +116,18 @@ class ArchiveSearchWidget(QWidget):
         self.resize(400, 800)
         self.layout = QVBoxLayout()
 
-        self.archive_title_label = QLabel('Archive URL:')
-        self.archive_url_textedit = QLineEdit('lcls-archapp.slac.stanford.edu')
+        self.archive_title_label = QLabel("Archive URL:")
+        self.archive_url_textedit = QLineEdit("lcls-archapp.slac.stanford.edu")
         self.archive_url_textedit.setFixedWidth(250)
         self.archive_url_textedit.setFixedHeight(25)
 
-        self.search_label = QLabel('Pattern:')
+        self.search_label = QLabel("Pattern:")
         self.search_box = QLineEdit()
-        self.search_button = QPushButton('Search')
+        self.search_button = QPushButton("Search")
         self.search_button.setDefault(True)
         self.search_button.clicked.connect(self.request_archiver_info)
 
-        self.loading_label = QLabel('Loading...')
+        self.loading_label = QLabel("Loading...")
         self.loading_label.hide()
 
         self.results_table_model = ArchiveResultsTableModel()
@@ -165,21 +175,23 @@ class ArchiveSearchWidget(QWidget):
             drag.exec()
 
     def request_archiver_info(self) -> None:
-        """ Send the search request to the archiver appliance based on the search string typed into the text box """
-        url_string = f'http://{self.archive_url_textedit.text()}/' \
-                     f'retrieval/bpl/searchForPVsRegex?regex=.*{self.search_box.text()}.*'
+        """Send the search request to the archiver appliance based on the search string typed into the text box"""
+        url_string = (
+            f"http://{self.archive_url_textedit.text()}/"
+            f"retrieval/bpl/searchForPVsRegex?regex=.*{self.search_box.text()}.*"
+        )
         request = QNetworkRequest(QUrl(url_string))
         self.network_manager.get(request)
         self.loading_label.show()
 
     def populate_results_list(self, reply: QNetworkReply) -> None:
-        """ Slot called when the archiver appliance returns search results. Will populate the table with the results """
+        """Slot called when the archiver appliance returns search results. Will populate the table with the results"""
         self.loading_label.hide()
         if reply.error() == QNetworkReply.NoError:
             self.results_table_model.clear()
             bytes_str = reply.readAll()
-            pv_list = str(bytes_str, 'utf-8').split()
+            pv_list = str(bytes_str, "utf-8").split()
             self.results_table_model.replace_rows(pv_list)
         else:
-            logger.error(f'Could not retrieve archiver results due to: {reply.error()}')
+            logger.error(f"Could not retrieve archiver results due to: {reply.error()}")
         reply.deleteLater()

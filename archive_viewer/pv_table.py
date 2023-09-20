@@ -1,6 +1,5 @@
-import os
 import epics
-import typing
+import re
 import pandas as pd
 from archive_search import ArchiveSearchWidget
 from functools import partial
@@ -8,42 +7,70 @@ from datetime import datetime
 from qtpy import QtCore, QtGui
 from pydm.widgets import PyDMLineEdit
 from collections.abc import MutableSequence
-from qtpy.QtWidgets import (QWidget, QFrame, QLabel, QVBoxLayout, QLineEdit, 
-                            QPushButton, QTableWidget, QSpinBox, QComboBox, 
-                            QMessageBox, QFileDialog, QTableWidgetItem,
-                            QSpacerItem, QSizePolicy, QCheckBox, QSlider, 
-                            QHeaderView, QColorDialog, QMenu, QAction, 
-                            QLineEdit, QDialog, QButtonGroup, QGridLayout)
+from qtpy.QtWidgets import (
+    QWidget,
+    QFrame,
+    QLabel,
+    QVBoxLayout,
+    QLineEdit,
+    QPushButton,
+    QTableWidget,
+    QSpinBox,
+    QComboBox,
+    QMessageBox,
+    QFileDialog,
+    QTableWidgetItem,
+    QSpacerItem,
+    QSizePolicy,
+    QCheckBox,
+    QSlider,
+    QHeaderView,
+    QColorDialog,
+    QMenu,
+    QAction,
+    QDialog,
+    QButtonGroup,
+    QGridLayout,
+)
 
 
 class PVTable(QWidget):
     """
-      The PVTable,
+    The PVTable,
 
-      Parameters
-      ----------
-      parent : QWidget
-        The parent widget for the table
-      macros : str, optional   
+    Parameters
+    ----------
+    parent : QWidget
+      The parent widget for the table
+    macros : str, optional
 
-      table_headers : list, optional
-        list of strings that sets the header names for the table.
-      max_rows : int, optional
-        max number of rows for the table.
-      number_columns : int, optional
-        number of columns in the table
+    table_headers : list, optional
+      list of strings that sets the header names for the table.
+    max_rows : int, optional
+      max number of rows for the table.
+    number_columns : int, optional
+      number of columns in the table
     """
+
     send_data_change_signal = QtCore.Signal()
 
     def __init__(self, macros=None, table_headers=[], max_rows=1, number_columns=8, col_widths=[50]):
         super().__init__()
         self.data = PVList()
-        self.data.set_callback(self.data_changed)    
+        self.data.set_callback(self.data_changed)
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
         self.spacer = QSpacerItem(100, 10, QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-        self.widget_list = [PyDMLineEdit(), QComboBox(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
-                            QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
+        self.widget_list = [
+            PyDMLineEdit(),
+            QComboBox(),
+            QComboBox(),
+            QCheckBox(),
+            QCheckBox(),
+            QPushButton(),
+            QComboBox(),
+            QSlider(orientation=QtCore.Qt.Horizontal),
+        ]
         self.table_headers = table_headers
         self.table = None
         self.number_columns = number_columns
@@ -57,20 +84,19 @@ class PVTable(QWidget):
 
         if macros:
             self.macros = macros
-            if 'PV' in self.macros.keys():
+            if "PV" in self.macros.keys():
                 try:
-                    self.table.cellWidget(0, 0).setText(macros['PV'])
+                    self.table.cellWidget(0, 0).setText(macros["PV"])
                     self.passPV(0)
-                except:
-                    print('Error with loading single PV')
-            elif 'CSV' in self.macros.keys():
+                except Exception:
+                    print("Error with loading single PV")
+            elif "CSV" in self.macros.keys():
                 try:
-                    self.applyCSVFile(macros['CSV'])
-                except:
-                    print('Error: File not found')
+                    self.applyCSVFile(macros["CSV"])
+                except Exception: 
+                    print("Error: File not found")
         else:
-            self.macros = {'PV': '',
-                           'CSV': ''}
+            self.macros = {"PV": "", "CSV": ""}
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
@@ -94,6 +120,15 @@ class PVTable(QWidget):
         context_menu.index = index.row()  # Store the row index for deletion
         context_menu.exec_(global_position)
 
+    '''
+    def show_context_menu(self, point):
+        index = self.table.indexAt(point)
+        if index.isValid():
+            row = index.row()
+            self.contextMenu.index = row  # Update the stored index in the context menu
+            self.contextMenu.exec_(self.table.viewport().mapToGlobal(point))
+    '''
+
     def data_menu(self, position_of_click):
         self.archive_search = ArchiveSearchWidget()
         self.archive_search.move(self.mapToGlobal(position_of_click))
@@ -103,7 +138,7 @@ class PVTable(QWidget):
         if row < 0 or row >= len(self.data):
             return
 
-        pv_name = self.data[row][0]  # Assuming the PV name is stored at index 0 in the data list (adjust as needed)
+        self.data[row][0]  # Assuming the PV name is stored at index 0 in the data list (adjust as needed)
         self.remove_row(row)
         self.send_data_change_signal.emit()
 
@@ -129,8 +164,7 @@ class PVTable(QWidget):
             letter = self.get_letter(row_index)
             self.table.setVerticalHeaderItem(row_index, QTableWidgetItem(letter))
 
-
-        #col_widths = [200, 200, 80, 80, 100, 80, 160, 40, 60, 80]
+        # col_widths = [200, 200, 80, 80, 100, 80, 160, 40, 60, 80]
         for i in range(self.table.columnCount()):
             self.table.setColumnWidth(i, self.col_widths[i])
 
@@ -151,17 +185,17 @@ class PVTable(QWidget):
         # Connect context menu to the table's customContextMenuRequested signal
         self.table.customContextMenuRequested.connect(self.show_context_menu)
 
-    def show_context_menu(self, point):
-        index = self.table.indexAt(point)
-        if index.isValid():
-            row = index.row()
-            self.contextMenu.index = row  # Update the stored index in the context menu
-            self.contextMenu.exec_(self.table.viewport().mapToGlobal(point))
-
     def setupRow(self, index):
         for i in range(0, self.table.columnCount()):
-            obj = [QLineEdit(), QComboBox(),  QCheckBox(), QCheckBox(), QPushButton(),
-                   QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
+            obj = [
+                QLineEdit(),
+                QComboBox(),
+                QCheckBox(),
+                QCheckBox(),
+                QPushButton(),
+                QComboBox(),
+                QSlider(orientation=QtCore.Qt.Horizontal),
+            ]
 
             # if i == 1:  # Time Axis drop-down menu
             #     time_axes_names = [axis["axis_name"] for axis in self.time_axes]
@@ -169,53 +203,64 @@ class PVTable(QWidget):
 
             if i == 4:  # Color column
                 color_button = QPushButton()
-                color_button.setStyleSheet(f"background-color: white")
+                color_button.setStyleSheet("background-color: white")
                 color_button.clicked.connect(partial(self.openColorPicker, index, color_button))
                 self.table.setCellWidget(index, i, color_button)
             else:
                 self.table.setCellWidget(index, i, obj[i])
         # establish signals
-        self.table.cellWidget(index, 0).textChanged.connect(partial(partial(self.update_data, index, 0,
-                                                                                self.table.cellWidget(index, 0).text)))
+        self.table.cellWidget(index, 0).textChanged.connect(
+            partial(partial(self.update_data, index, 0, self.table.cellWidget(index, 0).text))
+        )
 
-        self.table.cellWidget(index, 1).currentIndexChanged.connect(partial(self.update_data, index, 1,
-                                                                    self.table.cellWidget(index, 1).currentText()))
+        self.table.cellWidget(index, 1).currentIndexChanged.connect(
+            partial(self.update_data, index, 1, self.table.cellWidget(index, 1).currentText())
+        )
         # self.table.cellWidget(index, 2).currentIndexChanged.connect(partial(self.update_data, index, 2,
         #                                                             self.table.cellWidget(index, 2).currentText()))
-        self.table.cellWidget(index, 2).stateChanged.connect(partial(self.update_data, index, 2,
-                                                             self.table.cellWidget(index, 2).checkState))
-            # Set the initial state of the "Visible" checkbox to checked
+        self.table.cellWidget(index, 2).stateChanged.connect(
+            partial(self.update_data, index, 2, self.table.cellWidget(index, 2).checkState)
+        )
+        # Set the initial state of the "Visible" checkbox to checked
         self.table.cellWidget(index, 2).setChecked(True)
-        self.table.cellWidget(index, 3).stateChanged.connect(partial(self.update_data, index, 3,
-                                                             self.table.cellWidget(index, 3).checkState))
-        #self.table.cellWidget(index, 5).currentIndexChanged.connect(partial(self.update_data, index, 5, 
-                                                                    #self.table.cellWidget(index, 5).currentText()))               
-        self.table.cellWidget(index, 5).currentIndexChanged.connect(partial(self.update_data, index, 5,
-                                                                    self.table.cellWidget(index, 5).currentText()))
-        self.table.cellWidget(index, 6).valueChanged.connect(partial(self.update_data, index, 6,
-                                                                     self.table.cellWidget(index, 6).value))
+        self.table.cellWidget(index, 3).stateChanged.connect(
+            partial(self.update_data, index, 3, self.table.cellWidget(index, 3).checkState)
+        )
+        # self.table.cellWidget(index, 5).currentIndexChanged.connect(partial(self.update_data, index, 5,
+        # self.table.cellWidget(index, 5).currentText()))
+        self.table.cellWidget(index, 5).currentIndexChanged.connect(
+            partial(self.update_data, index, 5, self.table.cellWidget(index, 5).currentText())
+        )
+        self.table.cellWidget(index, 6).valueChanged.connect(
+            partial(self.update_data, index, 6, self.table.cellWidget(index, 6).value)
+        )
 
         letter = self.get_letter(index)
         self.table.setVerticalHeaderItem(index, QTableWidgetItem(letter))
 
-        self.data.append(PVList([self.table.cellWidget(index, 0).text(),
-                                 self.table.cellWidget(index, 1).currentText(),
-                                 
-                                 self.table.cellWidget(index, 2).checkState(),
-                                 self.table.cellWidget(index, 3).checkState(),
-                                 0,
-                                 self.table.cellWidget(index, 5).currentText(),
-                                 self.table.cellWidget(index, 6).value()]))
+        self.data.append(
+            PVList(
+                [
+                    self.table.cellWidget(index, 0).text(),
+                    self.table.cellWidget(index, 1).currentText(),
+                    self.table.cellWidget(index, 2).checkState(),
+                    self.table.cellWidget(index, 3).checkState(),
+                    0,
+                    self.table.cellWidget(index, 5).currentText(),
+                    self.table.cellWidget(index, 6).value(),
+                ]
+            )
+        )
 
         self.data[-1].set_callback(self.data_changed)
 
     def get_letter(self, index):
         if index < 26:
-            return chr(ord('A') + index)
+            return chr(ord("A") + index)
         else:
             div = index // 26
             mod = index % 26
-            return chr(ord('A') + div - 1) + chr(ord('A') + mod)
+            return chr(ord("A") + div - 1) + chr(ord("A") + mod)
 
     def update_data(self, index, position, value):
         print(index, position, value)
@@ -250,13 +295,20 @@ class PVTable(QWidget):
         if not self.widget_list:
             return False
 
-        obj = [PyDMLineEdit(), QComboBox(), QCheckBox(), QCheckBox(), QPushButton(),
-               QComboBox(), QSlider(orientation=QtCore.Qt.Horizontal)]
+        obj = [
+            PyDMLineEdit(),
+            QComboBox(),
+            QCheckBox(),
+            QCheckBox(),
+            QPushButton(),
+            QComboBox(),
+            QSlider(orientation=QtCore.Qt.Horizontal),
+        ]
 
         for i in range(0, self.table.columnCount()):
             self.table.setCellWidget(index, i, obj[i])
 
-        '''
+        """
         for j in range(1, self.table.columnCount()):
             self.table.setCellWidget(index, j, PyDMLabel(' '))
             self.table.cellWidget(index, j).setText(None)
@@ -269,12 +321,12 @@ class PVTable(QWidget):
         self.table.setCellWidget(index, 9, PyDMLineEdit())
         self.table.cellWidget(index, 7).clicked.connect(partial(self.savePV, index))
         self.table.cellWidget(index, 8).clicked.connect(partial(self.restorePV, index))
-        '''
+        """
 
     def passPV(self, index):
         self.data = self.table.cellWidget(index, 0).text()
 
-        '''
+        """
         if '#' in pv:
             self.resetRow(index)
             strings = pv.split('#')
@@ -313,7 +365,7 @@ class PVTable(QWidget):
             self.chan1.connect()
             self.chan1.connect()
             self.table.cellWidget(index, self.number_columns).channel = pv
-        '''
+        """
 
     def savePV(self, index):
         ## Check that channel is connected
@@ -347,8 +399,8 @@ class PVTable(QWidget):
                     pv = self.table.cellWidget(i, 0).text()
                     pv_list.append(pv)
                     epics.caput_many(pv_list, value_list)
-                except:
-                    a = 1
+                except Exception:
+                    pass
 
     def differenceCalc(self, new_val, foobar):
         live = self.table.cellWidget(foobar, 2).text()
@@ -362,36 +414,38 @@ class PVTable(QWidget):
                 saved = float(saved)
                 diff = live - saved
                 self.table.cellWidget(foobar, 5).setText(str(diff))
-            except:
-                a = 1
+            except Exception:
+                pass
 
     def setupHeader(self):
         self.header_frame[0].setMaximumHeight(40)
 
-        row_lbl = QLabel('Number of Rows:')
+        QLabel("Number of Rows:")
         self.row_spin = QSpinBox()
         self.row_spin.setValue(10)
         self.row_spin.setKeyboardTracking(False)
-        self.row_spin.setRange(1,200)
+        self.row_spin.setRange(1, 200)
         self.row_spin.valueChanged.connect(self.editRows)
 
-        fltr_lbl = QLabel('Filter:')
+        QLabel("Filter:")
         self.fltr_edit = QLineEdit()
         self.fltr_edit.returnPressed.connect(self.doSearch)
-        fltr_btn = QPushButton('Search')
+        fltr_btn = QPushButton("Search")
         fltr_btn.clicked.connect(self.doSearch)
-        fltr_rst_btn = QPushButton('Reset')
+        fltr_rst_btn = QPushButton("Reset")
         fltr_rst_btn.clicked.connect(self.resetSearch)
 
-        combo_lbl = QLabel('Menu:')
+        QLabel("Menu:")
         self.combo_btn = QComboBox()
-        combo_items = ['Export to CSV', 'Load Snapshot',
-                       'Load with eget', 'Clear Saves (Confirm)',
-                       'Clear Table (Confirm)',]
+        combo_items = [
+            "Export to CSV",
+            "Load Snapshot",
+            "Load with eget",
+            "Clear Saves (Confirm)",
+            "Clear Table (Confirm)",
+        ]
         self.combo_btn.addItems(combo_items)
         self.combo_btn.activated.connect(self.comboChoice)
-
-        #header_widgets = [row_lbl, self.row_spin, self.spacer, fltr_lbl, self.fltr_edit, fltr_btn, fltr_rst_btn, self.spacer, combo_lbl, self.combo_btn]
 
     def editRows(self):
         new_num_rows = self.row_spin.value()
@@ -402,14 +456,14 @@ class PVTable(QWidget):
         for i in range(new_num_rows):
             self.table.showRow(i)
 
-        #if new_num_rows > 199:
-         #   self.insert_btn.setEnabled(False)
-        #else:
-         #   self.insert_btn.setEnabled(True)
+        # if new_num_rows > 199:
+        #   self.insert_btn.setEnabled(False)
+        # else:
+        #   self.insert_btn.setEnabled(True)
 
     def doSearch(self):
         search_text = self.fltr_edit.text()
-        if search_text == '':
+        if search_text == "":
             self.editRows()
         for i in range(self.table.rowCount()):
             pv = self.table.cellWidget(i, 0).text()
@@ -417,7 +471,7 @@ class PVTable(QWidget):
                 self.table.hideRow(i)
 
     def resetSearch(self):
-        self.fltr_edit.setText('')
+        self.fltr_edit.setText("")
         self.editRows()
 
     def comboChoice(self):
@@ -428,9 +482,9 @@ class PVTable(QWidget):
         elif self.combo_btn.currentIndex() == 2:
             self.showEGETFrame()
         elif self.combo_btn.currentIndex() == 3:
-            self.clearConfirm(self.clearSaves, 'Saves')
+            self.clearConfirm(self.clearSaves, "Saves")
         elif self.combo_btn.currentIndex() == 4:
-            self.clearConfirm(self.clearTable, 'Table')
+            self.clearConfirm(self.clearTable, "Table")
 
     def exportToCSV(self):
         list_data = []
@@ -438,37 +492,37 @@ class PVTable(QWidget):
         for i in range(shown_rows):
             list_row = []
             for j in range(self.table.columnCount()):
-                if j in [0,1,2,3,5,6,9,10]:
-                    cell_text = self.table.cellWidget(i,j).text()
+                if j in [0, 1, 2, 3, 5, 6, 9, 10]:
+                    cell_text = self.table.cellWidget(i, j).text()
                     if not cell_text:
-                        cell_text = ' '
+                        cell_text = " "
                 elif j == 4:
-                    cell_text = self.table.item(i,j).text()
+                    cell_text = self.table.item(i, j).text()
                     if not cell_text:
-                        cell_text = ' '
-                elif j in [7,8]:
-                    cell_text = ' '
+                        cell_text = " "
+                elif j in [7, 8]:
+                    cell_text = " "
                 list_row.append(cell_text)
             list_data.append(list_row)
         df = pd.DataFrame(list_data, columns=self.table_headers)
         file_dialog = QFileDialog()
-        file_dialog.setDefaultSuffix('.csv')
+        file_dialog.setDefaultSuffix(".csv")
         try:
-            csv_file = file_dialog.getSaveFileName(self, 'Save File','',  'Comma-separated values (*.csv)')[0]
+            csv_file = file_dialog.getSaveFileName(self, "Save File", "", "Comma-separated values (*.csv)")[0]
             df.to_csv(csv_file)
         except IOError:
-            a = 1
+            pass
 
     def loadSnapshot(self):
         file_dialog = QFileDialog()
         try:
-            csv_file = file_dialog.getOpenFileName(self, 'Open File', '', 'Comma-separated values (*.csv)')
+            csv_file = file_dialog.getOpenFileName(self, "Open File", "", "Comma-separated values (*.csv)")
 
-            if csv_file != '':
+            if csv_file != "":
                 self.applyCSVFile(csv_file[0])
 
         except IOError:
-            a = 1
+            pass
 
     def applyCSVFile(self, filename):
         df = pd.read_csv(filename)
@@ -478,21 +532,21 @@ class PVTable(QWidget):
 
         for i in range(len(pvs)):
             self.table.cellWidget(i, 0).setText(str(df.PV.iloc[i]))
-            self.table.item(i, 4).setText(str(df['Saved Value'].iloc[i]))
-            self.table.cellWidget(i, 6).setText(str(df['Save Timestamp'].iloc[i]))
+            self.table.item(i, 4).setText(str(df["Saved Value"].iloc[i]))
+            self.table.cellWidget(i, 6).setText(str(df["Save Timestamp"].iloc[i]))
 
     def clearConfirm(self, fxn, items):
         msg = QMessageBox()
-        msg.setWindowTitle('Confirm ' + str(items) + ' Clear')
-        msg.setText('Are you sure you want to clear the ' + items.lower() + '?')
+        msg.setWindowTitle("Confirm " + str(items) + " Clear")
+        msg.setText("Are you sure you want to clear the " + items.lower() + "?")
         msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         msg.setDefaultButton(QMessageBox.No)
-        msg.buttonClicked.connect(partial(self.clearConfirmClicked, fxn = fxn))
-        x = msg.exec_()
+        msg.buttonClicked.connect(partial(self.clearConfirmClicked, fxn=fxn))
+        msg.exec_()
 
     def clearConfirmClicked(self, i, fxn):
         button_clicked = i.text()
-        if button_clicked == '&Yes':
+        if button_clicked == "&Yes":
             fxn()
 
     def clearTable(self):
@@ -503,43 +557,43 @@ class PVTable(QWidget):
     def clearSaves(self):
         for i in range(self.table.rowCount()):
             if self.table.item(i, 4).text():
-                self.table.item(i, 4).setText('')
+                self.table.item(i, 4).setText("")
                 self.table.item(i, 4).setBackground(QtGui.QColor(159, 157, 154))
-                self.table.cellWidget(i, 5).setText('')
-                self.table.cellWidget(i, 6).setText('')
+                self.table.cellWidget(i, 5).setText("")
+                self.table.cellWidget(i, 6).setText("")
 
     def setupFooter(self):
         self.footer_frame[0].setMaximumHeight(40)
-        #insert_lbl = QLabel('Insert Row Below:')
-        #self.insert_spin = QSpinBox()
-        #self.insert_spin.setRange(1,199)
-        #self.insert_btn = QPushButton('Insert Row')
-        #self.insert_btn.clicked.connect(self.insertRow)
+        # insert_lbl = QLabel('Insert Row Below:')
+        # self.insert_spin = QSpinBox()
+        # self.insert_spin.setRange(1,199)
+        # self.insert_btn = QPushButton('Insert Row')
+        # self.insert_btn.clicked.connect(self.insertRow)
 
-        save_all_btn = QPushButton('Save All')
+        save_all_btn = QPushButton("Save All")
         save_all_btn.clicked.connect(self.saveAll)
 
-        restore_all_btn = QPushButton('Restore All')
+        restore_all_btn = QPushButton("Restore All")
         restore_all_btn.setEnabled(False)
-        #restore_all_btn.clicked.connect(self.restoreAll)
+        # restore_all_btn.clicked.connect(self.restoreAll)
 
-        '''
+        """
         helpfile = 'pv_table_help.ui'
         help_btn = PyDMRelatedDisplayButton('Help...', filename = helpfile)
         help_btn.setMaximumWidth(80)
         help_btn.setProperty('openInNewWindow', True)
-        '''
+        """
 
-        #footer_widgets = [self.spacer, save_all_btn, restore_all_btn, help_btn]
-        #footer_widgets = [self.spacer, save_all_btn, restore_all_btn]
+        # footer_widgets = [self.spacer, save_all_btn, restore_all_btn, help_btn]
+        # footer_widgets = [self.spacer, save_all_btn, restore_all_btn]
 
-    #def insertRow(self):
-     #   insert_row = self.insert_spin.value()
-      #  num_rows = self.row_spin.value() + 1
-       # self.table.insertRow(insert_row)
-        #for i in range(insert_row, num_rows):
-         #   self.setupRow(i)
-        #self.row_spin.setValue(num_rows)
+    # def insertRow(self):
+    #   insert_row = self.insert_spin.value()
+    #  num_rows = self.row_spin.value() + 1
+    # self.table.insertRow(insert_row)
+    # for i in range(insert_row, num_rows):
+    #   self.setupRow(i)
+    # self.row_spin.setValue(num_rows)
 
     def openColorPicker(self, index, button_widget):
         color_dialog = QColorDialog()
@@ -563,8 +617,8 @@ class PVTable(QWidget):
 
 
 class PVList(MutableSequence):
-    """
-    """
+    """ """
+
     def __init__(self, iterable=()):
         self._list = list(iterable)
 
@@ -588,17 +642,18 @@ class PVList(MutableSequence):
         self._list.insert(index, item)
         # trigger change handler
         self.callback()
-        
+
     def set_callback(self, callback):
         self.callback = callback
 
+
 class PVContextMenu(QMenu):
-    """
-    """
+    """ """
+
     data_changed_signal = QtCore.Signal(int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
-
 
         # Add "SEARCH PV" option
         search_pv_action = QAction("SEARCH PV", self)
@@ -624,7 +679,7 @@ class PVContextMenu(QMenu):
         # Create the formula dialog window
         dialog = QDialog(self)
         dialog.setWindowTitle("Formula Input")
-        dialog.setWindowModality(Qt.ApplicationModal)
+        dialog.setWindowModality(QtCore.Qt.ApplicationModal)
 
         # Create the layout for the dialog
         layout = QVBoxLayout(dialog)
@@ -638,11 +693,26 @@ class PVContextMenu(QMenu):
 
         # Define the list of calculator buttons
         buttons = [
-            "7", "8", "9", "+",
-            "4", "5", "6", "-",
-            "1", "2", "3", "*",
-            "0", "(", ")", "/",
-            ".", "PV", "Clear", "="
+            "7",
+            "8",
+            "9",
+            "+",
+            "4",
+            "5",
+            "6",
+            "-",
+            "1",
+            "2",
+            "3",
+            "*",
+            "0",
+            "(",
+            ")",
+            "/",
+            ".",
+            "PV",
+            "Clear",
+            "=",
         ]
 
         # Create the calculator buttons and connect them to the input field
@@ -703,7 +773,7 @@ class PVContextMenu(QMenu):
 
     def delete_pv(self):
         if self.index is not None and 0 <= self.index < len(self.parentWidget().data):
-            pv_name = self.parentWidget().data[self.index][0]
+            self.parentWidget().data[self.index][0]
             self.parentWidget().remove_row(self.index)
             self.parentWidget().send_data_change_signal.emit()
             self.parentWidget().data.pop(self.index)
@@ -713,7 +783,7 @@ class PVContextMenu(QMenu):
             print("Invalid index or index out of range")
 
     def get_letter(self, index):
-        return chr(ord('A') + index)
+        return chr(ord("A") + index)
 
     '''
     def eventFilter(self, obj, event):
