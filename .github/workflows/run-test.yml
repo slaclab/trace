@@ -16,6 +16,7 @@ jobs:
   build:
     if: ${{ github.repository == 'slaclab/Archive-Viewer' }}
     runs-on: ${{ matrix.os }}
+    working-directory: ./Users/runner/work/Archive-Viewer/archive-viewer/
     strategy:
       fail-fast: false
       matrix:
