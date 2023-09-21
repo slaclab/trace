@@ -16,7 +16,6 @@ jobs:
   build:
     if: ${{ github.repository == 'slaclab/Archive-Viewer' }}
     runs-on: ${{ matrix.os }}
-    working-directory: ./Users/runner/work/Archive-Viewer/archive-viewer/
     strategy:
       fail-fast: false
       matrix:
@@ -56,6 +55,7 @@ jobs:
           sleep 1
         fi
     - name: Test with pytest
+      working-directory: /Users/runner/work/Archive-Viewer/archive-viewer
       shell: bash -el {0}
       run: |
         python run_tests.py
