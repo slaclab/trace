@@ -55,7 +55,6 @@ jobs:
           sleep 1
         fi
     - name: Test with pytest
-      working-directory: /home/runner/work/Archive-Viewer/
       shell: bash -el {0}
       run: |
         python run_tests.py
