@@ -4,7 +4,8 @@ name: Publish Documentation
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -22,12 +23,10 @@ jobs:
       - name: Build Docs
         shell: bash -l {0}
         run: |
-          pushd docs
-          make html
-          popd
-
+          mkdocs build
+  
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/build/html
+          publish_dir: ./site/
