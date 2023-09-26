@@ -8,8 +8,8 @@ dependencies:
   - pytest
   - pytest-qt
   - mkdocs
-  - mkdocstrings
   - mkdocs-material
+  - mkdocstrings
   - mkdocstrings-python
   - pre-commit
   - flake8
