@@ -35,6 +35,7 @@ markdown_extensions:
   - pymdownx.superfences
 
 plugins:
+  - search
   - mkdocstrings:
     default_handler: python
 
