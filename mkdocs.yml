@@ -5,7 +5,8 @@ repo_name: slaclab/Archive-Viewer
 nav:
     - Home: index.md
     - Installation: installation.md
-
+    - API Reference:
+        - Main: mian.md
 theme:
   icon:
     repo: fontawesome/brands/github
@@ -33,4 +34,7 @@ markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
 
+plugins:
+    - mkdocstrings:
+      default_handler: python
 
