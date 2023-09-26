@@ -6,7 +6,7 @@ nav:
     - Home: index.md
     - Installation: installation.md
     - API Reference:
-        - Main: mian.md
+        - Main: main.md
 theme:
   icon:
     repo: fontawesome/brands/github
@@ -35,6 +35,6 @@ markdown_extensions:
   - pymdownx.superfences
 
 plugins:
-    - mkdocstrings:
-      default_handler: python
+  - mkdocstrings:
+    default_handler: python
 
