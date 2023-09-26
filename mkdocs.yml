@@ -7,6 +7,7 @@ nav:
     - Installation: installation.md
     - API Reference:
         - Main: main.md
+        - PV Table: pv_table.md
 theme:
   icon:
     repo: fontawesome/brands/github
