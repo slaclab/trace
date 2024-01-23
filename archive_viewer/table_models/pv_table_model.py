@@ -154,7 +154,7 @@ class PVTableModel(QAbstractTableModel):
 
         index = reply.property("index")
         pv_name = reply.property("pv_name")
-        
+
         if reply.error() != QNetworkReply.NoError or not index:
             logger.error("Invalid Network Reply recieved")
             reply.deleteLater()
@@ -178,14 +178,14 @@ class PVTableModel(QAbstractTableModel):
     #   This was my attempt to fix it:
     # def mimeTypes(self):
     #     return ["application/vnd.text.list"]
-    
+
     # def canDropMimeData(self, data: QMimeData, action: Qt.DropAction,
     #                     row: int, column: int, parent: QModelIndex):
     #     # return super().canDropMimeData(data, action, row, column, parent)
     #     if column != 1:
     #         return False
     #     return True
-    
+
     # def dropMimeData(self, data: QMimeData, action: Qt.DropAction,
     #                  row: int, column: int, parent: QModelIndex):
     #     # return super().dropMimeData(data, action, row, column, parent)
@@ -193,10 +193,10 @@ class PVTableModel(QAbstractTableModel):
 
     #     if not self.canDropMimeData(data, action, row, column, parent):
     #         return False
-        
+
     #     if action == Qt.IgnoreAction:
     #         return True
-        
+
     #     ind = self.index(len(self._data), 1, QModelIndex())
     #     ret_status = self.setData(ind, data.text(), Qt.EditRole)
     #     logger.info(ret_status)

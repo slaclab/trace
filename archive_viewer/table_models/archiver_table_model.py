@@ -45,7 +45,7 @@ class ArchiversTableModel(QAbstractTableModel):
             return False
 
         logger.debug(f"Archiver table data for index: {(index.row(), index.column())}")
-        
+
         # Check Archiver that archiver is valid on 1) enabling or
         #   2) changing an archiver's URL
         send_request = False
@@ -94,7 +94,7 @@ class ArchiversTableModel(QAbstractTableModel):
         for name, url in init_archivers.items():
             new_row = [False, name, url]
             new_data.append(new_row)
-        
+
         self.beginInsertRows(QModelIndex(), 0, len(new_data))
         self._data = new_data
         self._error = [False] * len(new_data)
@@ -111,7 +111,7 @@ class ArchiversTableModel(QAbstractTableModel):
 
     def get_active_archivers(self):
         return {n: u for a, n, u in self._data if a}
-    
+
     def get_all_archivers(self):
         return {n: u for _, n, u in self._data}
 

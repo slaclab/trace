@@ -9,7 +9,7 @@ from config import color_palette
 class ColorButton(QPushButton):
     """Custom button to allow the user to select a color. The default
     color is a random bright color.
-    
+
     Left-clicking opens a color dialog box to choose a color.
     Right-clicking resets the color to the default."""
 
@@ -69,7 +69,7 @@ class ColorButton(QPushButton):
         color = QColor()
         color.setHsl(h, s, l)
         return color
-    
+
     @staticmethod
     def index_color(index):
         modded_index = index % len(color_palette)
@@ -77,7 +77,7 @@ class ColorButton(QPushButton):
 
         dark_factor = (index // len(color_palette)) * 35
         return color.darker(100 + dark_factor)
-        
+
 
 
 class CenterCheckbox(QWidget):
@@ -100,7 +100,7 @@ class CenterCheckbox(QWidget):
     @property
     def checkState(self):
         return self.check_box.isChecked()
-    
+
     @checkState.setter
     def checkState(self, state):
         self.check_box.setChecked(state)

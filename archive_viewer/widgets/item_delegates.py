@@ -89,7 +89,7 @@ class PVTableDelegate(QStyledItemDelegate):
         if event.type() == QEvent.Wheel and not object.hasFocus():
             return True
         return super().eventFilter(object, event)
-    
+
     @Slot(QPoint)
     def combo_menu_requested(self, pos: QPoint):
         pos = self.sender().mapToParent(pos)

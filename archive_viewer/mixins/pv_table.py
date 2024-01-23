@@ -101,7 +101,7 @@ class PVContextMenu(QMenu):
     @property
     def selected_index(self):
         return self._selected_index
-    
+
     @selected_index.setter
     def selected_index(self, ind: QModelIndex):
         self._selected_index = ind
