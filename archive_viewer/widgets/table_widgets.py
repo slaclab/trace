@@ -1,6 +1,7 @@
 from random import random
+from typing import (Any, Union)
 from qtpy.QtGui import (QColor, QMouseEvent)
-from qtpy.QtCore import (Qt, Signal)
+from qtpy.QtCore import (Qt, Signal, QObject)
 from qtpy.QtWidgets import (QWidget, QSpacerItem, QCheckBox, QHBoxLayout,
                             QSizePolicy, QPushButton, QColorDialog)
 from config import color_palette
@@ -11,11 +12,19 @@ class ColorButton(QPushButton):
     color is a random bright color.
 
     Left-clicking opens a color dialog box to choose a color.
-    Right-clicking resets the color to the default."""
+    Right-clicking resets the color to the default.
+
+    Parameters
+    ----------
+    color : QColor or str, optional
+        Default color for the button to use, by default None
+    index : int, optional
+        A value used in determining a default color, by default -1
+    """
 
     color_changed = Signal(QColor)
 
-    def __init__(self, *args, color=None, index=-1, **kwargs):
+    def __init__(self, *args: Any, color: Union[QColor, str] = None, index: int = -1, **kwargs):
         super().__init__(*args, **kwargs)
         if not color:
             if index >= 0:
@@ -37,10 +46,11 @@ class ColorButton(QPushButton):
 
     @property
     def color(self):
+        """Return the current color."""
         return self._color
 
     @color.setter
-    def color(self, color: QColor):
+    def color(self, color: QColor) -> None:
         """Set the background color of the button to the selected color."""
         if color == self._color:
             return
@@ -51,7 +61,8 @@ class ColorButton(QPushButton):
 
         self.color_changed.emit(color)
 
-    def mousePressEvent(self, e: QMouseEvent):
+    def mousePressEvent(self, e: QMouseEvent) -> None:
+        """Set the color to the default on right-click."""
         if e.button() == Qt.RightButton:
             self.color = self._default
             return
@@ -59,7 +70,7 @@ class ColorButton(QPushButton):
         return super().mousePressEvent(e)
 
     @staticmethod
-    def random_color():
+    def random_color() -> QColor:
         """Pick a random color for the default color of each PV. This
         function ensures that the color is bright, since it will be on a
         black background."""
@@ -71,7 +82,8 @@ class ColorButton(QPushButton):
         return color
 
     @staticmethod
-    def index_color(index):
+    def index_color(index: int):
+        """Returns the color in the color palette at index."""
         modded_index = index % len(color_palette)
         color = color_palette[modded_index]
 
@@ -79,10 +91,19 @@ class ColorButton(QPushButton):
         return color.darker(100 + dark_factor)
 
 
-
 class CenterCheckbox(QWidget):
+    """CenterCheckbox is a QWidget that creates a checkbox surrounded by
+    QSpacerItems. This is used in tables, where QCheckBoxes are not centered.
+
+    Parameters
+    ----------
+    parent : QObject
+        The parent object for the ComboBoxDelegate.
+    init_data : bool, optional
+        Whether the QCheckBox should be checked by default, by default True.
+    """
     toggled = Signal(bool)
-    def __init__(self, parent, init_data=True):
+    def __init__(self, parent: QObject, init_data: bool = True):
         super().__init__(parent)
 
         self.check_box = QCheckBox(parent)
@@ -99,8 +120,10 @@ class CenterCheckbox(QWidget):
 
     @property
     def checkState(self):
+        """Check state getter."""
         return self.check_box.isChecked()
 
     @checkState.setter
     def checkState(self, state):
+        """Set the check state of the QCheckBox."""
         self.check_box.setChecked(state)
