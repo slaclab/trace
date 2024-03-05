@@ -1,4 +1,4 @@
-from PyQt5.QtCore import (QModelIndex, Qt)
+from typing import (Dict, Union)
 from qtpy.QtGui import QColor
 from qtpy.QtCore import (QModelIndex, Qt, Slot, QAbstractTableModel, QUrl)
 from qtpy.QtWidgets import QWidget
@@ -39,19 +39,37 @@ class ArchiversTableModel(QAbstractTableModel):
                 return QColor(Qt.red)
             return QColor(Qt.black)
 
-    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
-        """Set the index's data on edit."""
+    def setData(self, index: QModelIndex, value: Union[str, bool], role: Qt.ItemDataRole):
+        """Set the index's data on edit. If the Archiver URL's validity
+        when archiver is enabled and/or the URL changes.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The index on the table that is being altered.
+        value : str or bool
+            The new value to be set in the table.
+        role : Qt.ItemDataRole
+            The QT data role for what data is changing. Only Qt.EditRole
+            is accepted.
+        """
         if not index.isValid() or role != Qt.EditRole:
             return False
 
         logger.debug(f"Archiver table data for index: {(index.row(), index.column())}")
 
-        # Check Archiver that archiver is valid on 1) enabling or
+        # Check that archiver is valid on 1) enabling or
         #   2) changing an archiver's URL
         send_request = False
         if index.column() == 0 and value:
+            base_url = self._data[index.row()][2]
+            if not base_url:
+                logger.debug(base_url)
+                self.dataChanged.emit(index, index)
+                return False
+
             send_request = True
-            url = self._data[index.row()][2] + "/retrieval/ping"
+            url = base_url + "/retrieval/ping"
             enable_index = index
         elif index.column() == 2 and self._data[index.row()][0]:
             send_request = True
@@ -61,25 +79,33 @@ class ArchiversTableModel(QAbstractTableModel):
         if send_request:
             reply = self.network_manager.get(QNetworkRequest(QUrl(url)))
             reply.setProperty("index", enable_index)
-            logger.info(f"Archiver validation request: {reply.url()}")
-
+            logger.debug(f"Archiver validation request: {reply.url()}")
 
         self._data[index.row()][index.column()] = value
         self.dataChanged.emit(index, index)
         return True
 
-    def headerData(self, section: int, orientation: Qt.Orientation,
-                   role: Qt.ItemDataRole):
+    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         """Set the horizontal header's text."""
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._headers[section]
 
     def flags(self, index: QModelIndex):
+        """Returns a list of the set flags for the given index."""
         fl = super().flags(index)
         fl |= (Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
         return fl
 
-    def removeRows(self, row: int, count:int,  parent=QModelIndex()):
+    def removeRows(self, row: int, count:int,  parent: QModelIndex = QModelIndex()):
+        """Removes a number of rows from the table.
+
+        Parameters
+        ----------
+        row : int
+            The index of the first row to be removed.
+        count : int
+            The number of rows to be removed from the table.
+        """
         if count < 1 or (row + count) > len(self._data):
             return False
 
@@ -89,7 +115,14 @@ class ArchiversTableModel(QAbstractTableModel):
 
         return True
 
-    def init_data(self, init_archivers):
+    def init_data(self, init_archivers: Dict[str, str]):
+        """Initializes the table model with the list of initial archivers.
+
+        Parameters
+        ----------
+        init_archivers : Dict[str, str]
+            Initial archivers where the key is the name and value is the url.
+        """
         new_data = []
         for name, url in init_archivers.items():
             new_row = [False, name, url]
@@ -100,7 +133,12 @@ class ArchiversTableModel(QAbstractTableModel):
         self._error = [False] * len(new_data)
         self.endInsertRows()
 
+        for row in range(len(self._data)):
+            ind = self.index(row, 0)
+            self.setData(ind, True, Qt.EditRole)
+
     def add_empty_row(self):
+        """Append an empty row to the end of the table model."""
         new_row = [False, "", ""]
         logger.debug("Adding row to archivers table.")
 
@@ -109,14 +147,18 @@ class ArchiversTableModel(QAbstractTableModel):
         self._error.append(False)
         self.endInsertRows()
 
-    def get_active_archivers(self):
+    def get_active_archivers(self) -> Dict[str, str]:
+        """Return a dictionary of archivers that are enabled."""
         return {n: u for a, n, u in self._data if a}
 
-    def get_all_archivers(self):
+    def get_all_archivers(self) -> Dict[str, str]:
+        """Return a dictionary of all archivers."""
         return {n: u for _, n, u in self._data}
 
     @Slot(QNetworkReply)
     def archiver_validation(self, reply: QNetworkReply):
+        """Recieves a network reply to check the validity of the entered
+        archiver URL."""
         index = reply.property("index")
 
         error = reply.error() != QNetworkReply.NoError or not index

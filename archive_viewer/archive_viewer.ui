@@ -40,9 +40,9 @@
        <property name="text">
         <string>30s</string>
        </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -50,9 +50,9 @@
        <property name="text">
         <string>1m</string>
        </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -60,9 +60,9 @@
        <property name="text">
         <string>1h</string>
        </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -70,9 +70,9 @@
        <property name="text">
         <string>1w</string>
        </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -80,19 +80,25 @@
        <property name="text">
         <string>1M</string>
        </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="cursor_scale_btn">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Cursor</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -107,6 +113,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="live_scale_btn">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Live</string>
        </property>
@@ -148,57 +157,22 @@
           <property name="toolTip">
            <string/>
           </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="waveform_tab">
-       <attribute name="title">
-        <string>Waveforms</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="PyDMWaveformPlot" name="waveform_plot">
-          <property name="toolTip">
-           <string/>
+          <property name="backgroundColor">
+           <color>
+            <red>255</red>
+            <green>255</green>
+            <blue>255</blue>
+           </color>
           </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="correlation_tab">
-       <attribute name="title">
-        <string>Correlations</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="PyDMWaveformPlot" name="correlation_plot">
-          <property name="toolTip">
-           <string/>
+          <property name="axisColor">
+           <color>
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </property>
+          <property name="bufferSize">
+           <number>5000</number>
           </property>
          </widget>
         </item>
@@ -223,12 +197,43 @@
            <bool>true</bool>
           </property>
           <property name="editTriggers">
-           <set>QAbstractItemView::AllEditTriggers</set>
+           <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
           </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="trace_row_lyt">
+          <item>
+           <spacer name="trace_row_spcr">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="add_trace_row_btn">
+            <property name="text">
+             <string>Add Trace</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="del_trace_row_btn">
+            <property name="text">
+             <string>Delete Trace</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -269,7 +274,42 @@
          </layout>
         </item>
         <item>
-         <widget class="QTableView" name="time_axis_tbl"/>
+         <widget class="QTableView" name="time_axis_tbl">
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="axis_row_lyt">
+          <item>
+           <spacer name="axis_row_spcr">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="add_axis_row_btn">
+            <property name="text">
+             <string>Add Axis</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="del_axis_row_btn">
+            <property name="text">
+             <string>Delete Axis</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -333,12 +373,10 @@
    <extends>PyDMTimePlot</extends>
    <header>pydm.widgets.archiver_time_plot</header>
   </customwidget>
-  <customwidget>
-   <class>PyDMWaveformPlot</class>
-   <extends>QGraphicsView</extends>
-   <header>pydm.widgets.waveformplot</header>
-  </customwidget>
  </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>
