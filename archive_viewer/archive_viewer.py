@@ -1,20 +1,18 @@
 from qtpy.QtGui import QColor
 from qtpy.QtCore import Qt
 from pydm import Display
-from config import (logger, archiver_urls)
-from mixins import (TracesTableMixin, ArchiversTabMixin)
+from mixins import (TracesTableMixin, AxisTableMixin, ArchiversTabMixin)
 
 
-class ArchiveViewer(Display, TracesTableMixin, ArchiversTabMixin):
-    def __init__(self, parent=None, args=None, macros=None, ui_filename=None):
-        ui_filename=__file__.replace(".py", ".ui")
+class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, ArchiversTabMixin):
         super(ArchiveViewer, self).__init__(parent=parent, args=args,
                                             macros=macros, ui_filename=ui_filename)
 
         # self.ui.archiver_select_cmbx.addItems(archiver_urls)
 
-        self.ui.archiver_plot.setAxisColor(QColor(Qt.black))
-        self.ui.archiver_plot.setBackgroundColor(QColor(Qt.white))
-
+        self.axis_table_init()
         self.traces_table_init()
         self.archivers_tab_init()
+
+        self.curve_delegates_init()
+        self.axis_delegates_init()
