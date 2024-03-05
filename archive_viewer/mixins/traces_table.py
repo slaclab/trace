@@ -1,62 +1,107 @@
-from qtpy.QtCore import (Qt, Slot, QPoint, QModelIndex)
-from qtpy.QtWidgets import (QComboBox, QCheckBox, QSlider, QHeaderView, QMenu,
-                            QStyledItemDelegate, QAction, QTableView, QDialog,
+from typing import (Dict, Any)
+from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject)
+from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
                             QVBoxLayout, QGridLayout, QLineEdit, QPushButton)
 from config import logger
-from widgets import (ColorButton, PVTableDelegate, ArchiveSearchWidget)
-from table_models import PVTableModel
+from widgets import (ArchiveSearchWidget, ColorButtonDelegate, CheckboxDelegate,
+                     ComboBoxDelegate, CurveStyleDelegate, DeleteRowDelegate)
+from table_models import ArchiverCurveModel
 
 
-class PVTableMixin:
-    def pv_table_init(self):
-        self.col_wids = {"ROW_HEADER_HIDDEN": str,
-                         "PV NAME": None,
-                         "RANGE AXIS": QComboBox,
-                         "VISIBLE": QCheckBox,
-                         "RAW": QCheckBox,
-                         "COLOR": ColorButton,
-                         "TYPE": QComboBox,
-                         "WIDTH": QSlider}
+class TracesTableMixin:
+    """Mixins class for the Traces tab of the settings section."""
+    def traces_table_init(self):
+        """Initialize the Traces table model and section."""
+        self.curves_model = ArchiverCurveModel(self, self.ui.archiver_plot, self.axis_table_model)
+        self.curves_model.append()
 
-        self.pv_table_model = PVTableModel(self, self.col_wids)
-
-        self.ui.traces_tbl.setModel(self.pv_table_model)
-
-        self.ui.traces_tbl.hideColumn(0)
-        # self.ui.traces_tbl.setDragDropOverwriteMode(False)
-        # self.ui.traces_tbl.setAcceptDrops(True)
-        # self.ui.traces_tbl.setDropIndicatorShown(True)
-
-        my_delegate = PVTableDelegate(self.ui.traces_tbl, self.col_wids)
-        self.ui.traces_tbl.setItemDelegate(my_delegate)
-        self.ui.traces_tbl.setItemDelegateForColumn(0, QStyledItemDelegate())
-        self.ui.traces_tbl.setItemDelegateForColumn(1, QStyledItemDelegate())
-
-        hdr = self.ui.traces_tbl.horizontalHeader()
-        hdr.setSectionResizeMode(QHeaderView.Stretch)
-        for i in range(3, 6):
-            hdr.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+        self.ui.traces_tbl.setModel(self.curves_model)
 
         self.menu = PVContextMenu(self)
         self.ui.traces_tbl.customContextMenuRequested.connect(
             self.custom_context_menu)
 
+    def curve_delegates_init(self):
+        """Set column delegates for the Traces table to display widgets."""
+        # For the Archive Data column, create a Checkbox widget delegate.
+        archive_del = CheckboxDelegate(self,
+                                       self.curves_model,
+                                       self.ui.traces_tbl)
+        archive_col = self.curves_model.getColumnIndex("Archive Data")
+        self.ui.traces_tbl.setItemDelegateForColumn(archive_col, archive_del)
+
+        # For the Y-Axis Name column, create a ComboBox widget delegate.
+        axis_combo_del = ComboBoxDelegate(self,
+                                          self.curves_model,
+                                          self.ui.traces_tbl,
+                                          self.axis_table_model)
+        axis_col = self.curves_model.getColumnIndex("Y-Axis Name")
+        self.ui.traces_tbl.setItemDelegateForColumn(axis_col, axis_combo_del)
+        axis_combo_del.text_change_signal.connect(self.axis_change)
+
+        # For the Color column, create a Color Button widget delegate.
+        color_button_del = ColorButtonDelegate(self,
+                                               self.curves_model,
+                                               self.ui.traces_tbl)
+        color_col = self.curves_model.getColumnIndex("Color")
+        self.ui.traces_tbl.setItemDelegateForColumn(color_col, color_button_del)
+
+        # For the Style column, use the PyDM CurveStyleDelegate.
+        style_del = CurveStyleDelegate(self,
+                                       self.curves_model,
+                                       self.ui.traces_tbl)
+        style_del.toggleColumnVisibility()
+        style_col = self.curves_model.getColumnIndex("Style")
+        self.ui.traces_tbl.setItemDelegateForColumn(style_col, style_del)
+
+        # Use a delegate to display a button to delete the row.
+        delete_row_del = DeleteRowDelegate(self,
+                                           self.curves_model,
+                                           self.ui.traces_tbl)
+        delete_col = self.curves_model.getColumnIndex("")
+        self.ui.traces_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
+
+        # Resize the column showing the delete row button.
+        hdr = self.ui.traces_tbl.horizontalHeader()
+        hdr.setSectionResizeMode(delete_col, QHeaderView.ResizeToContents)
+
     @Slot(QPoint)
     def custom_context_menu(self, pos: QPoint):
+        """Open a custom context menu for the Traces table where the
+        user right-clicks. If the ColorButton is right-clicked, then do
+        not open a context menu.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The position where the context menu should appear
+        """
         table = self.ui.traces_tbl
         if not table or not isinstance(table, QTableView):
             logger.error(f"Internal error: {type(table)} is not QTableView")
             return
 
         index = table.indexAt(pos)
-        is_color = "COLOR" == table.model().headerData(index.column(),
-                                                       Qt.Horizontal,
-                                                       Qt.DisplayRole)
-        logger.debug(f"ColorButton solumn selected: {is_color}")
+        is_color = index.column() == self.curves_model.getColumnIndex("Color")
+        logger.debug(f"ColorButton column selected: {is_color}")
 
         if index.isValid() and not is_color:
             self.menu.selected_index = index
             self.menu.popup(table.viewport().mapToGlobal(pos))
+
+    @Slot(int, str)
+    def axis_change(self, row: int, axis_name: str):
+        """Slot for connecting a curve to a specified axis.
+
+        Parameters
+        ----------
+        row : int
+            The row of the table associated with the curve changed
+        axis_name : str
+            The name of the new axis the curve should be on
+        """
+        curve = self.curves_model.curve_at_index(row)
+        self.ui.archiver_plot.plotItem.linkDataToAxis(curve, axis_name)
 
 
 class PVContextMenu(QMenu):
@@ -72,9 +117,8 @@ class PVContextMenu(QMenu):
 
     # TODO: Archived PVs are no longer draggable from the search tool. Find out why
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QObject = None):
         super().__init__(parent)
-        # self.logger = getLogger(__name__)
         self._selected_index = None
         self.archive_search = ArchiveSearchWidget()
         self._formula_dialog = FormulaDialog(self)
@@ -89,11 +133,6 @@ class PVContextMenu(QMenu):
         formula_action.triggered.connect(self._formula_dialog.exec_)
         self.addAction(formula_action)
 
-        # Add "DELETE PV" option
-        delete_pv_action = QAction("DELETE PV", self)
-        delete_pv_action.triggered.connect(self.delete_pv)
-        self.addAction(delete_pv_action)
-
         import_action = QAction("IMPORT CSV", self)
         import_action.triggered.connect(self.import_csv)
         self.addAction(import_action)
@@ -106,27 +145,15 @@ class PVContextMenu(QMenu):
     def selected_index(self, ind: QModelIndex):
         self._selected_index = ind
 
-    # @Slot()
-    # def search_pv(self):
-    #     self.archive_search.show()
-
-    @Slot()
-    def delete_pv(self):
-        if not self.selected_index or not self.selected_index.isValid():
-            logger.error("PV invalid, unable to delete row")
-            return
-        self.selected_index.model().removeRow(self.selected_index.row())
-        logger.debug(f"Deleted row: {self.selected_index.row()}")
-
     @Slot()
     def import_csv(self):
+        # TODO: Add action to import csv
         pass
 
 
 class FormulaDialog(QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent: QObject):
         super().__init__(parent)
-        # self.logger = getLogger(__name__)
         self.setWindowTitle("Formula Input")
 
         # Create the layout for the dialog
@@ -173,7 +200,7 @@ class FormulaDialog(QDialog):
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
 
-    def evaluate_formula(self, **kwargs):
+    def evaluate_formula(self, **kwargs: Dict[str, Any]):
         # Evaluate the formula expression and update the formula input field
         # TODO: Check if PVs used are in Table Model
         #   if yes, replace with row header; if no, add to TableModel and replace with row header
@@ -185,7 +212,7 @@ class FormulaDialog(QDialog):
             self.field.setText("Error")
             logger.error("Invalid formula evaluated.")
 
-    def accept_formula(self, **kwargs):
+    def accept_formula(self, **kwargs: Dict[str, Any]):
         # Retrieve the formula and PV name and perform desired actions
         # TODO: Evaluate the formula before accepting, prompt user if invalid(?)
         formula = self.field.text()

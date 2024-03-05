@@ -1,2 +1,2 @@
-from .pv_table_model import PVTableModel
+from .curve_model import ArchiverCurveModel
 from .archiver_table_model import ArchiversTableModel
