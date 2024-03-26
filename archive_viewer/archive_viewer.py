@@ -1,6 +1,9 @@
 from time import time
+from functools import partial
 from qtpy.QtCore import Slot
+from qtpy.QtWidgets import QAbstractButton
 from pydm import Display
+from config import logger
 from mixins import (TracesTableMixin, AxisTableMixin, ArchiversTabMixin)
 
 
@@ -19,21 +22,36 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, ArchiversTabMixin
         self.curve_delegates_init()
         self.axis_delegates_init()
 
-        self.ui.half_min_scale_btn.clicked.connect(lambda _: self.set_plot_timerange(30))
-        self.ui.min_scale_btn.clicked.connect(lambda _: self.set_plot_timerange(60))
-        self.ui.hour_scale_btn.clicked.connect(lambda _: self.set_plot_timerange(3600))
-        self.ui.week_scale_btn.clicked.connect(lambda _: self.set_plot_timerange(604800))
-        self.ui.month_scale_btn.clicked.connect(lambda _: self.set_plot_timerange(2628300))
-        self.ui.auto_scale_btn.toggled.connect(self.ui.archiver_plot.setAutoRangeY)
+        self.button_spans = {self.ui.half_min_scale_btn: 30,
+                             self.ui.min_scale_btn: 60,
+                             self.ui.hour_scale_btn: 3600,
+                             self.ui.week_scale_btn: 604800,
+                             self.ui.month_scale_btn: 2628300,
+                             self.ui.cursor_scale_btn: -1}
+        self.ui.timespan_btns.buttonClicked.connect(partial(self.set_plot_timerange))
 
-    @Slot(float)
-    def set_plot_timerange(self, timespan: float) -> None:
-        """Sets the Archiver Plot's x-axis to show the requested timespan.
+    @Slot(QAbstractButton)
+    def set_plot_timerange(self, button: QAbstractButton) -> None:
+        """Slot to be called when a timespan setting button is pressed.
+        This will enable autoscrolling along the x-axis and disable mouse
+        controls. If the "Cursor" button is pressed, then autoscrolling is
+        disabled and mouse controls are enabled.
 
         Parameters
         ----------
-        timespan : float
-            The number of seconds to show on the plot.
+        button : QAbstractButton
+            The timespan setting button pressed. Determines which timespan
+            to set.
         """
-        curr = time()
-        self.ui.archiver_plot.plotItem.setXRange(curr - timespan, curr)
+        if button not in self.button_spans:
+            logger.error(f"{button} is not a valid timespan button")
+            return
+
+        # Enable autoscroll unless the cursor_scale_btn is pressed
+        # Disable autoscroll unless the cursor_scale_btn is pressed
+        enable_scroll = (button != self.ui.cursor_scale_btn)
+        enable_mouse = not enable_scroll
+        timespan = self.button_spans[button]
+
+        self.ui.archiver_plot.plotItem.setAutoScroll(enable_scroll, timespan)
+        self.ui.archiver_plot.plotItem.setMouseEnabled(enable_mouse, enable_mouse)
