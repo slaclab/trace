@@ -16,6 +16,8 @@
   <property name="styleSheet">
    <string notr="true">QSplitter::handle {
 	background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(121, 121, 121, 255), stop:0.3 rgba(121, 121, 121, 255), stop:0.301 rgba(255, 255, 255, 255), stop:1 rgba(255, 255, 255, 100));
+	margin-top: 7px;
+	margin-bottom: 7px;
 }
 </string>
   </property>
@@ -208,37 +210,6 @@
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
          </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="trace_row_lyt">
-          <item>
-           <spacer name="trace_row_spcr">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="add_trace_row_btn">
-            <property name="text">
-             <string>Add Trace</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="del_trace_row_btn">
-            <property name="text">
-             <string>Delete Trace</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
       </widget>
