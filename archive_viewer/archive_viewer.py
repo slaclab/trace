@@ -31,8 +31,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, ArchiversTabMixin
         self.ui.timespan_btns.buttonClicked.connect(partial(self.set_plot_timerange))
 
         plot_viewbox = self.ui.archiver_plot.plotItem.vb
-        plot_viewbox.sigMouseDragged.connect(self.ui.cursor_scale_btn.click)
-        plot_viewbox.sigMouseWheelZoomed.connect(self.ui.cursor_scale_btn.click)
+        plot_viewbox.sigRangeChangedManually.connect(self.ui.cursor_scale_btn.click)
 
         plot_x_axis = self.ui.archiver_plot.getXAxis()
         plot_x_axis.sigMouseInteraction.connect(self.ui.cursor_scale_btn.click)

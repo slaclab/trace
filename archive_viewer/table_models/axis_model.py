@@ -1,4 +1,7 @@
-from pydm.widgets.axis_table_model import BasePlotAxesModel
+from typing import Tuple
+from qtpy.QtCore import Qt, QVariant, Slot
+from pydm.widgets.axis_table_model import BasePlotAxesModel, BasePlotAxisItem
+from pydm.widgets.multi_axis_viewbox import MultiAxisViewBox
 
 
 class ArchiverAxisModel(BasePlotAxesModel):
@@ -47,8 +50,30 @@ class ArchiverAxisModel(BasePlotAxesModel):
         if not name:
             axis_count = self.rowCount() + 1
             name = f"New Axis {axis_count}"
-            while name in self._plot.plotItem.axes:
+            while name in self.plot.plotItem.axes:
                 axis_count += 1
                 name = f"New Axis {axis_count}"
 
         super().append(name)
+
+        new_axis = self.get_axis(-1)
+
+        row = self.get_row(new_axis)
+        min_col = self.getColumnIndex("Min Y Range")
+        min_index = self.index(row, min_col)
+
+        max_col = self.getColumnIndex("Max Y Range")
+        max_index = self.index(row, max_col)
+        new_axis.sigYRangeChanged.connect(lambda *_: self.dataChanged.emit(min_index, max_index))
+
+    def get_axis(self, index: int):
+        try:
+            return self.plot._axes[index]
+        except IndexError:
+            return None
+
+    def get_row(self, axis: BasePlotAxisItem):
+        try:
+            return self.plot._axes.index(axis)
+        except ValueError:
+            return None
