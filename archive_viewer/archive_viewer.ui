@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>965</width>
-    <height>615</height>
+    <width>1200</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,9 +15,9 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QSplitter::handle {
-	background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(121, 121, 121, 255), stop:0.3 rgba(121, 121, 121, 255), stop:0.301 rgba(255, 255, 255, 255), stop:1 rgba(255, 255, 255, 100));
-	margin-top: 7px;
-	margin-bottom: 7px;
+	background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(121, 121, 121, 255), stop:0.3 rgba(121, 121, 121, 255), stop:0.301 rgba(255, 255, 255, 255), stop:1 rgba(255, 255, 255, 40));
+	margin-top: 10px;
+	margin-bottom: 5px;
 }
 </string>
   </property>
