@@ -1,9 +1,10 @@
 from functools import partial
 from qtpy.QtCore import Slot
-from qtpy.QtWidgets import QAbstractButton
+from qtpy.QtWidgets import QAbstractButton, QApplication
 from pydm import Display
 from config import logger
 from mixins import (TracesTableMixin, AxisTableMixin, ArchiversTabMixin)
+from styles import CenterCheckStyle
 
 
 class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, ArchiversTabMixin):
@@ -35,6 +36,9 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, ArchiversTabMixin
 
         plot_x_axis = self.ui.archiver_plot.getXAxis()
         plot_x_axis.sigMouseInteraction.connect(self.ui.cursor_scale_btn.click)
+
+        app = QApplication.instance()
+        app.setStyle(CenterCheckStyle())
 
     @Slot(QAbstractButton)
     def set_plot_timerange(self, button: QAbstractButton) -> None:

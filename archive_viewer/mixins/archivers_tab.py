@@ -1,6 +1,6 @@
 from typing import Dict
 from config import archiver_urls
-from widgets import CheckboxDelegate
+from qtpy.QtWidgets import QHeaderView
 from table_models import ArchiversTableModel
 
 
@@ -11,8 +11,8 @@ class ArchiversTabMixin:
         self.archivers_table_model = ArchiversTableModel(self, archiver_urls)
         self.ui.archivers_tbl.setModel(self.archivers_table_model)
 
-        self.archivers_delegate = CheckboxDelegate(self, self.archivers_table_model, self.ui.archivers_tbl)
-        self.ui.archivers_tbl.setItemDelegateForColumn(0, self.archivers_delegate)
+        hdr = self.ui.archivers_tbl.horizontalHeader()
+        hdr.setSectionResizeMode(QHeaderView.Stretch)
 
         self.ui.add_archiver_btn.clicked.connect(self.archivers_table_model.add_empty_row)
 
