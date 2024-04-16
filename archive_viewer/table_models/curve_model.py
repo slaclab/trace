@@ -23,7 +23,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
     def __init__(self, parent: Optional[QObject], plot: BasePlot, axis_model: ArchiverAxisModel) -> None:
         super(ArchiverCurveModel, self).__init__(plot, parent)
-        self._column_names = self._column_names[:5] + ("Style",) + self._column_names[5:] + ("",)
+        self._column_names = self._column_names[:6] + ("Style",) + self._column_names[6:] + ("",)
         self._row_names = []
         self._axis_model = axis_model
 
@@ -62,6 +62,9 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         """
         ret_code = False
         if column_name == "Channel":
+            if value == curve.address:
+                return True
+
             [ch.disconnect() for ch in curve.channels() if ch]
             curve.address = str(value)
             [ch.connect() for ch in curve.channels() if ch]
@@ -93,15 +96,15 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         color : Optional[QColor], optional
             The curve's color on the plot.
         """
-        if not self._axis_model.rowCount():
+        if self.rowCount() != 1:
             self._axis_model.append()
-        def_y_axis = self._axis_model.index(0, 0).data()
+        y_axis = self._axis_model.get_axis(-1)
         if not color:
             color = ColorButton.index_color(self.rowCount())
         self._row_names.append(self.next_header())
         #          KLYS:LI22:31:KVAC
         self.beginInsertRows(QModelIndex(), len(self._plot._curves), len(self._plot._curves))
-        self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=def_y_axis)
+        self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
 
     def removeAtIndex(self, index: QModelIndex) -> None:
