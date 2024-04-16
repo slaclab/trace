@@ -24,17 +24,17 @@ class SliderDelegate(QStyledItemDelegate):
     def __init__(self, parent: QTableView, init_range: Tuple[int, int] = (1, 10)) -> None:
         super().__init__(parent)
         self.init_range = init_range
-        self.editor_map = {}
+        self.editor_list = []
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
         """Create a new persistent editor on the Table View at the given index."""
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             self.parent().openPersistentEditor(index)
         return super().paint(painter, option, index)
 
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QSlider:
         """Initialize a QSlider object for use in the Table View."""
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             value = index.data(Qt.DisplayRole)
             editor = QSlider(orientation=Qt.Horizontal)
             editor.setFocusPolicy(Qt.StrongFocus)
@@ -44,9 +44,17 @@ class SliderDelegate(QStyledItemDelegate):
             editor.setValue(value)
             editor.valueChanged.connect(lambda: self.commitData.emit(editor))
 
-            self.editor_map[index] = editor
+            self.editor_list.append(editor)
             return editor
         return super().createEditor(parent, option, index)
+
+    def destroyEditor(self, editor: ColorButton, index: QModelIndex) -> None:
+        if index.row() < len(self.editor_list):
+            del self.editor_list[index.row()]
+            editor.deleteLater()
+            self.parent().closePersistentEditor(index)
+            return
+        return super().destroyEditor(editor, index)
 
     def setEditorData(self, editor: QSlider, index: QModelIndex) -> None:
         """Set the editor's data to match the table model's data."""
@@ -84,17 +92,11 @@ class ComboBoxDelegate(QStyledItemDelegate):
         if isinstance(data_source, list):
             data_source = {v: v for v in data_source}
         self.data_source = data_source
-        self.editor_map = {}
+        self.editor_list = []
 
-    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
-        """Open a persistent QComboBox on the Table View at the index."""
-        if index not in self.editor_map:
-            self.parent().openPersistentEditor(index)
-        return super().paint(painter, option, index)
-
-    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QComboBox:
+    def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex):
         """Initialize a QComboBox for use in the Table View."""
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             editor = QComboBox()
 
             logger.debug(f"Setting input to {self.data_source}")
@@ -115,18 +117,17 @@ class ComboBoxDelegate(QStyledItemDelegate):
             editor.customContextMenuRequested.connect(self.combo_menu_requested)
             editor.currentIndexChanged.connect(lambda: self.commitData.emit(editor))
 
-            self.editor_map[index] = editor
-            return editor
-        return super().createEditor(parent, option, index)
+            self.editor_list.append(editor)
+            self.parent().setIndexWidget(index, editor)
+        return super().initStyleOption(option, index)
 
-    def setEditorData(self, editor: QComboBox, index: QModelIndex) -> None:
-        """Set the editor's data to match the table model's data."""
-        value = index.data(Qt.DisplayRole)
-        if str(value) in self.data_source:
-            editor.setCurrentText(str(value))
-        else:
-            value_ind = list(self.data_source.values()).index(value)
-            editor.setCurrentIndex(value_ind)
+    def destroyEditor(self, editor: QComboBox, index: QModelIndex) -> None:
+        if index.row() < len(self.editor_list):
+            logger.debug(f"Removing {self.editor_list[index.row()]} from delegate")
+            self.editor_list[index.row()].deleteLater()
+            del self.editor_list[index.row()]
+            return
+        return super().destroyEditor(editor, index)
 
     def setModelData(self, editor: QComboBox, model: QAbstractTableModel, index: QModelIndex) -> None:
         """Set the table model's data to match the editor's data."""
@@ -163,24 +164,32 @@ class CheckboxDelegate(QStyledItemDelegate):
     """
     def __init__(self, parent: QTableView) -> None:
         super().__init__(parent)
-        self.editor_map = {}
+        self.editor_list = []
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
         """Create a new persistent editor on the Table View at the given index."""
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             self.parent().openPersistentEditor(index)
         return super().paint(painter, option, index)
 
-    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QWidget:
+    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> CenterCheckbox:
         """Initialize a QCheckbox for use in the Table View."""
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             value = index.data(Qt.DisplayRole)
             editor = CenterCheckbox(parent, bool(value))
             editor.toggled.connect(lambda: self.commitData.emit(editor))
 
-            self.editor_map[index] = editor
+            self.editor_list.append(editor)
             return editor
         return super().createEditor(parent, option, index)
+
+    def destroyEditor(self, editor: ColorButton, index: QModelIndex) -> None:
+        if index.row() < len(self.editor_list):
+            del self.editor_list[index.row()]
+            editor.deleteLater()
+            self.parent().closePersistentEditor(index)
+            return
+        return super().destroyEditor(editor, index)
 
     def setEditorData(self, editor: CenterCheckbox, index: QModelIndex) -> None:
         """Set the editor's data to match the table model's data."""
@@ -205,25 +214,32 @@ class ColorButtonDelegate(QStyledItemDelegate):
     """
     def __init__(self, parent: QTableView) -> None:
         super().__init__(parent)
-        self.editor_map = {}
+        self.editor_list = []
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
         """Create a new persistent editor on the Table View at the given index."""
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             self.parent().openPersistentEditor(index)
         return super().paint(painter, option, index)
 
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> ColorButton:
         """Initialize a ColorButton for use in the Table View."""
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             value = index.data(Qt.DisplayRole)
             editor = ColorButton(parent, color=value)
             editor.color_changed.connect(lambda: self.commitData.emit(editor))
 
-            self.editor_map[index] = editor
+            self.editor_list.append(editor)
             return editor
-
         return super().createEditor(parent, option, index)
+
+    def destroyEditor(self, editor: ColorButton, index: QModelIndex) -> None:
+        if index.row() < len(self.editor_list):
+            del self.editor_list[index.row()]
+            editor.deleteLater()
+            self.parent().closePersistentEditor(index)
+            return
+        return super().destroyEditor(editor, index)
 
     def setEditorData(self, editor: ColorButton, index: QModelIndex) -> None:
         """Set the editor's data to match the table model's data."""
@@ -249,30 +265,32 @@ class DeleteRowDelegate(QStyledItemDelegate):
     """
     def __init__(self, parent: QTableView) -> None:
         super().__init__(parent)
-        self.editor_map = {}
+        self.editor_list = []
 
-    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
-        """Create a new persistent editor on the Table View at the given index."""
-        if index not in self.editor_map:
-            self.parent().openPersistentEditor(index)
-        return super().paint(painter, option, index)
-
-    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QPushButton:
+    def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex) -> None:
         """Initialize a QPushButton to delete the table's row."""
         logger.debug("called method: DeleteRowDelegate.initStyleOption")
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             editor = QPushButton(self.parent())
             icon = editor.style().standardIcon(QStyle.SP_DialogCancelButton)
             editor.setIcon(icon)
             editor.setToolTip("Delete Trace")
             editor.clicked.connect(lambda: self.commitData.emit(editor))
 
-            self.editor_map[index] = editor
-            return editor
+            self.editor_list.append(editor)
+            self.parent().setIndexWidget(index, editor)
 
-        return super().createEditor(parent, option, index)
+        return super().initStyleOption(option, index)
 
-    def setModelData(self, editor: ColorButton, model: QAbstractTableModel, index: QModelIndex) -> None:
+    def destroyEditor(self, editor: QWidget, index: QModelIndex) -> None:
+        if index.row() < len(self.editor_list):
+            logger.debug(f"Removing {self.editor_list[index.row()]} from delegate")
+            self.editor_list[index.row()].deleteLater()
+            del self.editor_list[index.row()]
+            return
+        return super().destroyEditor(editor, index)
+
+    def setModelData(self, _: QPushButton, model: QAbstractTableModel, index: QModelIndex) -> None:
         """When the setModelData slot is triggered, the row is removed."""
         model.removeAtIndex(index)
 
@@ -281,17 +299,17 @@ class FloatDelegate(QStyledItemDelegate):
         super().__init__(parent)
         self.range = init_range
         self.prec = prec
-        self.editor_map = {}
+        self.editor_list = []
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
         """Create a new persistent editor on the Table View at the given index."""
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             self.parent().openPersistentEditor(index)
         return super().paint(painter, option, index)
 
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QDoubleSpinBox:
         """Initialize a QDoubleSpinBox to delete the table's row."""
-        if index not in self.editor_map:
+        if index.row() >= len(self.editor_list):
             value = index.data(Qt.DisplayRole)
             if value is None:
                 value = self.range[0]
@@ -303,10 +321,18 @@ class FloatDelegate(QStyledItemDelegate):
             editor.setValue(value)
             editor.editingFinished.connect(lambda: self.commitData.emit(editor))
 
-            self.editor_map[index] = editor
+            self.editor_list.append(editor)
             return editor
 
         return super().createEditor(parent, option, index)
+
+    def destroyEditor(self, editor: ColorButton, index: QModelIndex) -> None:
+        if index.row() < len(self.editor_list):
+            del self.editor_list[index.row()]
+            editor.deleteLater()
+            self.parent().closePersistentEditor(index)
+            return
+        return super().destroyEditor(editor, index)
 
     def setEditorData(self, editor: QDoubleSpinBox, index: QModelIndex) -> None:
         """Set the editor's data to match the table model's data."""
