@@ -1,7 +1,5 @@
-from typing import Tuple
-from qtpy.QtCore import Qt, QVariant, Slot
-from pydm.widgets.axis_table_model import BasePlotAxesModel, BasePlotAxisItem
-from pydm.widgets.multi_axis_viewbox import MultiAxisViewBox
+from qtpy.QtCore import (Qt, QVariant, QPersistentModelIndex, QModelIndex)
+from pydm.widgets.axis_table_model import BasePlotAxesModel
 
 
 class ArchiverAxisModel(BasePlotAxesModel):
@@ -55,16 +53,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
                 name = f"New Axis {axis_count}"
 
         super().append(name)
-
-        new_axis = self.get_axis(-1)
-
-        row = self.get_row(new_axis)
-        min_col = self.getColumnIndex("Min Y Range")
-        min_index = self.index(row, min_col)
-
-        max_col = self.getColumnIndex("Max Y Range")
-        max_index = self.index(row, max_col)
-        new_axis.sigYRangeChanged.connect(lambda *_: self.dataChanged.emit(min_index, max_index))
+        self.attach_range_changed()
 
     def get_axis(self, index: int):
         try:
@@ -72,8 +61,16 @@ class ArchiverAxisModel(BasePlotAxesModel):
         except IndexError:
             return None
 
-    def get_row(self, axis: BasePlotAxisItem):
-        try:
-            return self.plot._axes.index(axis)
-        except ValueError:
-            return None
+    def attach_range_changed(self):
+        new_axis = self.get_axis(-1)
+        row = self.rowCount() - 1
+
+        min_col = self.getColumnIndex("Min Y Range")
+        min_index = QPersistentModelIndex(self.index(row, min_col))
+
+        max_col = self.getColumnIndex("Max Y Range")
+        max_index = QPersistentModelIndex(self.index(row, max_col))
+
+        new_axis.sigYRangeChanged.connect(lambda *_:
+                                          self.dataChanged.emit(QModelIndex(min_index),
+                                                                QModelIndex(max_index)))
