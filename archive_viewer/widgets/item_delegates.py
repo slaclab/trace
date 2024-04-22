@@ -1,10 +1,10 @@
 from typing import (Union, Tuple)
-from qtpy.QtGui import QColor, QPainter
-from qtpy.QtCore import (Qt, QObject, QEvent, QPoint, Slot, Signal,
+from qtpy.QtGui import (QColor, QPainter, QRegExpValidator)
+from qtpy.QtCore import (Qt, QObject, QEvent, QPoint, Slot, Signal, QRegExp,
                          QAbstractTableModel, QModelIndex, QAbstractItemModel)
 from qtpy.QtWidgets import (QStyledItemDelegate, QSlider, QComboBox, QStyle,
                             QPushButton, QTableView, QStyleOptionViewItem,
-                            QWidget, QDoubleSpinBox)
+                            QWidget, QDoubleSpinBox, QLineEdit)
 from config import logger
 from widgets import (ColorButton, CenterCheckbox)
 
@@ -36,7 +36,7 @@ class SliderDelegate(QStyledItemDelegate):
         """Initialize a QSlider object for use in the Table View."""
         if index.row() >= len(self.editor_list):
             value = index.data(Qt.DisplayRole)
-            editor = QSlider(orientation=Qt.Horizontal)
+            editor = QSlider(orientation=Qt.Horizontal, parent=parent)
             editor.setFocusPolicy(Qt.StrongFocus)
             editor.setRange(*self.init_range)
             editor.setTickPosition(QSlider.TicksBothSides)
@@ -48,7 +48,7 @@ class SliderDelegate(QStyledItemDelegate):
             return editor
         return super().createEditor(parent, option, index)
 
-    def destroyEditor(self, editor: ColorButton, index: QModelIndex) -> None:
+    def destroyEditor(self, editor: QSlider, index: QModelIndex) -> None:
         if index.row() < len(self.editor_list):
             del self.editor_list[index.row()]
             editor.deleteLater()
@@ -183,7 +183,7 @@ class CheckboxDelegate(QStyledItemDelegate):
             return editor
         return super().createEditor(parent, option, index)
 
-    def destroyEditor(self, editor: ColorButton, index: QModelIndex) -> None:
+    def destroyEditor(self, editor: CenterCheckbox, index: QModelIndex) -> None:
         if index.row() < len(self.editor_list):
             del self.editor_list[index.row()]
             editor.deleteLater()
@@ -294,6 +294,7 @@ class DeleteRowDelegate(QStyledItemDelegate):
         """When the setModelData slot is triggered, the row is removed."""
         model.removeAtIndex(index)
 
+
 class FloatDelegate(QStyledItemDelegate):
     def __init__(self, parent: QTableView, init_range: Tuple[float, float] = (float("-inf"), float("inf")), prec: int = 2):
         super().__init__(parent)
@@ -305,6 +306,8 @@ class FloatDelegate(QStyledItemDelegate):
         """Create a new persistent editor on the Table View at the given index."""
         if index.row() >= len(self.editor_list):
             self.parent().openPersistentEditor(index)
+            editor = self.editor_list[-1]
+            editor.lineEdit().deselect()
         return super().paint(painter, option, index)
 
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QDoubleSpinBox:
@@ -314,7 +317,7 @@ class FloatDelegate(QStyledItemDelegate):
             if value is None:
                 value = self.range[0]
 
-            editor = QDoubleSpinBox()
+            editor = QDoubleSpinBox(parent)
             editor.setMinimum(self.range[0])
             editor.setMaximum(self.range[1])
             editor.setDecimals(self.prec)
@@ -323,10 +326,9 @@ class FloatDelegate(QStyledItemDelegate):
 
             self.editor_list.append(editor)
             return editor
-
         return super().createEditor(parent, option, index)
 
-    def destroyEditor(self, editor: ColorButton, index: QModelIndex) -> None:
+    def destroyEditor(self, editor: QDoubleSpinBox, index: QModelIndex) -> None:
         if index.row() < len(self.editor_list):
             del self.editor_list[index.row()]
             editor.deleteLater()
@@ -338,8 +340,75 @@ class FloatDelegate(QStyledItemDelegate):
         """Set the editor's data to match the table model's data."""
         value = index.data(Qt.DisplayRole)
         editor.setValue(value)
+        editor.lineEdit().deselect()
 
     def setModelData(self, editor: QDoubleSpinBox, model: QAbstractTableModel, index: QModelIndex) -> None:
         """Set the table model's data to match the editor's data."""
         data = editor.value()
+        model.setData(index, data, Qt.EditRole)
+
+
+class ScientificNotationDelegate(QStyledItemDelegate):
+    def __init__(self, parent: QTableView, prec: int = 2):
+        super().__init__(parent)
+        self.prec = prec
+        self.editor_list = []
+
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
+        """Create a new persistent editor on the Table View at the given index."""
+        if index.row() >= len(self.editor_list):
+            self.parent().openPersistentEditor(index)
+            editor = self.editor_list[-1][0]
+            editor.deselect()
+        return super().paint(painter, option, index)
+
+    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QLineEdit:
+        """Initialize a QLineEdit to delete the table's row."""
+        if index.row() >= len(self.editor_list):
+            value = index.data(Qt.DisplayRole)
+            if value is None:
+                value = self.range[0]
+
+            rx = QRegExp("^[+-]?\d*(?:\.\d*(?:[eE][+-]?\d+)?)?$")
+            validator = QRegExpValidator(rx, parent)
+
+            editor = QLineEdit(parent)
+            editor.setValidator(validator)
+            editor.editingFinished.connect(lambda: self.commitData.emit(editor))
+
+            self.editor_list.append([editor, -1])
+            return editor
+        return super().createEditor(parent, option, index)
+
+    def destroyEditor(self, editor: QLineEdit, index: QModelIndex) -> None:
+        if index.row() < len(self.editor_list):
+            del self.editor_list[index.row()]
+            editor.deleteLater()
+            self.parent().closePersistentEditor(index)
+            return
+        return super().destroyEditor(editor, index)
+
+    def setEditorData(self, editor: QLineEdit, index: QModelIndex) -> None:
+        """Set the editor's data to match the table model's data."""
+        value = index.data(Qt.DisplayRole)
+
+        prec = self.editor_list[index.row()][1]
+        if prec != -1:
+            value = f"{value:.{prec}e}"
+        else:
+            value = str(value)
+
+        editor.setText(value)
+
+    def setModelData(self, editor: QLineEdit, model: QAbstractTableModel, index: QModelIndex) -> None:
+        """Set the table model's data to match the editor's data."""
+        text = editor.text().lower()
+
+        if 'e' in text:
+            prec = text.index('e') - text.index('.') - 1
+        else:
+            prec = -1
+        self.editor_list[index.row()][1] = prec
+
+        data = float(text)
         model.setData(index, data, Qt.EditRole)

@@ -1,7 +1,7 @@
 from qtpy.QtCore import Slot
 from qtpy.QtWidgets import QHeaderView
 from table_models import ArchiverAxisModel
-from widgets import ComboBoxDelegate, FloatDelegate
+from widgets import ComboBoxDelegate, ScientificNotationDelegate
 
 
 class AxisTableMixin:
@@ -25,11 +25,11 @@ class AxisTableMixin:
         self.ui.time_axis_tbl.setItemDelegateForColumn(orientation_col, orientation_del)
 
         min_range_col = self.axis_table_model.getColumnIndex("Min Y Range")
-        min_range_del = FloatDelegate(self.ui.time_axis_tbl, prec=8)
+        min_range_del = ScientificNotationDelegate(self.ui.time_axis_tbl)
         self.ui.time_axis_tbl.setItemDelegateForColumn(min_range_col, min_range_del)
 
         max_range_col = self.axis_table_model.getColumnIndex("Max Y Range")
-        max_range_del = FloatDelegate(self.ui.time_axis_tbl, prec=8)
+        max_range_del = ScientificNotationDelegate(self.ui.time_axis_tbl)
         self.ui.time_axis_tbl.setItemDelegateForColumn(max_range_col, max_range_del)
 
     @Slot()
