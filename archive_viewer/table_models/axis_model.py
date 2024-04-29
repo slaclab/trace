@@ -6,6 +6,14 @@ class ArchiverAxisModel(BasePlotAxesModel):
     as a go-between for the axes in a plot, and QTableView items.
     """
     def append(self, name: str = "") -> None:
+        """Add an empty row to the end of the table model.
+
+        Parameters
+        ----------
+        name : str
+            The name for the new axis item. If none is passed in, the
+            axis is named "New Axis <row_count>".
+        """
         if not name:
             axis_count = self.rowCount() + 1
             name = f"New Axis {axis_count}"
