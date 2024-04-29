@@ -22,7 +22,7 @@ class ArchiveResultsTableModel(QAbstractTableModel):
     """
 
     def __init__(self, parent: Optional[QObject] = None) -> None:
-        super(QAbstractTableModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.results_list = []
         self.column_names = ("PV",)
 
@@ -100,7 +100,7 @@ class ArchiveSearchWidget(QWidget):
     """
 
     def __init__(self, parent: Optional[QObject] = None) -> None:
-        super(QWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.populate_results_list)
