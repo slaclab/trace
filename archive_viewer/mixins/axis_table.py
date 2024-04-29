@@ -4,7 +4,7 @@ from table_models import ArchiverAxisModel
 
 class AxisTableMixin:
     """Mixins class for the Axes tab of the settings section."""
-    def axis_table_init(self):
+    def axis_table_init(self) -> None:
         """Initializer for the Axis Table Model and Table View."""
         self.axis_table_model = ArchiverAxisModel(self.ui.archiver_plot, self)
         self.axis_table_model.append()
@@ -14,15 +14,15 @@ class AxisTableMixin:
         self.ui.add_axis_row_btn.clicked.connect(self.addAxis)
         self.ui.del_axis_row_btn.clicked.connect(self.removeSelectedAxis)
 
-    def axis_delegates_init(self):
+    def axis_delegates_init(self) -> None:
         # TODO: Initialize and set all ItemDelegates for displaying
         #       widgets on the Axis table
         pass
 
     @Slot()
-    def addAxis(self):
+    def addAxis(self) -> None:
         self.axis_table_model.append()
 
     @Slot()
-    def removeSelectedAxis(self):
+    def removeSelectedAxis(self) -> None:
         self.axis_table_model.removeAtIndex(self.ui.time_axis_tbl.currentIndex())

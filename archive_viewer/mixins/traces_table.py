@@ -10,7 +10,7 @@ from table_models import ArchiverCurveModel
 
 class TracesTableMixin:
     """Mixins class for the Traces tab of the settings section."""
-    def traces_table_init(self):
+    def traces_table_init(self) -> None:
         """Initialize the Traces table model and section."""
         self.curves_model = ArchiverCurveModel(self, self.ui.archiver_plot, self.axis_table_model)
         self.curves_model.append()
@@ -21,7 +21,7 @@ class TracesTableMixin:
         self.ui.traces_tbl.customContextMenuRequested.connect(
             self.custom_context_menu)
 
-    def curve_delegates_init(self):
+    def curve_delegates_init(self) -> None:
         """Set column delegates for the Traces table to display widgets."""
         # For the Archive Data column, create a Checkbox widget delegate.
         archive_del = CheckboxDelegate(self,
@@ -66,7 +66,7 @@ class TracesTableMixin:
         hdr.setSectionResizeMode(delete_col, QHeaderView.ResizeToContents)
 
     @Slot(QPoint)
-    def custom_context_menu(self, pos: QPoint):
+    def custom_context_menu(self, pos: QPoint) -> None:
         """Open a custom context menu for the Traces table where the
         user right-clicks. If the ColorButton is right-clicked, then do
         not open a context menu.
@@ -90,7 +90,7 @@ class TracesTableMixin:
             self.menu.popup(table.viewport().mapToGlobal(pos))
 
     @Slot(int, str)
-    def axis_change(self, row: int, axis_name: str):
+    def axis_change(self, row: int, axis_name: str) -> None:
         """Slot for connecting a curve to a specified axis.
 
         Parameters
@@ -117,7 +117,7 @@ class PVContextMenu(QMenu):
 
     # TODO: Archived PVs are no longer draggable from the search tool. Find out why
 
-    def __init__(self, parent: QObject = None):
+    def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent)
         self._selected_index = None
         self.archive_search = ArchiveSearchWidget()
@@ -138,21 +138,21 @@ class PVContextMenu(QMenu):
         self.addAction(import_action)
 
     @property
-    def selected_index(self):
+    def selected_index(self) -> QModelIndex:
         return self._selected_index
 
     @selected_index.setter
-    def selected_index(self, ind: QModelIndex):
+    def selected_index(self, ind: QModelIndex) -> None:
         self._selected_index = ind
 
     @Slot()
-    def import_csv(self):
+    def import_csv(self) -> None:
         # TODO: Add action to import csv
         pass
 
 
 class FormulaDialog(QDialog):
-    def __init__(self, parent: QObject):
+    def __init__(self, parent: QObject) -> None:
         super().__init__(parent)
         self.setWindowTitle("Formula Input")
 
@@ -200,7 +200,7 @@ class FormulaDialog(QDialog):
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
 
-    def evaluate_formula(self, **kwargs: Dict[str, Any]):
+    def evaluate_formula(self, **kwargs: Dict[str, Any]) -> None:
         # Evaluate the formula expression and update the formula input field
         # TODO: Check if PVs used are in Table Model
         #   if yes, replace with row header; if no, add to TableModel and replace with row header
@@ -212,7 +212,7 @@ class FormulaDialog(QDialog):
             self.field.setText("Error")
             logger.error("Invalid formula evaluated.")
 
-    def accept_formula(self, **kwargs: Dict[str, Any]):
+    def accept_formula(self, **kwargs: Dict[str, Any]) -> None:
         # Retrieve the formula and PV name and perform desired actions
         # TODO: Evaluate the formula before accepting, prompt user if invalid(?)
         formula = self.field.text()

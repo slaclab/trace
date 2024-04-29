@@ -6,7 +6,7 @@ from table_models import ArchiversTableModel
 
 class ArchiversTabMixin:
     """Mixins class for managing the Archivers tab of the settings section."""
-    def archivers_tab_init(self):
+    def archivers_tab_init(self) -> None:
         """Initializer for Archivers Table Model and Table View."""
         self.archivers_table_model = ArchiversTableModel(self, archiver_urls)
         self.ui.archivers_tbl.setModel(self.archivers_table_model)

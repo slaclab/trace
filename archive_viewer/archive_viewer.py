@@ -5,7 +5,7 @@ from mixins import (TracesTableMixin, AxisTableMixin, ArchiversTabMixin)
 
 
 class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, ArchiversTabMixin):
-    def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")):
+    def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
         super(ArchiveViewer, self).__init__(parent=parent, args=args,
                                             macros=macros, ui_filename=ui_filename)
 

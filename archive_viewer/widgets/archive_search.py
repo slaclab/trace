@@ -21,7 +21,7 @@ class ArchiveResultsTableModel(QAbstractTableModel):
         The parent item of this table
     """
 
-    def __init__(self, parent: Optional[QObject] = None):
+    def __init__(self, parent: Optional[QObject] = None) -> None:
         super(QAbstractTableModel, self).__init__(parent=parent)
         self.results_list = []
         self.column_names = ("PV",)
@@ -99,7 +99,7 @@ class ArchiveSearchWidget(QWidget):
         The parent item of this widget
     """
 
-    def __init__(self, parent: Optional[QObject] = None):
+    def __init__(self, parent: Optional[QObject] = None) -> None:
         super(QWidget, self).__init__(parent=parent)
 
         self.network_manager = QNetworkAccessManager()
@@ -150,7 +150,7 @@ class ArchiveSearchWidget(QWidget):
         self.layout.addWidget(self.results_view)
         self.setLayout(self.layout)
 
-    def startDragAction(self, supported_actions):
+    def startDragAction(self, supported_actions) -> None:
         """
         The method to be called when a user initiates a drag action for one of the results in the table. The current
         reason for this functionality is the ability to drag a PV name onto a plot to automatically start drawing

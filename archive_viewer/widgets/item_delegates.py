@@ -26,7 +26,7 @@ class SliderDelegate(QStyledItemDelegate):
         The range for the QSlider widget, by default (1, 10)
     """
     def __init__(self, parent: Optional[QObject], table_model: QAbstractTableModel,
-                 table_view: QTableView, init_range: Tuple[int, int] = (1, 10)):
+                 table_view: QTableView, init_range: Tuple[int, int] = (1, 10)) -> None:
         super().__init__(parent)
         self.table_model = table_model
         self.table_view = table_view
@@ -79,7 +79,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
     text_change_signal = Signal(int, str)
 
     def __init__(self, parent: QObject, table_model: QAbstractTableModel,
-                 table_view: QTableView, input: Union[ArchiverAxisModel, list]):
+                 table_view: QTableView, input: Union[ArchiverAxisModel, list]) -> None:
         super().__init__(parent)
         self.table_model = table_model
         self.table_view = table_view
@@ -119,20 +119,20 @@ class ComboBoxDelegate(QStyledItemDelegate):
         self.text_change_signal.emit(index.row(), new_axis_name)
         model.setData(index, data, Qt.EditRole)
 
-    def eventFilter(self, object: QObject, event: QEvent):
+    def eventFilter(self, object: QObject, event: QEvent) -> bool:
         """Disable scrolling for widgets that are not the focus."""
         if event.type() == QEvent.Wheel and not object.hasFocus():
             return True
         return super().eventFilter(object, event)
 
     @Slot(list)
-    def reset_items(self, items: list):
+    def reset_items(self, items: list) -> None:
         """"Clear the QComboBox's items and set them to the new list."""
         self.editor.clear()
         self.editor.addItems(items)
 
     @Slot(QPoint)
-    def combo_menu_requested(self, pos: QPoint):
+    def combo_menu_requested(self, pos: QPoint) -> None:
         """Redirect menu requests to the Table View."""
         pos = self.sender().mapToParent(pos)
         self.table_view.customContextMenuRequested.emit(pos)
@@ -151,7 +151,7 @@ class CheckboxDelegate(QStyledItemDelegate):
     table_view : QTableView
         The table view to be associated with the CheckboxDelegate.
     """
-    def __init__(self, parent: QObject, table_model: QAbstractTableModel, table_view: QTableView):
+    def __init__(self, parent: QObject, table_model: QAbstractTableModel, table_view: QTableView) -> None:
         super().__init__(parent)
         self.table_model = table_model
         self.table_view = table_view
@@ -194,7 +194,7 @@ class ColorButtonDelegate(QStyledItemDelegate):
     table_view : QTableView
         The table view to be associated with the ColorButtonDelegate.
     """
-    def __init__(self, parent: QObject, table_model: QAbstractTableModel, table_view: QTableView):
+    def __init__(self, parent: QObject, table_model: QAbstractTableModel, table_view: QTableView) -> None:
         super().__init__(parent)
         self.table_model = table_model
         self.table_view = table_view
@@ -241,7 +241,7 @@ class DeleteRowDelegate(QStyledItemDelegate):
     table_view : QTableView
         The table view to be associated with the DeleteRowDelegate.
     """
-    def __init__(self, parent: QObject, table_model: QAbstractTableModel, table_view: QTableView):
+    def __init__(self, parent: QObject, table_model: QAbstractTableModel, table_view: QTableView) -> None:
         super().__init__(parent)
         self.table_model = table_model
         self.table_view = table_view

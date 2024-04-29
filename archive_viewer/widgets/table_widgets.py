@@ -24,7 +24,7 @@ class ColorButton(QPushButton):
 
     color_changed = Signal(QColor)
 
-    def __init__(self, *args: Any, color: Union[QColor, str] = None, index: int = -1, **kwargs):
+    def __init__(self, *args: Any, color: Union[QColor, str] = None, index: int = -1, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         if not color:
             if index >= 0:
@@ -45,7 +45,7 @@ class ColorButton(QPushButton):
         self.color = self._default
 
     @property
-    def color(self):
+    def color(self) -> QColor:
         """Return the current color."""
         return self._color
 
@@ -82,7 +82,7 @@ class ColorButton(QPushButton):
         return color
 
     @staticmethod
-    def index_color(index: int):
+    def index_color(index: int) -> QColor:
         """Returns the color in the color palette at index."""
         modded_index = index % len(color_palette)
         color = color_palette[modded_index]
@@ -103,7 +103,7 @@ class CenterCheckbox(QWidget):
         Whether the QCheckBox should be checked by default, by default True.
     """
     toggled = Signal(bool)
-    def __init__(self, parent: QObject, init_data: bool = True):
+    def __init__(self, parent: QObject, init_data: bool = True) -> None:
         super().__init__(parent)
 
         self.check_box = QCheckBox(parent)
@@ -119,11 +119,11 @@ class CenterCheckbox(QWidget):
         self.setLayout(layout)
 
     @property
-    def checkState(self):
+    def checkState(self) -> bool:
         """Check state getter."""
         return self.check_box.isChecked()
 
     @checkState.setter
-    def checkState(self, state):
+    def checkState(self, state) -> None:
         """Set the check state of the QCheckBox."""
         self.check_box.setChecked(state)

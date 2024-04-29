@@ -21,7 +21,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         The table model that stores the axes for the plot.
     """
 
-    def __init__(self, parent: Optional[QObject], plot: BasePlot, axis_model: ArchiverAxisModel):
+    def __init__(self, parent: Optional[QObject], plot: BasePlot, axis_model: ArchiverAxisModel) -> None:
         super(ArchiverCurveModel, self).__init__(plot, parent)
         self._column_names = self._column_names[:5] + ("Style",) + self._column_names[5:] + ("",)
         self._row_names = []
@@ -104,7 +104,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=def_y_axis)
         self.endInsertRows()
 
-    def removeAtIndex(self, index: QModelIndex):
+    def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the curve at the given table index.
 
         Parameters
