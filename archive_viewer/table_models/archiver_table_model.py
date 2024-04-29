@@ -7,7 +7,21 @@ from config import logger
 
 
 class ArchiversTableModel(QAbstractTableModel):
-    def __init__(self, parent: QWidget, init_archivers) -> None:
+    """Table model for storing Archivers to fetch data from. Consists of
+    3 columns:
+    "Fetch From" : Whether or not to fetch data from this archiver.
+    "Archiver" : The user provided name of the archiver.
+    "URL" : The archiver's URL to fetch data from. The URL's validity is
+    checked.
+
+    Parameters
+    ----------
+    parent (optional) : QObject
+        The parent object for the table model.
+    init_archivers : Dict[str, str]
+        Initial archivers where the key is the name and value is the url.
+    """
+    def __init__(self, parent: QWidget, init_archivers: Dict[str, str]) -> None:
         super().__init__(parent)
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.archiver_validation)
