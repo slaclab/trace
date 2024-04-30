@@ -300,7 +300,7 @@
       </widget>
       <widget class="QWidget" name="plot_tab">
        <attribute name="title">
-        <string>Archivers</string>
+        <string>Plot</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_7"/>
       </widget>
