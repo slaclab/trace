@@ -49,6 +49,7 @@ class SliderDelegate(QStyledItemDelegate):
         return super().createEditor(parent, option, index)
 
     def destroyEditor(self, editor: QSlider, index: QModelIndex) -> None:
+        """Close the persistent editor for a defined index."""
         if index.row() < len(self.editor_list):
             del self.editor_list[index.row()]
             editor.deleteLater()
@@ -122,6 +123,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
         return super().initStyleOption(option, index)
 
     def destroyEditor(self, editor: QComboBox, index: QModelIndex) -> None:
+        """Destroy the editor for a defined index."""
         if index.row() < len(self.editor_list):
             logger.debug(f"Removing {self.editor_list[index.row()]} from delegate")
             self.editor_list[index.row()].deleteLater()
@@ -184,6 +186,7 @@ class CheckboxDelegate(QStyledItemDelegate):
         return super().createEditor(parent, option, index)
 
     def destroyEditor(self, editor: CenterCheckbox, index: QModelIndex) -> None:
+        """Close the persistent editor for a defined index."""
         if index.row() < len(self.editor_list):
             del self.editor_list[index.row()]
             editor.deleteLater()
@@ -234,6 +237,7 @@ class ColorButtonDelegate(QStyledItemDelegate):
         return super().createEditor(parent, option, index)
 
     def destroyEditor(self, editor: ColorButton, index: QModelIndex) -> None:
+        """Close the persistent editor for a defined index."""
         if index.row() < len(self.editor_list):
             del self.editor_list[index.row()]
             editor.deleteLater()
@@ -283,6 +287,7 @@ class DeleteRowDelegate(QStyledItemDelegate):
         return super().initStyleOption(option, index)
 
     def destroyEditor(self, editor: QWidget, index: QModelIndex) -> None:
+        """Destroy the editor for a defined index."""
         if index.row() < len(self.editor_list):
             logger.debug(f"Removing {self.editor_list[index.row()]} from delegate")
             self.editor_list[index.row()].deleteLater()
@@ -329,6 +334,7 @@ class FloatDelegate(QStyledItemDelegate):
         return super().createEditor(parent, option, index)
 
     def destroyEditor(self, editor: QDoubleSpinBox, index: QModelIndex) -> None:
+        """Close the persistent editor for a defined index."""
         if index.row() < len(self.editor_list):
             del self.editor_list[index.row()]
             editor.deleteLater()
@@ -382,6 +388,7 @@ class ScientificNotationDelegate(QStyledItemDelegate):
         return super().createEditor(parent, option, index)
 
     def destroyEditor(self, editor: QLineEdit, index: QModelIndex) -> None:
+        """Close the persistent editor for a defined index."""
         if index.row() < len(self.editor_list):
             del self.editor_list[index.row()]
             editor.deleteLater()

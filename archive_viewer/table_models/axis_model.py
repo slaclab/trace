@@ -5,19 +5,38 @@ from pydm.widgets.axis_table_model import BasePlotAxesModel
 class ArchiverAxisModel(BasePlotAxesModel):
     """The data model for the axes tab in the properties section. Acts
     as a go-between for the axes in a plot, and QTableView items.
+
+    Parameters
+    ----------
+    plot : BasePlot
+        The model's associated plot widget
+    parent : QObject, optional
+        The model's parent, by default None
     """
     def __init__(self, plot, parent=None):
         super().__init__(plot, parent)
         self.checkable_col = {self.getColumnIndex("Enable Auto Range"),
                               self.getColumnIndex("Log Mode")}
 
-    def flags(self, index):
+    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+        """Return flags that determine how users can interact with the items in the table"""
         flags = super().flags(index)
         if index.column() in self.checkable_col:
             flags = Qt.ItemIsEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsSelectable
         return flags
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index: QModelIndex, role=Qt.DisplayRole) -> Any:
+        """Retrieve the data from the model for a given index using the
+        defined role.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The model's index for the data being retrieved.
+        role : Qt.ItemDataRole, optional
+            The role used by the view to indicate which type of data it
+            needs, by default Qt.DisplayRole
+        """
         if not index.isValid():
             return QVariant()
         elif role == Qt.CheckStateRole and index.column() in self.checkable_col:
@@ -27,7 +46,19 @@ class ArchiverAxisModel(BasePlotAxesModel):
             return super().data(index, role)
         return None
 
-    def setData(self, index, value, role=Qt.EditRole):
+    def setData(self, index: QModelIndex, value: Any, role=Qt.EditRole) -> bool:
+        """Sets the model data for a given index using the defined role.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The model's index for the data being set.
+        value : Any
+            The new value for the model to store.
+        role : Qt.ItemDataRole, optional
+            The role used by the view to indicate if the model is being editted,
+            by default Qt.EditRole
+        """
         if not index.isValid():
             return QVariant()
         elif role == Qt.CheckStateRole and index.column() in self.checkable_col:
@@ -53,24 +84,43 @@ class ArchiverAxisModel(BasePlotAxesModel):
                 name = f"New Axis {axis_count}"
 
         super().append(name)
-        self.attach_range_changed()
 
-    def get_axis(self, index: int):
+        new_axis = self.get_axis(-1)
+        row = self.rowCount() - 1
+        self.attach_range_changed(row, new_axis)
+
+    def get_axis(self, index: int) -> BasePlotAxisItem:
+        """Return the BasePlotAxisItem for a given row number.
+
+        Parameters
+        ----------
+        index : int
+            The row number of the axis item.
+        """
         try:
             return self.plot._axes[index]
         except IndexError:
             return None
 
-    def attach_range_changed(self):
-        new_axis = self.get_axis(-1)
-        row = self.rowCount() - 1
+    def attach_range_changed(self, row: int, axis: BasePlotAxisItem) -> None:
+        """Attach an axis' sigYRangeChanged signal to the model's dataChanged
+        signal. This will notify the model to update to reflect new data.
 
+        Parameters
+        ----------
+        row : int
+            The row number of the axis. (0 based)
+        axis : BasePlotAxisItem
+            The axis item to be connected to the dataChanged signal.
+        """
         min_col = self.getColumnIndex("Min Y Range")
         min_index = QPersistentModelIndex(self.index(row, min_col))
 
         max_col = self.getColumnIndex("Max Y Range")
         max_index = QPersistentModelIndex(self.index(row, max_col))
 
-        new_axis.sigYRangeChanged.connect(lambda *_:
-                                          self.dataChanged.emit(QModelIndex(min_index),
-                                                                QModelIndex(max_index)))
+        axis.sigYRangeChanged.connect(
+            lambda *_: self.dataChanged.emit(
+                QModelIndex(min_index), QModelIndex(max_index)
+            )
+        )

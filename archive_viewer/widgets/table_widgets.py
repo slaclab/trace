@@ -124,6 +124,6 @@ class CenterCheckbox(QWidget):
         return self.check_box.isChecked()
 
     @checkState.setter
-    def checkState(self, state) -> None:
+    def checkState(self, state: bool) -> None:
         """Set the check state of the QCheckBox."""
         self.check_box.setChecked(state)

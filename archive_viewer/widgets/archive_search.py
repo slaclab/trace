@@ -11,8 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class ArchiveResultsTableModel(QAbstractTableModel):
-    """
-    This table model holds the results of an archiver appliance PV search. This search is for names matching
+    """This table model holds the results of an archiver appliance PV search. This search is for names matching
     the input search words, and the results are a list of PV names that match that search.
 
     Parameters
@@ -21,18 +20,18 @@ class ArchiveResultsTableModel(QAbstractTableModel):
         The parent item of this table
     """
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent=parent)
         self.results_list = []
         self.column_names = ("PV",)
 
-    def rowCount(self, parent) -> int:
+    def rowCount(self, parent: QObject) -> int:
         """Return the row count of the table"""
         if parent is not None and parent.isValid():
             return 0
         return len(self.results_list)
 
-    def columnCount(self, parent) -> int:
+    def columnCount(self, parent: QObject) -> int:
         """Return the column count of the table"""
         if parent is not None and parent.isValid():
             return 0
@@ -99,7 +98,7 @@ class ArchiveSearchWidget(QWidget):
         The parent item of this widget
     """
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent=parent)
 
         self.network_manager = QNetworkAccessManager()

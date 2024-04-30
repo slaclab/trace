@@ -6,6 +6,7 @@ from widgets import ComboBoxDelegate, ScientificNotationDelegate
 
 class AxisTableMixin:
     """Mixins class for the Axes tab of the settings section."""
+
     def axis_table_init(self) -> None:
         """Initializer for the Axis Table Model and Table View."""
         self.axis_table_model = ArchiverAxisModel(self.ui.archiver_plot, self)
@@ -19,6 +20,7 @@ class AxisTableMixin:
         self.ui.del_axis_row_btn.clicked.connect(self.removeSelectedAxis)
 
     def axis_delegates_init(self) -> None:
+        """Initialize and set the ItemDelegates for the axis table."""
         orientation_col = self.axis_table_model.getColumnIndex("Y-Axis Orientation")
         orientation_map = {"Left": "left", "Right": "right"}
         orientation_del = ComboBoxDelegate(self.ui.time_axis_tbl, orientation_map)
@@ -34,8 +36,10 @@ class AxisTableMixin:
 
     @Slot()
     def addAxis(self) -> None:
+        """Slot for button to add a new row to the axis table."""
         self.axis_table_model.append()
 
     @Slot()
     def removeSelectedAxis(self) -> None:
+        """Slot for button to remove a row from the axis table."""
         self.axis_table_model.removeAtIndex(self.ui.time_axis_tbl.currentIndex())
