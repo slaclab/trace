@@ -376,7 +376,8 @@ class ScientificNotationDelegate(QStyledItemDelegate):
             editor.setValidator(validator)
             editor.editingFinished.connect(lambda: self.commitData.emit(editor))
 
-            self.editor_list.append([editor, -1])
+            # List containing the editor, scientific notation flag, and precision
+            self.editor_list.append([editor, False, -1])
             return editor
         return super().createEditor(parent, option, index)
 
@@ -392,9 +393,9 @@ class ScientificNotationDelegate(QStyledItemDelegate):
         """Set the editor's data to match the table model's data."""
         value = index.data(Qt.DisplayRole)
 
-        prec = self.editor_list[index.row()][1]
+        _, sci_not, prec = self.editor_list[index.row()]
         if prec != -1:
-            value = f"{value:.{prec}e}"
+            value = f"{value:.{prec}{'e' if sci_not else 'f'}}"
         else:
             value = str(value)
 
@@ -404,11 +405,14 @@ class ScientificNotationDelegate(QStyledItemDelegate):
         """Set the table model's data to match the editor's data."""
         text = editor.text().lower()
 
-        if 'e' in text:
-            prec = text.index('e') - text.index('.') - 1
+        sci_not = "e" in text
+        if "." not in text:
+            prec = 0
+        elif sci_not:
+            prec = text.index("e") - text.index(".") - 1
         else:
-            prec = -1
-        self.editor_list[index.row()][1] = prec
+            prec = len(text) - text.index(".") - 1
+        self.editor_list[index.row()][1:] = [sci_not, prec]
 
         data = float(text)
         model.setData(index, data, Qt.EditRole)
