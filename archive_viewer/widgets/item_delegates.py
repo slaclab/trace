@@ -301,7 +301,20 @@ class DeleteRowDelegate(QStyledItemDelegate):
 
 
 class FloatDelegate(QStyledItemDelegate):
-    def __init__(self, parent: QTableView, init_range: Tuple[float, float] = (float("-inf"), float("inf")), prec: int = 2):
+    """FloatDelegate is a QStyledItemDelegate to display a
+    QDoubleSpinbox on a table.
+
+    Parameters
+    ----------
+    parent : QTableView
+        The delegate's associated QTableView.
+    init_range : Tuple[float, float], optional
+        The min/max range for the QDoubleSpinBox, by default
+        (float("-inf"), float("inf"))
+    prec : int, optional
+        The float's precision, by default 2
+    """
+    def __init__(self, parent: QTableView, init_range: Tuple[float, float] = (float("-inf"), float("inf")), prec: int = 2) -> None:
         super().__init__(parent)
         self.range = init_range
         self.prec = prec
@@ -355,9 +368,20 @@ class FloatDelegate(QStyledItemDelegate):
 
 
 class ScientificNotationDelegate(QStyledItemDelegate):
-    def __init__(self, parent: QTableView, prec: int = 2):
+    """ScientificNotationDelegate is a QStyledItemDelegate to display a
+    QLineEdit on a table.
+
+    The delegate has a validator to allow the user to only enter an int
+    or float in scientific or fixed-point notation. The notation and
+    precision used by the user is tracked and used for future values.
+
+    Parameters
+    ----------
+    parent : QTableView
+        The delegate's associated QTableView.
+    """
+    def __init__(self, parent: QTableView) -> None:
         super().__init__(parent)
-        self.prec = prec
         self.editor_list = []
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:

@@ -1,4 +1,6 @@
+from typing import Any
 from qtpy.QtCore import (Qt, QVariant, QPersistentModelIndex, QModelIndex)
+from pydm.widgets.baseplot import BasePlotAxisItem
 from pydm.widgets.axis_table_model import BasePlotAxesModel
 
 
@@ -13,7 +15,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
     parent : QObject, optional
         The model's parent, by default None
     """
-    def __init__(self, plot, parent=None):
+    def __init__(self, plot, parent=None) -> None:
         super().__init__(plot, parent)
         self.checkable_col = {self.getColumnIndex("Enable Auto Range"),
                               self.getColumnIndex("Log Mode")}
