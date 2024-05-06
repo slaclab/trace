@@ -67,8 +67,10 @@ class AxisTableMixin:
         proc_range.sort()
 
         self.ui.archiver_plot.plotItem.vb.blockSignals(True)
-        self.ui.archiver_plot.plotItem.setXRange(*raw_range)
+        self.ui.archiver_plot.plotItem.setXRange(*proc_range)
         self.ui.archiver_plot.plotItem.vb.blockSignals(False)
+
+        self.ui.cursor_scale_btn.click()
 
     @Slot(object, object)
     def set_axis_datetimes(self, _: ViewBox = None, time_range: Tuple[float, float] = None) -> None:
@@ -91,6 +93,8 @@ class AxisTableMixin:
 
         edits = (self.ui.main_start_datetime, self.ui.main_end_datetime)
         for ind, qdt in enumerate(edits):
+            if qdt.hasFocus():
+                continue
             qdt.blockSignals(True)
             qdt.setDateTime(QDateTime(time_range[ind]))
             qdt.blockSignals(False)
