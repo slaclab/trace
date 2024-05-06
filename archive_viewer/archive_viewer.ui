@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>965</width>
-    <height>615</height>
+    <width>1200</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,9 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QSplitter::handle {
-	background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(121, 121, 121, 255), stop:0.3 rgba(121, 121, 121, 255), stop:0.301 rgba(255, 255, 255, 255), stop:1 rgba(255, 255, 255, 100));
+	background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(121, 121, 121, 255), stop:0.3 rgba(121, 121, 121, 255), stop:0.301 rgba(255, 255, 255, 255), stop:1 rgba(255, 255, 255, 40));
+	margin-top: 10px;
+	margin-bottom: 5px;
 }
 </string>
   </property>
@@ -40,8 +42,11 @@
        <property name="text">
         <string>30s</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
        <attribute name="buttonGroup">
-        <string notr="true">buttonGroup</string>
+        <string notr="true">timespan_btns</string>
        </attribute>
       </widget>
      </item>
@@ -50,8 +55,11 @@
        <property name="text">
         <string>1m</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
        <attribute name="buttonGroup">
-        <string notr="true">buttonGroup</string>
+        <string notr="true">timespan_btns</string>
        </attribute>
       </widget>
      </item>
@@ -60,8 +68,11 @@
        <property name="text">
         <string>1h</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
        <attribute name="buttonGroup">
-        <string notr="true">buttonGroup</string>
+        <string notr="true">timespan_btns</string>
        </attribute>
       </widget>
      </item>
@@ -70,8 +81,11 @@
        <property name="text">
         <string>1w</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
        <attribute name="buttonGroup">
-        <string notr="true">buttonGroup</string>
+        <string notr="true">timespan_btns</string>
        </attribute>
       </widget>
      </item>
@@ -80,35 +94,28 @@
        <property name="text">
         <string>1M</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
        <attribute name="buttonGroup">
-        <string notr="true">buttonGroup</string>
+        <string notr="true">timespan_btns</string>
        </attribute>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="cursor_scale_btn">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
        <property name="text">
         <string>Cursor</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
        </property>
-       <attribute name="buttonGroup">
-        <string notr="true">buttonGroup</string>
-       </attribute>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="auto_scale_btn">
-       <property name="text">
-        <string>Y Axis Autoscale</string>
-       </property>
-       <property name="checkable">
+       <property name="checked">
         <bool>true</bool>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">timespan_btns</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -183,6 +190,12 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
+      <property name="usesScrollButtons">
+       <bool>false</bool>
+      </property>
+      <property name="movable">
+       <bool>true</bool>
+      </property>
       <widget class="QWidget" name="traces_tab">
        <attribute name="title">
         <string>Traces</string>
@@ -203,37 +216,6 @@
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
          </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="trace_row_lyt">
-          <item>
-           <spacer name="trace_row_spcr">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="add_trace_row_btn">
-            <property name="text">
-             <string>Add Trace</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="del_trace_row_btn">
-            <property name="text">
-             <string>Delete Trace</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
       </widget>
@@ -275,6 +257,9 @@
         </item>
         <item>
          <widget class="QTableView" name="time_axis_tbl">
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
@@ -313,49 +298,11 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="archivers_tab">
+      <widget class="QWidget" name="plot_tab">
        <attribute name="title">
-        <string>Archivers</string>
+        <string>Plot</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_7">
-        <item>
-         <widget class="QTableView" name="archivers_tbl">
-          <property name="editTriggers">
-           <set>QAbstractItemView::AllEditTriggers</set>
-          </property>
-          <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectRows</enum>
-          </property>
-          <attribute name="horizontalHeaderStretchLastSection">
-           <bool>true</bool>
-          </attribute>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="add_archiver_lyt">
-          <item>
-           <spacer name="add_archiver_spcr">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="add_archiver_btn">
-            <property name="text">
-             <string>Add Archiver</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
+       <layout class="QVBoxLayout" name="verticalLayout_7"/>
       </widget>
      </widget>
     </widget>
@@ -377,6 +324,6 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup"/>
+  <buttongroup name="timespan_btns"/>
  </buttongroups>
 </ui>

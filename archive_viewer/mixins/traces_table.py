@@ -2,9 +2,11 @@ from typing import (Dict, Any)
 from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
                             QVBoxLayout, QGridLayout, QLineEdit, QPushButton)
+from pydm.widgets.baseplot import BasePlotCurveItem
+from pydm.widgets.baseplot_curve_editor import PlotStyleColumnDelegate
 from config import logger
-from widgets import (ArchiveSearchWidget, ColorButtonDelegate, CheckboxDelegate,
-                     ComboBoxDelegate, CurveStyleDelegate, DeleteRowDelegate)
+from widgets import (ArchiveSearchWidget, ColorButtonDelegate, ComboBoxDelegate,
+                     DeleteRowDelegate, FloatDelegate)
 from table_models import ArchiverCurveModel
 
 
@@ -21,49 +23,69 @@ class TracesTableMixin:
         self.ui.traces_tbl.customContextMenuRequested.connect(
             self.custom_context_menu)
 
+        hdr = self.ui.traces_tbl.horizontalHeader()
+        hdr.setSectionResizeMode(QHeaderView.Stretch)
+        channel_col = self.curves_model.getColumnIndex("Channel")
+        hdr.setSectionResizeMode(channel_col, QHeaderView.ResizeToContents)
+        hdr.setSectionResizeMode(self.curves_model.getColumnIndex(""), QHeaderView.ResizeToContents)
+
     def curve_delegates_init(self) -> None:
         """Set column delegates for the Traces table to display widgets."""
-        # For the Archive Data column, create a Checkbox widget delegate.
-        archive_del = CheckboxDelegate(self,
-                                       self.curves_model,
-                                       self.ui.traces_tbl)
-        archive_col = self.curves_model.getColumnIndex("Archive Data")
-        self.ui.traces_tbl.setItemDelegateForColumn(archive_col, archive_del)
-
-        # For the Y-Axis Name column, create a ComboBox widget delegate.
-        axis_combo_del = ComboBoxDelegate(self,
-                                          self.curves_model,
-                                          self.ui.traces_tbl,
-                                          self.axis_table_model)
         axis_col = self.curves_model.getColumnIndex("Y-Axis Name")
+        axis_combo_del = ComboBoxDelegate(self.ui.traces_tbl, self.axis_table_model)
+        axis_combo_del.sigTextChange.connect(self.axis_change)
         self.ui.traces_tbl.setItemDelegateForColumn(axis_col, axis_combo_del)
-        axis_combo_del.text_change_signal.connect(self.axis_change)
 
-        # For the Color column, create a Color Button widget delegate.
-        color_button_del = ColorButtonDelegate(self,
-                                               self.curves_model,
-                                               self.ui.traces_tbl)
         color_col = self.curves_model.getColumnIndex("Color")
+        color_button_del = ColorButtonDelegate(self.ui.traces_tbl)
         self.ui.traces_tbl.setItemDelegateForColumn(color_col, color_button_del)
 
-        # For the Style column, use the PyDM CurveStyleDelegate.
-        style_del = CurveStyleDelegate(self,
+        style_col = self.curves_model.getColumnIndex("Style")
+        style_del = PlotStyleColumnDelegate(self,
                                        self.curves_model,
                                        self.ui.traces_tbl)
         style_del.toggleColumnVisibility()
-        style_col = self.curves_model.getColumnIndex("Style")
         self.ui.traces_tbl.setItemDelegateForColumn(style_col, style_del)
 
-        # Use a delegate to display a button to delete the row.
-        delete_row_del = DeleteRowDelegate(self,
-                                           self.curves_model,
-                                           self.ui.traces_tbl)
-        delete_col = self.curves_model.getColumnIndex("")
-        self.ui.traces_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
+        styles = BasePlotCurveItem.lines
+        line_style_col = self.curves_model.getColumnIndex("Line Style")
+        line_style_del = ComboBoxDelegate(self.ui.traces_tbl, styles)
+        self.ui.traces_tbl.setItemDelegateForColumn(line_style_col, line_style_del)
 
-        # Resize the column showing the delete row button.
-        hdr = self.ui.traces_tbl.horizontalHeader()
-        hdr.setSectionResizeMode(delete_col, QHeaderView.ResizeToContents)
+        size_data = {f"{i}px": i for i in range(1, 6)}
+        line_width_col = self.curves_model.getColumnIndex("Line Width")
+        line_width_del = ComboBoxDelegate(self.ui.traces_tbl, size_data)
+        self.ui.traces_tbl.setItemDelegateForColumn(line_width_col, line_width_del)
+
+        symbols = BasePlotCurveItem.symbols
+        symbol_col = self.curves_model.getColumnIndex("Symbol")
+        symbol_del = ComboBoxDelegate(self.ui.traces_tbl, symbols)
+        self.ui.traces_tbl.setItemDelegateForColumn(symbol_col, symbol_del)
+
+        size_data = {f"{i}px": i for i in range(5, 26, 5)}
+        symbol_size_col = self.curves_model.getColumnIndex("Symbol Size")
+        symbol_size_del = ComboBoxDelegate(self.ui.traces_tbl, size_data)
+        self.ui.traces_tbl.setItemDelegateForColumn(symbol_size_col, symbol_size_del)
+
+        bar_width_col = self.curves_model.getColumnIndex("Bar Width")
+        bar_width_del = FloatDelegate(self.ui.traces_tbl, init_range=(.1, 5))
+        self.ui.traces_tbl.setItemDelegateForColumn(bar_width_col, bar_width_del)
+
+        upper_limit_col = self.curves_model.getColumnIndex("Upper Limit")
+        upper_limit_del = FloatDelegate(self.ui.traces_tbl, init_range=(0, float("inf")))
+        self.ui.traces_tbl.setItemDelegateForColumn(upper_limit_col, upper_limit_del)
+
+        lower_limit_col = self.curves_model.getColumnIndex("Lower Limit")
+        lower_limit_del = FloatDelegate(self.ui.traces_tbl, init_range=(0, float("inf")))
+        self.ui.traces_tbl.setItemDelegateForColumn(lower_limit_col, lower_limit_del)
+
+        limit_color_col = self.curves_model.getColumnIndex("Limit Color")
+        limit_color_del = ColorButtonDelegate(self.ui.traces_tbl)
+        self.ui.traces_tbl.setItemDelegateForColumn(limit_color_col, limit_color_del)
+
+        delete_col = self.curves_model.getColumnIndex("")
+        delete_row_del = DeleteRowDelegate(self.ui.traces_tbl)
+        self.ui.traces_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
 
     @Slot(QPoint)
     def custom_context_menu(self, pos: QPoint) -> None:
