@@ -17,6 +17,8 @@ class ArchiverAxisModel(BasePlotAxesModel):
     """
     def __init__(self, plot: BasePlot, parent=None) -> None:
         super().__init__(plot, parent)
+        self._column_names = self._column_names + ("",)
+
         self.checkable_col = {self.getColumnIndex("Enable Auto Range"),
                               self.getColumnIndex("Log Mode")}
 
@@ -90,6 +92,18 @@ class ArchiverAxisModel(BasePlotAxesModel):
         new_axis = self.get_axis(-1)
         row = self.rowCount() - 1
         self.attach_range_changed(row, new_axis)
+
+    def removeAtIndex(self, index: QModelIndex) -> None:
+        """Removes the axis at the given table index.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            An index in the row to be removed.
+        """
+        if self.rowCount() <= 1:
+            self.append()
+        super().removeAtIndex(index)
 
     def get_axis(self, index: int) -> BasePlotAxisItem:
         """Return the BasePlotAxisItem for a given row number.

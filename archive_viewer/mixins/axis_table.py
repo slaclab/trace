@@ -4,7 +4,7 @@ from qtpy.QtCore import Slot, QDateTime
 from qtpy.QtWidgets import QHeaderView
 from pyqtgraph import ViewBox
 from table_models import ArchiverAxisModel
-from widgets import ComboBoxDelegate, ScientificNotationDelegate
+from widgets import ComboBoxDelegate, ScientificNotationDelegate, DeleteRowDelegate
 
 
 class AxisTableMixin:
@@ -18,9 +18,8 @@ class AxisTableMixin:
 
         hdr = self.ui.time_axis_tbl.horizontalHeader()
         hdr.setSectionResizeMode(QHeaderView.Stretch)
-
-        self.ui.add_axis_row_btn.clicked.connect(self.addAxis)
-        self.ui.del_axis_row_btn.clicked.connect(self.removeSelectedAxis)
+        del_col = self.axis_table_model.getColumnIndex("")
+        hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
 
         plot_viewbox = self.ui.archiver_plot.plotItem.vb
         plot_viewbox.sigXRangeChanged.connect(self.set_axis_datetimes)
@@ -28,6 +27,8 @@ class AxisTableMixin:
 
         self.ui.main_start_datetime.dateTimeChanged.connect(lambda qdt: self.set_time_axis_range((qdt, None)))
         self.ui.main_end_datetime.dateTimeChanged.connect(lambda qdt: self.set_time_axis_range((None, qdt)))
+
+        self.ui.add_axis_row_btn.clicked.connect(self.addAxis)
 
     def axis_delegates_init(self) -> None:
         """Initialize and set the ItemDelegates for the axis table."""
@@ -43,6 +44,10 @@ class AxisTableMixin:
         max_range_col = self.axis_table_model.getColumnIndex("Max Y Range")
         max_range_del = ScientificNotationDelegate(self.ui.time_axis_tbl)
         self.ui.time_axis_tbl.setItemDelegateForColumn(max_range_col, max_range_del)
+
+        delete_col = self.axis_table_model.getColumnIndex("")
+        delete_row_del = DeleteRowDelegate(self.ui.time_axis_tbl)
+        self.ui.time_axis_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
 
     Slot(object)
     def set_time_axis_range(self, raw_range: Tuple[QDateTime, QDateTime] = (None, None)) -> None:
@@ -103,8 +108,3 @@ class AxisTableMixin:
     def addAxis(self) -> None:
         """Slot for button to add a new row to the axis table."""
         self.axis_table_model.append()
-
-    @Slot()
-    def removeSelectedAxis(self) -> None:
-        """Slot for button to remove a row from the axis table."""
-        self.axis_table_model.removeAtIndex(self.ui.time_axis_tbl.currentIndex())
