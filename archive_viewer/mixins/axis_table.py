@@ -56,6 +56,9 @@ class AxisTableMixin:
             the other is None. The positioning changes either the plot's
             min or max range value. By default (None, None)
         """
+        # Disable Autoscroll if enabled
+        self.ui.cursor_scale_btn.click()
+
         proc_range = [None, None]
         for ind, val in enumerate(raw_range):
             # Values that are QDateTime are converted to a float timestamp
@@ -69,8 +72,6 @@ class AxisTableMixin:
         self.ui.archiver_plot.plotItem.vb.blockSignals(True)
         self.ui.archiver_plot.plotItem.setXRange(*proc_range)
         self.ui.archiver_plot.plotItem.vb.blockSignals(False)
-
-        self.ui.cursor_scale_btn.click()
 
     @Slot(object, object)
     def set_axis_datetimes(self, _: ViewBox = None, time_range: Tuple[float, float] = None) -> None:
