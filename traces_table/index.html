@@ -798,8 +798,7 @@
 
             <details class="quote">
               <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">129</span>
-<span class="normal">130</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
@@ -844,7 +843,8 @@
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
-<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">PVContextMenu</span><span class="p">(</span><span class="n">QMenu</span><span class="p">):</span>
+<span class="normal">175</span>
+<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">PVContextMenu</span><span class="p">(</span><span class="n">QMenu</span><span class="p">):</span>
     <span class="c1"># TODO: Change this QMenu so functions that change data stay in table object</span>
     <span class="c1">#   - Move functions to table widget</span>
     <span class="c1">#   - Init parameters: dict(&quot;ACTION_NAME&quot;: function)</span>
@@ -1068,7 +1068,8 @@
 <span class="normal">123</span>
 <span class="normal">124</span>
 <span class="normal">125</span>
-<span class="normal">126</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TracesTableMixin</span><span class="p">:</span>
+<span class="normal">126</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TracesTableMixin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixins class for the Traces tab of the settings section.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">traces_table_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Traces table model and section.&quot;&quot;&quot;</span>
@@ -1085,7 +1086,8 @@
         <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="n">QHeaderView</span><span class="o">.</span><span class="n">Stretch</span><span class="p">)</span>
         <span class="n">channel_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">getColumnIndex</span><span class="p">(</span><span class="s2">&quot;Channel&quot;</span><span class="p">)</span>
         <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="n">channel_col</span><span class="p">,</span> <span class="n">QHeaderView</span><span class="o">.</span><span class="n">ResizeToContents</span><span class="p">)</span>
-        <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">getColumnIndex</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">QHeaderView</span><span class="o">.</span><span class="n">ResizeToContents</span><span class="p">)</span>
+        <span class="n">del_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">getColumnIndex</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="n">del_col</span><span class="p">,</span> <span class="n">QHeaderView</span><span class="o">.</span><span class="n">ResizeToContents</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">curve_delegates_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set column delegates for the Traces table to display widgets.&quot;&quot;&quot;</span>
@@ -1219,8 +1221,7 @@ axis_name : str
 
           <details class="quote">
             <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">114</span>
-<span class="normal">115</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
@@ -1231,7 +1232,8 @@ axis_name : str
 <span class="normal">123</span>
 <span class="normal">124</span>
 <span class="normal">125</span>
-<span class="normal">126</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+<span class="normal">126</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">axis_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">axis_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Slot for connecting a curve to a specified axis.</span>
 
@@ -1267,8 +1269,7 @@ axis_name : str
 
           <details class="quote">
             <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">32</span>
-<span class="normal">33</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">33</span>
 <span class="normal">34</span>
 <span class="normal">35</span>
 <span class="normal">36</span>
@@ -1323,7 +1324,8 @@ axis_name : str
 <span class="normal">85</span>
 <span class="normal">86</span>
 <span class="normal">87</span>
-<span class="normal">88</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">curve_delegates_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">88</span>
+<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">curve_delegates_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set column delegates for the Traces table to display widgets.&quot;&quot;&quot;</span>
     <span class="n">axis_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">getColumnIndex</span><span class="p">(</span><span class="s2">&quot;Y-Axis Name&quot;</span><span class="p">)</span>
     <span class="n">axis_combo_del</span> <span class="o">=</span> <span class="n">ComboBoxDelegate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_table_model</span><span class="p">)</span>
@@ -1408,8 +1410,7 @@ not open a context menu.</p>
 
           <details class="quote">
             <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 90</span>
-<span class="normal"> 91</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
 <span class="normal"> 92</span>
 <span class="normal"> 93</span>
 <span class="normal"> 94</span>
@@ -1430,7 +1431,8 @@ not open a context menu.</p>
 <span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
-<span class="normal">112</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QPoint</span><span class="p">)</span>
+<span class="normal">112</span>
+<span class="normal">113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QPoint</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">custom_context_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="n">QPoint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Open a custom context menu for the Traces table where the</span>
 <span class="sd">    user right-clicks. If the ColorButton is right-clicked, then do</span>
@@ -1491,7 +1493,8 @@ not open a context menu.</p>
 <span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">traces_table_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">30</span>
+<span class="normal">31</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">traces_table_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the Traces table model and section.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span> <span class="o">=</span> <span class="n">ArchiverCurveModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">archiver_plot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_table_model</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
@@ -1506,7 +1509,8 @@ not open a context menu.</p>
     <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="n">QHeaderView</span><span class="o">.</span><span class="n">Stretch</span><span class="p">)</span>
     <span class="n">channel_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">getColumnIndex</span><span class="p">(</span><span class="s2">&quot;Channel&quot;</span><span class="p">)</span>
     <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="n">channel_col</span><span class="p">,</span> <span class="n">QHeaderView</span><span class="o">.</span><span class="n">ResizeToContents</span><span class="p">)</span>
-    <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">getColumnIndex</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">QHeaderView</span><span class="o">.</span><span class="n">ResizeToContents</span><span class="p">)</span>
+    <span class="n">del_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">getColumnIndex</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="n">del_col</span><span class="p">,</span> <span class="n">QHeaderView</span><span class="o">.</span><span class="n">ResizeToContents</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
