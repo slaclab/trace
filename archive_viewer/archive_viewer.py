@@ -32,9 +32,6 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin):
         plot_viewbox = self.ui.archiver_plot.plotItem.vb
         plot_viewbox.sigRangeChangedManually.connect(self.ui.cursor_scale_btn.click)
 
-        plot_x_axis = self.ui.archiver_plot.getXAxis()
-        plot_x_axis.sigMouseInteraction.connect(self.ui.cursor_scale_btn.click)
-
         app = QApplication.instance()
         app.setStyle(CenterCheckStyle())
 
