@@ -27,7 +27,8 @@ class TracesTableMixin:
         hdr.setSectionResizeMode(QHeaderView.Stretch)
         channel_col = self.curves_model.getColumnIndex("Channel")
         hdr.setSectionResizeMode(channel_col, QHeaderView.ResizeToContents)
-        hdr.setSectionResizeMode(self.curves_model.getColumnIndex(""), QHeaderView.ResizeToContents)
+        del_col = self.curves_model.getColumnIndex("")
+        hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
 
     def curve_delegates_init(self) -> None:
         """Set column delegates for the Traces table to display widgets."""

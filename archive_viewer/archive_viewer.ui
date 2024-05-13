@@ -293,13 +293,6 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QPushButton" name="del_axis_row_btn">
-            <property name="text">
-             <string>Delete Axis</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
        </layout>

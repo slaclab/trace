@@ -278,7 +278,7 @@ class DeleteRowDelegate(QStyledItemDelegate):
             editor = QPushButton(self.parent())
             icon = editor.style().standardIcon(QStyle.SP_DialogCancelButton)
             editor.setIcon(icon)
-            editor.setToolTip("Delete Trace")
+            editor.setToolTip("Delete Row")
             editor.clicked.connect(lambda: self.commitData.emit(editor))
 
             self.editor_list.append(editor)
