@@ -8,7 +8,7 @@ from config import logger
 from widgets import (ArchiveSearchWidget, ColorButtonDelegate, ComboBoxDelegate,
                      DeleteRowDelegate, FloatDelegate)
 from table_models import ArchiverCurveModel
-
+import re
 
 class TracesTableMixin:
     """Mixins class for the Traces tab of the settings section."""
@@ -241,9 +241,17 @@ class FormulaDialog(QDialog):
         # Retrieve the formula and PV name and perform desired actions
         # TODO: Evaluate the formula before accepting, prompt user if invalid(?)
         formula = self.field.text()
-        pv_name = self.pv_name_input.text()
-
+        # pv_name = self.pv_name_input.text()
+        pvs = re.findall("{(.+)}", formula)
+        curveModel = self.parent().parent().curves_model
+        for pv in pvs:
+            if pv not in curveModel._row_names:
+                print("Error, " + pv + " is an invalid variable name.")
+            else:
+                index = curveModel._row_names.index(pv)
+                print(curveModel._plot._curves[index].address)
+            
         print("Formula:", formula)
-        print("PV Name:", pv_name)
+        # print("PV Name:", pv_name)
 
         self.accept()
