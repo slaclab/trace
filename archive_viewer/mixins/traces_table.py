@@ -244,14 +244,20 @@ class FormulaDialog(QDialog):
         # pv_name = self.pv_name_input.text()
         pvs = re.findall("{(.+)}", formula)
         curveModel = self.parent().parent().curves_model
+        pvdict = dict()
         for pv in pvs:
             if pv not in curveModel._row_names:
                 print("Error, " + pv + " is an invalid variable name.")
             else:
                 index = curveModel._row_names.index(pv)
-                print(curveModel._plot._curves[index].address)
-            
-        print("Formula:", formula)
+                pvdict[pv] = curveModel._plot._curves[index]
+        # print("row" + str(self.parent().selected_index.row()))
+        # print(curveModel._row_names)
+        # print(curveModel._plot._curves)
+        # for row in curveModel._plot._curves:
+        #     print(row.address)
+        # print("Formula:", formula)
         # print("PV Name:", pv_name)
-
+        print("accepted formula")
+        curveModel.replaceToFormula(index = self.parent().selected_index, formula = formula, pvs = pvdict)
         self.accept()

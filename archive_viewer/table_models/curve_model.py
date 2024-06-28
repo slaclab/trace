@@ -106,6 +106,23 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self.beginInsertRows(QModelIndex(), len(self._plot._curves), len(self._plot._curves))
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
+    def replaceToFormula(self, index: QModelIndex, formula:str, pvs: dict, color: Optional[QColor] = None) -> None:
+        """Add a new curve item to plot and the data model.
+
+        Parameters
+        ----------
+        address : str, optional
+            The PV address that the curve should gather data from.
+        name : str, optional
+            The display name for the curve.
+        color : Optional[QColor], optional
+            The curve's color on the plot.
+        """
+        y_axis = self._axis_model.get_axis(-1)
+        if not color:
+            color = ColorButton.index_color(self.rowCount())
+        #          KLYS:LI22:31:KVAC
+        self._plot._curves[index.row()] = self._plot.addFormulaChannel(formula=formula, pvs=pvs,color=color, useArchiveData=True, yAxisName=y_axis.name)
 
     def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the curve at the given table index.
@@ -119,7 +136,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             return False
         del self._row_names[index.row()]
         ret = super(ArchiverCurveModel, self).removeAtIndex(index)
-
         if not self._plot._curves:
             self.append()
         return ret
