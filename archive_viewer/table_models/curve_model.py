@@ -120,9 +120,11 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         """
         y_axis = self._axis_model.get_axis(-1)
         if not color:
-            color = ColorButton.index_color(self.rowCount())
+            color = ColorButton.index_color(index.row())
         #          KLYS:LI22:31:KVAC
         self._plot._curves[index.row()] = self._plot.addFormulaChannel(formula=formula, pvs=pvs,color=color, useArchiveData=True, yAxisName=y_axis.name)
+        if index.row() == self.rowCount() - 1:
+            self.append()
 
     def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the curve at the given table index.
