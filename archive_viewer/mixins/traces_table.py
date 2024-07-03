@@ -9,6 +9,7 @@ from widgets import (ArchiveSearchWidget, ColorButtonDelegate, ComboBoxDelegate,
                      DeleteRowDelegate, FloatDelegate)
 from table_models import ArchiverCurveModel
 import re
+import numpy as np
 
 class TracesTableMixin:
     """Mixins class for the Traces tab of the settings section."""
@@ -242,7 +243,7 @@ class FormulaDialog(QDialog):
         # TODO: Evaluate the formula before accepting, prompt user if invalid(?)
         formula = self.field.text()
         # pv_name = self.pv_name_input.text()
-        pvs = re.findall("{(.+)}", formula)
+        pvs = re.findall("{(.+?)}", formula)
         curveModel = self.parent().parent().curves_model
         pvdict = dict()
         for pv in pvs:

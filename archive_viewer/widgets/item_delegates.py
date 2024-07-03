@@ -141,6 +141,11 @@ class ComboBoxDelegate(QStyledItemDelegate):
             data = curr_text
         model.setData(index, data, Qt.EditRole)
 
+    def setEditorData(self, editor: QComboBox, index: QModelIndex) -> None:
+        """Set the editor's data to match the table model's data."""
+        value = index.data(Qt.DisplayRole)
+        editor.setCurrentText(value)
+
     def eventFilter(self, object: QObject, event: QEvent) -> bool:
         """Disable scrolling for widgets that are not the focus."""
         if event.type() == QEvent.Wheel and not object.hasFocus():
