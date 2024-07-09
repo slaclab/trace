@@ -184,11 +184,11 @@ class FormulaDialog(QDialog):
 
         # Create the layout for the dialog
         layout = QVBoxLayout(self)
-
         # Create the QLineEdit for formula input
         self.field = QLineEdit(self)
         layout.addWidget(self.field)
-
+        self.index = self.parent().selected_index
+        self.curveModel = self.parent().parent().curves_model
         # Define the list of calculator buttons
         buttons = ["7", "8", "9", "+",
                    "4", "5", "6", "-",
@@ -225,7 +225,16 @@ class FormulaDialog(QDialog):
         ok_button = QPushButton("OK", self)
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
-
+    def exec_(self):
+        self.index = self.parent().selected_index
+        if self.index: 
+            index = self.curveModel.index(self.index.row(), 0)
+            if index.data():
+                self.field.setText(str(index.data()).strip("f://"))
+            else:
+                self.field.setText("")        
+        super().exec_()
+        
     def evaluate_formula(self, **kwargs: Dict[str, Any]) -> None:
         # Evaluate the formula expression and update the formula input field
         # TODO: Check if PVs used are in Table Model
@@ -241,24 +250,11 @@ class FormulaDialog(QDialog):
     def accept_formula(self, **kwargs: Dict[str, Any]) -> None:
         # Retrieve the formula and PV name and perform desired actions
         # TODO: Evaluate the formula before accepting, prompt user if invalid(?)
-        formula = self.field.text()
+        formula = "f://" + self.field.text()
+        parent = self.parent()
+        parentparent = parent.parent()
         # pv_name = self.pv_name_input.text()
-        pvs = re.findall("{(.+?)}", formula)
-        curveModel = self.parent().parent().curves_model
-        pvdict = dict()
-        for pv in pvs:
-            if pv not in curveModel._row_names:
-                print("Error, " + pv + " is an invalid variable name.")
-            else:
-                index = curveModel._row_names.index(pv)
-                pvdict[pv] = curveModel._plot._curves[index]
-        # print("row" + str(self.parent().selected_index.row()))
-        # print(curveModel._row_names)
-        # print(curveModel._plot._curves)
-        # for row in curveModel._plot._curves:
-        #     print(row.address)
-        # print("Formula:", formula)
-        # print("PV Name:", pv_name)
-        print("accepted formula")
-        curveModel.replaceToFormula(index = self.parent().selected_index, formula = formula, pvs = pvdict)
-        self.accept()
+        passed = self.curveModel.replaceToFormula(index = self.curveModel.index(self.parent().selected_index.row(), 0), formula = formula)
+        if passed:
+            self.field.setText("")
+            self.accept()

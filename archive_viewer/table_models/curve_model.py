@@ -1,9 +1,11 @@
 from typing import (Any, Optional)
 from qtpy.QtCore import (QObject, QModelIndex, Qt)
 from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
-from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
+from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem, FormulaCurveItem
 from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
 from qtpy.QtGui import QColor
+from functools import partial
+import re
 from widgets import ColorButton
 from table_models import ArchiverAxisModel
 
@@ -62,16 +64,21 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         """
         ret_code = False
         if column_name == "Channel":
-            if isinstance(curve,ArchivePlotCurveItem):
-                if value == curve.address:
-                    return True
-                [ch.disconnect() for ch in curve.channels() if ch]
-                curve.address = str(value)
-                [ch.connect() for ch in curve.channels() if ch]
+            if value.startswith("f://"):
+                index = self.index(self._plot._curves.index(curve),0)
+                replaced = self.replaceToFormula(index = index, formula = value)
+                return replaced
             else:
-                if value == curve.formula:
-                    return True
-                curve.formula = str(value)
+                if isinstance(curve,ArchivePlotCurveItem):
+                    if value == curve.address:
+                        return True
+                    [ch.disconnect() for ch in curve.channels() if ch]
+                    curve.address = str(value)
+                    [ch.connect() for ch in curve.channels() if ch]
+                    y_axis = self._axis_model.get_axis(-1)
+                    self.plot.linkDataToAxis(curve, y_axis.name)
+                else:
+                    self.replaceToArchivePlot(curve)
             if not curve.name():
                 curve.setData(name=str(value))
 
@@ -91,7 +98,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             ret_code = True
         else:
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
-
+        
         return ret_code
 
     def append(self, address: Optional[str] = None, name: Optional[str] = None, color: Optional[QColor] = None) -> None:
@@ -106,7 +113,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         color : Optional[QColor], optional
             The curve's color on the plot.
         """
-        if self.rowCount() ==0 :
+        if self.rowCount() == 0:
             self._axis_model.append()        
         y_axis = self._axis_model.get_axis(-1)
         if not color:
@@ -116,7 +123,9 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self.beginInsertRows(QModelIndex(), len(self._plot._curves), len(self._plot._curves))
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
-    def replaceToFormula(self, index: QModelIndex, formula:str, pvs: dict, color: Optional[QColor] = None) -> None:
+    def replaceToArchivePlot(curve: BasePlotCurveItem):
+        print('moo')
+    def replaceToFormula(self, index: QModelIndex, formula:str, color: Optional[QColor] = None) -> bool:
         """Add a new curve item to plot and the data model.
 
         Parameters
@@ -128,15 +137,53 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         color : Optional[QColor], optional
             The curve's color on the plot.
         """
-        if index.row() == self.rowCount() - 1:
-            self._axis_model.append()
-        y_axis = self._axis_model.get_axis(-1)
+        
+        pvs = re.findall("{(.+?)}", formula)
+        pvdict = dict()
+        rowName = self._row_names[index.row()]
+        for pv in pvs:
+            if pv not in self._row_names:
+                print("Error, " + pv + " is an invalid variable name.")
+                return False
+            elif pv == rowName:
+                print("Error, formula is recursive")
+                return False
+            else:
+                rindex = self._row_names.index(pv)
+                pvdict[pv] = self._plot._curves[rindex]
+        print("accepted formula")
+        curve = self._plot._curves[index.row()] 
         if not color:
             color = ColorButton.index_color(index.row())
         #          KLYS:LI22:31:KVAC
-        self._plot._curves[index.row()] = self._plot.addFormulaChannel(formula=formula, pvs=pvs,color=color, useArchiveData=True, yAxisName=y_axis.name)
-        if index.row() == self.rowCount() - 1:
+        if isinstance(curve, ArchivePlotCurveItem):
+            if index.row() == self.rowCount() - 1:
+                self._axis_model.append()
+                self.append()
+            y_axis = self._axis_model.get_axis(index.row())
+            self._plot._curves[index.row()] = self._plot.addFormulaChannel(formula=formula, pvs=pvdict,color=color, useArchiveData=True, yAxisName=y_axis.name)
+            self._plot._curves[index.row()].formula_invalid_signal.connect(partial(self.invalidFormula, header = self._row_names[index.row()]))
+        else:
+            curve.formula = formula
+            curve.pvs = pvdict
+        return True
+    
+    def invalidFormula(self, header):
+        rindex = self._row_names.index(header)
+        index = self.index(rindex,0)
+        if not index.isValid() or index.row() == (self.rowCount() - 1):
+            return False
+        del self._row_names[index.row()]
+        curve = self._plot._curves[rindex]
+        self.beginRemoveRows(QModelIndex(), index.row(), index.row())
+        if curve.y_axis_name in self._plot.plotItem.axes:
+            self.plot.plotItem.unlinkDataFromAxis(curve.y_axis_name)
+        self.plot.removeItem(curve)
+        self.plot._curves.remove(curve)
+        self.endRemoveRows()
+        if not self._plot._curves:
             self.append()
+
     def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the curve at the given table index.
 
@@ -145,12 +192,18 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         index : QModelIndex
             An index in the row to be removed.
         """
+        if isinstance(self._plot._curves[index.row()], FormulaCurveItem):
+            self.invalidFormula(self._row_names[index.row()])
+            return
         if not index.isValid() or index.row() == (self.rowCount() - 1):
             return False
         del self._row_names[index.row()]
         ret = super(ArchiverCurveModel, self).removeAtIndex(index)
         if not self._plot._curves:
             self.append()
+        self._plot.archive_data_received()
+        self._plot.set_needs_redraw()
+        self._plot.redrawPlot()
         return ret
 
     def headerData(self, section, orientation, role=Qt.DisplayRole) -> Any:
