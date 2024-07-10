@@ -5,10 +5,10 @@ from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
 from pydm.widgets.baseplot import BasePlotCurveItem
 from pydm.widgets.baseplot_curve_editor import PlotStyleColumnDelegate
 from config import logger
+from pydm.widgets.archiver_time_plot import FormulaCurveItem
 from widgets import (ArchiveSearchWidget, ColorButtonDelegate, ComboBoxDelegate,
                      DeleteRowDelegate, FloatDelegate)
 from table_models import ArchiverCurveModel
-import re
 import numpy as np
 
 class TracesTableMixin:
@@ -190,18 +190,18 @@ class FormulaDialog(QDialog):
         self.index = self.parent().selected_index
         self.curveModel = self.parent().parent().curves_model
         # Define the list of calculator buttons
-        buttons = ["7", "8", "9", "+",
-                   "4", "5", "6", "-",
-                   "1", "2", "3", "*",
-                   "0", "(", ")", "/",
-                   ".", "PV", "Clear", "="]
+        buttons = ["7", "8", "9", "+", "log()",
+                   "4", "5", "6", "-", "sqrt()",
+                   "1", "2", "3", "*", "^2",
+                   "0", "(", ")", "/", "^",
+                   ".", "PV", "Clear", "=", ""]
 
         # Create the calculator buttons and connect them to the input field
         grid_layout = QGridLayout()
         for i, button_text in enumerate(buttons):
             button = QPushButton(button_text, self)
-            row = i // 4
-            col = i % 4
+            row = i // 5
+            col = i % 5
             grid_layout.addWidget(button, row, col)
 
             # Connect the button clicked signal to the appropriate action
@@ -229,7 +229,8 @@ class FormulaDialog(QDialog):
         self.index = self.parent().selected_index
         if self.index: 
             index = self.curveModel.index(self.index.row(), 0)
-            if index.data():
+            curve = self.curveModel._plot._curves[self.index.row()]
+            if index.data() and isinstance(curve, FormulaCurveItem):
                 self.field.setText(str(index.data()).strip("f://"))
             else:
                 self.field.setText("")        
