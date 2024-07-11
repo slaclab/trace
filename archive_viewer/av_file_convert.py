@@ -1,6 +1,7 @@
 import json
 import logging
 import xml.etree.ElementTree as ET
+from re import compile
 from os import (path, getenv)
 from typing import (Dict, Union)
 from pathlib import Path
@@ -24,6 +25,11 @@ else:
 
 
 class ArchiveViewerFileConverter():
+    # Java date time conversion regex
+    full_java_absolute_re = compile(r"^[01]\d/[0-3]\d/\d{4}\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
+    java_date_re = compile(r"^[01]\d/[0-3]\d/\d{4}")
+    time_re = compile(r"(?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?")
+
     def __init__(self, input_file: Union[str, Path] = "", output_file: Union[str, Path] = "") -> None:
         self.input_file = input_file
         self.output_file = output_file
@@ -146,7 +152,13 @@ class ArchiveViewerFileConverter():
         converted_data['plot'] = {'title': data_in['plot_title'],
                                   'legend': legend_dict}
 
-        converted_data['time_axis'] = data_in['time_axis'][0]
+        # Convert date formats from MM/DD/YYYY --> YYYY-MM-DD
+        converted_data['time_axis'] = {}
+        for key, val in data_in['time_axis'][0].items():
+            if key in ['start', 'end']:
+                val = self.reformat_date(val)
+            converted_data['time_axis'][key] = val
+
         converted_data['y-axes'] = []
         for axis_in in data_in['range_axis']:
             ax_dict = {'name': axis_in['name'],
@@ -176,6 +188,23 @@ class ArchiveViewerFileConverter():
 
         self.stored_data = converted_data
         return self.stored_data
+
+    @classmethod
+    def reformat_date(cls, input_str: str) -> str:
+        """Convert a time string from the format 'MM/DD/YYYY' --> 'YYYY-MM-DD'
+        and retain time if included
+        """
+        if not cls.full_java_absolute_re.fullmatch(input_str):
+            return input_str
+
+        date = cls.java_date_re.search(input_str).group()
+        m, d, y = date.split('/')
+        formatted_date = f"{y}-{m}-{d}"
+
+        time_match = cls.time_re.search(input_str)
+        if time_match:
+            formatted_date += " " + time_match.group()
+        return formatted_date
 
     @staticmethod
     def xml_to_dict(xml: ET.ElementTree) -> Dict:
