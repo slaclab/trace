@@ -12,7 +12,6 @@ from av_file_convert import ArchiveViewerFileConverter
 class FileIOMixin:
     def file_io_init(self):
         self.converter = ArchiveViewerFileConverter()
-        self.parser = IOTimeParser()
 
         self.io_path = save_file_dir
 
@@ -73,9 +72,9 @@ class FileIOMixin:
         try:
             start_str = file_data['time_axis']['start']
             end_str = file_data['time_axis']['end']
-            start_dt, end_dt = self.parser.parse_times(start_str, end_str)
-            logger.warning(f"Starting time: {start_dt}")
-            logger.warning(f"Ending time: {end_dt}")
+            start_dt, end_dt = IOTimeParser.parse_times(start_str, end_str)
+            logger.debug(f"Starting time: {start_dt}")
+            logger.debug(f"Ending time: {end_dt}")
         except ValueError as e:
             logger.error(e)
             self.import_save_file()
@@ -96,47 +95,31 @@ class FileIOMixin:
 
 
 class IOTimeParser:
-    def __init__(self):
-        self.full_relative_re = compile(r"^([+-]?\d+[yMwdHms] ?)*\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
-        self.full_absolute_re = compile(r"^\d{4}-[01]\d-[0-3]\d\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
+    full_relative_re = compile(r"^([+-]?\d+[yMwdHms] ?)*\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
+    full_absolute_re = compile(r"^\d{4}-[01]\d-[0-3]\d\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
 
-        self.relative_re = compile(r"(?<!\S)(?:[+-]?\d+[yMwdHms])")
-        self.date_re = compile(r"^\d{4}-[01]\d-[0-3]\d")
-        self.time_re = compile(r"(?:[01]\d|2[0-3])(?::[0-5\\d)(?::[0-5]\d(?:.\d*)?)?")
+    relative_re = compile(r"(?<!\S)(?:[+-]?\d+[yMwdHms])")
+    date_re = compile(r"^\d{4}-[01]\d-[0-3]\d")
+    time_re = compile(r"(?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?")
 
-    def is_relative(self, time: str) -> bool:
+    @classmethod
+    def is_relative(cls, input_str: str) -> bool:
         """Check if the given string is a relative time (e.g. '+1d',
         '-8h', '-1w 08:00')
-
-        Parameters
-        ----------
-        time : str
-            Time string to check
-
-        Returns
-        -------
-        bool
         """
-        found = self.full_relative_re.fullmatch(time)
+        found = cls.full_relative_re.fullmatch(input_str)
         return bool(found)
 
-    def is_absolute(self, time: str) -> bool:
+    @classmethod
+    def is_absolute(cls, input_str: str) -> bool:
         """Check if the given string is an absolute time (e.g.
         '2024-07-16 08:00')
-
-        Parameters
-        ----------
-        time : str
-            Time string to check
-
-        Returns
-        -------
-        bool
         """
-        found = self.full_absolute_re.fullmatch(time)
+        found = cls.full_absolute_re.fullmatch(input_str)
         return bool(found)
 
-    def relative_to_delta(self, time: str) -> timedelta:
+    @classmethod
+    def relative_to_delta(cls, time: str) -> timedelta:
         """Convert the given string containing a relative time into a
         datetime.timedelta
 
@@ -152,7 +135,7 @@ class IOTimeParser:
         """
         td = timedelta()
         negative = True
-        for token in self.relative_re.findall(time):
+        for token in cls.relative_re.findall(time):
             logger.debug(f"Processing relative time token: {token}")
             if token[0] in '+-':
                 negative = token[0] == '-'
@@ -178,7 +161,8 @@ class IOTimeParser:
         logger.debug(f"Relative time '{time}' as delta: {td}")
         return td
 
-    def set_time_on_datetime(self, dt: datetime, time_str: str) -> datetime:
+    @classmethod
+    def set_time_on_datetime(cls, dt: datetime, time_str: str) -> datetime:
         """Set an absolute time on a datetime object
 
         Parameters
@@ -193,7 +177,7 @@ class IOTimeParser:
         datetime
             The datetime object with the same date and the new time
         """
-        time = self.time_re.search(time_str).group()
+        time = cls.time_re.search(time_str).group()
         if not time:
             return dt
 
@@ -204,7 +188,8 @@ class IOTimeParser:
 
         return dt
 
-    def parse_times(self, start_str: str, end_str: str) -> Tuple[datetime, datetime]:
+    @classmethod
+    def parse_times(cls, start_str: str, end_str: str) -> Tuple[datetime, datetime]:
         """Convert 2 strings containing a start and end date & time, return the
         values' datetime objects. The strings can be formatted as either absolute
         times or relative times. Both are needed as relative times may be relative
@@ -235,31 +220,31 @@ class IOTimeParser:
         # if the basetime is the start time, end time, or 'now'
         if end_str == "now":
             end_dt = basetime
-        elif self.is_relative(end_str):
-            end_delta = self.relative_to_delta(end_str)
+        elif cls.is_relative(end_str):
+            end_delta = cls.relative_to_delta(end_str)
 
             # end_delta >= 0 --> the basetime is start time, so are processed after the start time
             # end_delta <  0 --> the basetime is 'now'
             if end_delta < timedelta():
                 end_dt = basetime + end_delta
-                end_dt = self.set_time_on_datetime(end_dt, end_str)
-        elif self.is_absolute(end_str):
+                end_dt = cls.set_time_on_datetime(end_dt, end_str)
+        elif cls.is_absolute(end_str):
             end_dt = datetime.fromisoformat(end_str)
             basetime = end_dt
         else:
             raise ValueError("Time Axis end value is in an unexpected format.")
 
         # Process the start time string second, it may be used as the basetime
-        if self.is_relative(start_str):
-            start_delta = self.relative_to_delta(start_str)
+        if cls.is_relative(start_str):
+            start_delta = cls.relative_to_delta(start_str)
 
             # start_delta >= 0 --> raise ValueError; this isn't allowed
             if start_delta < timedelta():
                 start_dt = basetime + start_delta
-                start_dt = self.set_time_on_datetime(start_dt, start_str)
+                start_dt = cls.set_time_on_datetime(start_dt, start_str)
             else:
                 raise ValueError("Time Axis start value cannot be a relative time and be positive.")
-        elif self.is_absolute(start_str):
+        elif cls.is_absolute(start_str):
             start_dt = datetime.fromisoformat(start_str)
         else:
             raise ValueError("Time Axis start value is in an unexpected format.")
@@ -268,6 +253,6 @@ class IOTimeParser:
         if end_delta and end_delta >= timedelta():
             basetime = start_dt
             end_dt = end_delta + basetime
-            end_dt = self.set_time_on_datetime(end_dt, end_str)
+            end_dt = cls.set_time_on_datetime(end_dt, end_str)
 
         return (start_dt, end_dt)
