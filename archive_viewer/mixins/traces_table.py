@@ -189,13 +189,12 @@ class FormulaDialog(QDialog):
         # Create the QLineEdit for formula input
         self.field = QLineEdit(self)
         self.curveModel = self.parent().parent().curves_model
-        print(self.curveModel)
-        self.pv_list = QTableView()
+        self.pv_list = QTableView(self)
         self.pv_list.setModel(self.curveModel)
         self.pv_list.setEditTriggers(QAbstractItemView.EditTriggers(0))
         self.pv_list.setMaximumWidth(1000)
-        print(len(self.curveModel._row_names))
-        
+        header = self.pv_list.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
         for i in range(1, self.curveModel.columnCount() - 1):
             self.pv_list.setColumnHidden(i, True)
         insertButton = InsertPVDelegate(self.pv_list, self.curveModel)
@@ -235,11 +234,7 @@ class FormulaDialog(QDialog):
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        print("hello")
-        print(e.key())
-        print(Qt.Key_Enter)
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
-            print("world")
             self.accept_formula()
         return super().keyPressEvent(e)
     def exec_(self):

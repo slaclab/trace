@@ -4,7 +4,7 @@ from qtpy.QtCore import (Qt, QObject, QEvent, QPoint, Slot, Signal, QRegExp,
                          QAbstractTableModel, QModelIndex, QAbstractItemModel)
 from qtpy.QtWidgets import (QStyledItemDelegate, QSlider, QComboBox, QStyle,
                             QPushButton, QTableView, QStyleOptionViewItem,
-                            QWidget, QDoubleSpinBox, QLineEdit, QDialog)
+                            QWidget, QDoubleSpinBox, QLineEdit)
 from config import logger
 from widgets import (ColorButton, CenterCheckbox)
 
@@ -326,7 +326,8 @@ class InsertPVDelegate(QStyledItemDelegate):
             editor = QPushButton(self.parent())
             editor.setText("Insert")
             editor.setToolTip("Insert PV")
-            editor.clicked.connect(lambda: self.button_clicked.emit("{"+ self.model._row_names[index.row()]+"}"))
+            editor.setFocusPolicy(Qt.NoFocus)
+            editor.pressed.connect(lambda: self.button_clicked.emit("{"+ self.model._row_names[index.row()]+"}"))
             self.editor_list.append(editor)
             self.parent().setIndexWidget(index, editor)
 
