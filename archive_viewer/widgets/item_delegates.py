@@ -320,12 +320,13 @@ class InsertPVDelegate(QStyledItemDelegate):
         self.model = model
 
     def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex) -> None:
-        """Initialize a QPushButton to delete the table's row."""
+        """Initialize a QPushButton to insert the table's header."""
         logger.debug("called method: InsertPVDelegate.initStyleOption")
         if index.row() >= len(self.editor_list):
             editor = QPushButton(self.parent())
             editor.setText("Insert")
             editor.setToolTip("Insert PV")
+            #We don't want to allow people to select the button, only click it
             editor.setFocusPolicy(Qt.NoFocus)
             editor.pressed.connect(lambda: self.button_clicked.emit("{"+ self.model._row_names[index.row()]+"}"))
             self.editor_list.append(editor)

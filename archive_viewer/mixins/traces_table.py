@@ -180,6 +180,8 @@ class PVContextMenu(QMenu):
 
 
 class FormulaDialog(QDialog):
+    """Formula Dialog - when a user right clicks on a row in the list of curves, they have the option to input a formula
+    They could opt to type it instead, but this opens a box that is a nicer UI for inputting a formula."""
     def __init__(self, parent: QObject) -> None:
         super().__init__(parent)
         self.setWindowTitle("Formula Input")
@@ -190,12 +192,14 @@ class FormulaDialog(QDialog):
         self.field = QLineEdit(self)
         self.curveModel = self.parent().parent().curves_model
         self.pv_list = QTableView(self)
+        #We're going to copy the list of PVs from the curve model. We're also not going to allow the user to make edits to the list of PVs
         self.pv_list.setModel(self.curveModel)
         self.pv_list.setEditTriggers(QAbstractItemView.EditTriggers(0))
         self.pv_list.setMaximumWidth(1000)
         header = self.pv_list.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         for i in range(1, self.curveModel.columnCount() - 1):
+            #Hide all columns that arent useful, but keep one left over to add a button to
             self.pv_list.setColumnHidden(i, True)
         insertButton = InsertPVDelegate(self.pv_list, self.curveModel)
         insertButton.button_clicked.connect(self.field.insert)
@@ -205,7 +209,7 @@ class FormulaDialog(QDialog):
         
         self.index = self.parent().selected_index
         
-        # Define the list of calculator buttons
+        # Define the list of calculator buttons. It's a bunch of preset buttons, but users can type other functions under math.
         buttons = ["7",       "8",     "9",      "+",     "(",      ")",
                    "4",       "5",     "6",      "-",    "^2", "sqrt()",
                    "1",       "2",     "3",      "*",   "^-1",  "ln()",
@@ -221,8 +225,10 @@ class FormulaDialog(QDialog):
             col = i % 6
             grid_layout.addWidget(button, row, col)
             # Connect the button clicked signal to the appropriate action
+            #PV currently does nothing, this is a remnant from when we would have the pv_list open in a new window
             if button_text == "PV":
-                button.clicked.connect(lambda _: self.pv_list.exec_())
+                #TODO: Either give a function for this button or replace it
+                pass
             elif button_text == "Clear":
                 button.clicked.connect(lambda _: self.field.clear())
             else:
@@ -234,10 +240,13 @@ class FormulaDialog(QDialog):
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
     def keyPressEvent(self, e: QKeyEvent) -> None:
+        #Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.accept_formula()
         return super().keyPressEvent(e)
     def exec_(self):
+        #When the formula dialog is opened (every time) we need to update it with the latest information on the curve model and
+        #also populate the text box with the pre-existing formula (if it already was there)
         self.index = self.parent().selected_index
         self.pv_list.setRowHidden(len(self.curveModel._row_names) - 1, True)
         for i in range(self.curveModel.rowCount() - 1):
@@ -252,6 +261,7 @@ class FormulaDialog(QDialog):
         super().exec_()
         
     def evaluate_formula(self, **kwargs: Dict[str, Any]) -> None:
+        #This function isn't used. Used to be there when an '=' existed in the calculator. 
         # Evaluate the formula expression and update the formula input field
         # TODO: Check if PVs used are in Table Model
         #   if yes, replace with row header; if no, add to TableModel and replace with row header
@@ -265,7 +275,7 @@ class FormulaDialog(QDialog):
 
     def accept_formula(self, **kwargs: Dict[str, Any]) -> None:
         # Retrieve the formula and PV name and perform desired actions
-        # TODO: Evaluate the formula before accepting, prompt user if invalid(?)
+        # We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window
         formula = "f://" + self.field.text()
         # pv_name = self.pv_name_input.text()
         passed = self.curveModel.replaceToFormula(index = self.curveModel.index(self.parent().selected_index.row(), 0), formula = formula)
