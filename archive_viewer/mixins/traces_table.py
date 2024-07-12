@@ -1,15 +1,17 @@
 from typing import (Dict, Any)
-from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject)
+from PySide2.QtGui import QKeyEvent
+from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
-                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton)
+                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView, QTableWidget)
 from pydm.widgets.baseplot import BasePlotCurveItem
 from pydm.widgets.baseplot_curve_editor import PlotStyleColumnDelegate
 from config import logger
 from pydm.widgets.archiver_time_plot import FormulaCurveItem
 from widgets import (ArchiveSearchWidget, ColorButtonDelegate, ComboBoxDelegate,
-                     DeleteRowDelegate, FloatDelegate)
+                     DeleteRowDelegate, FloatDelegate, InsertPVDelegate)
 from table_models import ArchiverCurveModel
 import numpy as np
+
 
 class TracesTableMixin:
     """Mixins class for the Traces tab of the settings section."""
@@ -186,47 +188,65 @@ class FormulaDialog(QDialog):
         layout = QVBoxLayout(self)
         # Create the QLineEdit for formula input
         self.field = QLineEdit(self)
-        layout.addWidget(self.field)
-        self.index = self.parent().selected_index
         self.curveModel = self.parent().parent().curves_model
+        print(self.curveModel)
+        self.pv_list = QTableView()
+        self.pv_list.setModel(self.curveModel)
+        self.pv_list.setEditTriggers(QAbstractItemView.EditTriggers(0))
+        self.pv_list.setMaximumWidth(1000)
+        print(len(self.curveModel._row_names))
+        
+        for i in range(1, self.curveModel.columnCount() - 1):
+            self.pv_list.setColumnHidden(i, True)
+        insertButton = InsertPVDelegate(self.pv_list, self.curveModel)
+        insertButton.button_clicked.connect(self.field.insert)
+        self.pv_list.setItemDelegateForColumn(self.curveModel.columnCount() - 1, insertButton)
+        layout.addWidget(self.pv_list)
+        layout.addWidget(self.field)
+        
+        self.index = self.parent().selected_index
+        
         # Define the list of calculator buttons
-        buttons = ["7", "8", "9", "+", "log()",
-                   "4", "5", "6", "-", "sqrt()",
-                   "1", "2", "3", "*", "^2",
-                   "0", "(", ")", "/", "^",
-                   ".", "PV", "Clear", "=", ""]
+        buttons = ["7",       "8",     "9",      "+",     "(",      ")",
+                   "4",       "5",     "6",      "-",    "^2", "sqrt()",
+                   "1",       "2",     "3",      "*",   "^-1",  "ln()",
+                   "0",       "e",    "pi",      "/", "sin()", "asin()",
+                   ".",   "abs()", "min()",      "^", "cos()", "acos()",
+                   "PV",  "Clear", "max()", "mean()", "tan()", "atan()"]
 
         # Create the calculator buttons and connect them to the input field
         grid_layout = QGridLayout()
         for i, button_text in enumerate(buttons):
             button = QPushButton(button_text, self)
-            row = i // 5
-            col = i % 5
+            row = i // 6
+            col = i % 6
             grid_layout.addWidget(button, row, col)
-
             # Connect the button clicked signal to the appropriate action
             if button_text == "PV":
-                button.clicked.connect(lambda _: self.field.insert("PV"))
+                button.clicked.connect(lambda _: self.pv_list.exec_())
             elif button_text == "Clear":
                 button.clicked.connect(lambda _: self.field.clear())
-            elif button_text == "=":
-                button.clicked.connect(self.evaluate_formula)
             else:
                 button.clicked.connect(lambda _, text=button_text: self.field.insert(text))
-
         layout.addLayout(grid_layout)
-
-        # Add an input field for PV name
-        self.pv_name_input = QLineEdit(self)
-        self.pv_name_input.setPlaceholderText("Enter PV name")
-        layout.addWidget(self.pv_name_input)
 
         # Add an "OK" button to accept the formula and close the dialog
         ok_button = QPushButton("OK", self)
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
+    def keyPressEvent(self, e: QKeyEvent) -> None:
+        print("hello")
+        print(e.key())
+        print(Qt.Key_Enter)
+        if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
+            print("world")
+            self.accept_formula()
+        return super().keyPressEvent(e)
     def exec_(self):
         self.index = self.parent().selected_index
+        self.pv_list.setRowHidden(len(self.curveModel._row_names) - 1, True)
+        for i in range(self.curveModel.rowCount() - 1):
+            self.pv_list.setRowHidden(i, False)
         if self.index: 
             index = self.curveModel.index(self.index.row(), 0)
             curve = self.curveModel._plot._curves[self.index.row()]
@@ -252,8 +272,6 @@ class FormulaDialog(QDialog):
         # Retrieve the formula and PV name and perform desired actions
         # TODO: Evaluate the formula before accepting, prompt user if invalid(?)
         formula = "f://" + self.field.text()
-        parent = self.parent()
-        parentparent = parent.parent()
         # pv_name = self.pv_name_input.text()
         passed = self.curveModel.replaceToFormula(index = self.curveModel.index(self.parent().selected_index.row(), 0), formula = formula)
         if passed:
