@@ -39,6 +39,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="half_min_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>30s</string>
        </property>
@@ -52,6 +58,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="min_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>1m</string>
        </property>
@@ -65,6 +77,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="hour_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>1h</string>
        </property>
@@ -81,6 +99,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="week_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>1w</string>
        </property>
@@ -94,6 +118,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="month_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>1M</string>
        </property>
@@ -108,7 +138,7 @@
      <item>
       <widget class="QPushButton" name="cursor_scale_btn">
        <property name="text">
-        <string>Cursor</string>
+        <string>Mouse-Ctrl</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -119,19 +149,6 @@
        <attribute name="buttonGroup">
         <string notr="true">timespan_btns</string>
        </attribute>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="live_scale_btn">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Live</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
       </widget>
      </item>
     </layout>
