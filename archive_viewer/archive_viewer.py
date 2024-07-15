@@ -1,4 +1,5 @@
 from functools import partial
+from subprocess import run
 from qtpy.QtCore import Slot
 from qtpy.QtWidgets import (QAbstractButton, QApplication)
 from pydm import Display
@@ -11,9 +12,13 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
     def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
         super(ArchiveViewer, self).__init__(parent=parent, args=args,
                                             macros=macros, ui_filename=ui_filename)
+        app = QApplication.instance()
+        app.setStyle(CenterCheckStyle())
 
         self.ui.main_spltr.setCollapsible(0, False)
         self.ui.main_spltr.setStretchFactor(0, 1)
+
+        self.ui.ftr_ver_lbl.setText(self.git_version())
 
         self.axis_table_init()
         self.traces_table_init()
@@ -62,3 +67,13 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         timespan = self.button_spans[button]
 
         self.ui.archiver_plot.setAutoScroll(enable_scroll, timespan)
+
+    @staticmethod
+    def git_version():
+        """Get the current git tag for the project"""
+        project_directory = __file__.rsplit('/', 1)[0]
+        git_cmd = run(f"cd {project_directory} && git describe --tags",
+                      text=True,
+                      shell=True,
+                      capture_output=True)
+        return git_cmd.stdout.strip()
