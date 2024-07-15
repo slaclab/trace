@@ -1,4 +1,4 @@
-from typing import (Dict, Any)
+from typing import Dict, Any
 from PySide2.QtGui import QKeyEvent
 from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
@@ -7,8 +7,14 @@ from pydm.widgets.baseplot import BasePlotCurveItem
 from pydm.widgets.baseplot_curve_editor import PlotStyleColumnDelegate
 from config import logger
 from pydm.widgets.archiver_time_plot import FormulaCurveItem
-from widgets import (ArchiveSearchWidget, ColorButtonDelegate, ComboBoxDelegate,
-                     DeleteRowDelegate, FloatDelegate, InsertPVDelegate)
+from widgets import (
+    ArchiveSearchWidget,
+    ColorButtonDelegate,
+    ComboBoxDelegate,
+    DeleteRowDelegate,
+    FloatDelegate,
+    InsertPVDelegate
+)
 from table_models import ArchiverCurveModel
 import numpy as np
 
@@ -23,8 +29,7 @@ class TracesTableMixin:
         self.ui.traces_tbl.setModel(self.curves_model)
 
         self.menu = PVContextMenu(self)
-        self.ui.traces_tbl.customContextMenuRequested.connect(
-            self.custom_context_menu)
+        self.ui.traces_tbl.customContextMenuRequested.connect(self.custom_context_menu)
 
         hdr = self.ui.traces_tbl.horizontalHeader()
         hdr.setSectionResizeMode(QHeaderView.Stretch)
@@ -206,10 +211,11 @@ class FormulaDialog(QDialog):
         self.pv_list.setItemDelegateForColumn(self.curveModel.columnCount() - 1, insertButton)
         layout.addWidget(self.pv_list)
         layout.addWidget(self.field)
-        
+
         self.index = self.parent().selected_index
-        
-        # Define the list of calculator buttons. It's a bunch of preset buttons, but users can type other functions under math.
+
+        # Define the list of calculator buttons.
+        # It's a bunch of preset buttons, but users can type other functions under math.
         buttons = ["7",       "8",     "9",      "+",     "(",      ")",
                    "4",       "5",     "6",      "-",    "^2", "sqrt()",
                    "1",       "2",     "3",      "*",   "^-1",  "ln()",
@@ -225,9 +231,10 @@ class FormulaDialog(QDialog):
             col = i % 6
             grid_layout.addWidget(button, row, col)
             # Connect the button clicked signal to the appropriate action
-            #PV currently does nothing, this is a remnant from when we would have the pv_list open in a new window
+            # PV currently does nothing, this is a remnant
+            # From when we would have the pv_list open in a new window
             if button_text == "PV":
-                #TODO: Either give a function for this button or replace it
+                # TODO: Either give a function for this button or replace it
                 pass
             elif button_text == "Clear":
                 button.clicked.connect(lambda _: self.field.clear())
@@ -240,28 +247,29 @@ class FormulaDialog(QDialog):
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        #Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
+        # Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.accept_formula()
         return super().keyPressEvent(e)
     def exec_(self):
-        #When the formula dialog is opened (every time) we need to update it with the latest information on the curve model and
-        #also populate the text box with the pre-existing formula (if it already was there)
+        # When the formula dialog is opened (every time) we need to
+        # update it with the latest information on the curve model and
+        # also populate the text box with the pre-existing formula (if it already was there)
         self.index = self.parent().selected_index
         self.pv_list.setRowHidden(len(self.curveModel._row_names) - 1, True)
         for i in range(self.curveModel.rowCount() - 1):
             self.pv_list.setRowHidden(i, False)
-        if self.index: 
+        if self.index:
             index = self.curveModel.index(self.index.row(), 0)
             curve = self.curveModel._plot._curves[self.index.row()]
             if index.data() and isinstance(curve, FormulaCurveItem):
                 self.field.setText(str(index.data()).strip("f://"))
             else:
-                self.field.setText("")        
+                self.field.setText("")
         super().exec_()
-        
+
     def evaluate_formula(self, **kwargs: Dict[str, Any]) -> None:
-        #This function isn't used. Used to be there when an '=' existed in the calculator. 
+        # This function isn't used. Used to be there when an '=' existed in the calculator.
         # Evaluate the formula expression and update the formula input field
         # TODO: Check if PVs used are in Table Model
         #   if yes, replace with row header; if no, add to TableModel and replace with row header
