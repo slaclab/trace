@@ -13,14 +13,13 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
     def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
         super(ArchiveViewer, self).__init__(parent=parent, args=args,
                                             macros=macros, ui_filename=ui_filename)
+        self.populate_footer()
+
         app = QApplication.instance()
         app.setStyle(CenterCheckStyle())
 
         self.ui.main_spltr.setCollapsible(0, False)
         self.ui.main_spltr.setStretchFactor(0, 1)
-
-        self.ui.ftr_ver_lbl.setText(self.git_version())
-        self.ui.ftr_url_lbl.setText(f"Archiver URL: {getenv('PYDM_ARCHIVER_URL')}")
 
         self.axis_table_init()
         self.traces_table_init()
@@ -35,7 +34,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
                              self.ui.week_scale_btn: 604800,
                              self.ui.month_scale_btn: 2628300,
                              self.ui.cursor_scale_btn: -1}
-        self.ui.timespan_btns.buttonClicked.connect(partial(self.set_plot_timerange))
+        self.ui.timespan_btns.buttonClicked.connect(self.set_plot_timerange)
 
         plot_viewbox = self.ui.archiver_plot.plotItem.vb
         plot_viewbox.sigRangeChangedManually.connect(self.ui.cursor_scale_btn.click)
@@ -47,6 +46,10 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         """Add export & import functionality to File menu; override Display.file_menu_items"""
         return {"save": (self.export_save_file, "Ctrl+S"),
                 "load": (self.import_save_file, "Ctrl+L")}
+
+    def populate_footer(self):
+        self.ui.ftr_ver_lbl.setText(self.git_version())
+        self.ui.ftr_url_lbl.setText(f"Archiver URL: {getenv('PYDM_ARCHIVER_URL')}")
 
     @Slot(QAbstractButton)
     def set_plot_timerange(self, button: QAbstractButton) -> None:
