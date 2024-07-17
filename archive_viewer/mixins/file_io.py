@@ -25,10 +25,11 @@ class FileIOMixin:
                                                    "Python Archive Viewer (*.pyav)")
         file_name = Path(file_name)
         if file_name.is_dir():
-            logger.warning("No file name provided")
+            logger.warning("No file name provided to export save file to")
             return
 
         try:
+            logger.debug(f"Attempting to export to file: {file_name}")
             self.io_path = file_name.parent
             self.converter.export_file(file_name, self.ui.archiver_plot)
         except FileNotFoundError as e:
@@ -45,11 +46,13 @@ class FileIOMixin:
                                                    + "All Files (*)")
         file_name = Path(file_name)
         if not file_name.is_file():
+            logger.warning(f"Attempted import is not a file: {file_name}")
             return
 
         # Import the given file, and convert it from Java Archive Viewer's
         # format to Trace's format if necessary
         try:
+            logger.debug(f"Attempting to import file: {file_name}")
             file_data = self.converter.import_file(file_name)
             if self.converter.import_is_xml():
                 file_data = self.converter.convert_data(file_data)
@@ -64,14 +67,16 @@ class FileIOMixin:
         import_url = urlparse(file_data['archiver_url'])
         archiver_url = urlparse(getenv("PYDM_ARCHIVER_URL"))
         if import_url.hostname != archiver_url.hostname:
+            logger.warning(f"Attempting to import save file using different Archiver URL: {import_url.hostname}")
             ret = QMessageBox.warning(self,
                                       "Import Error",
                                       "The config file you tried to open reads from a different archiver.\n"
                                       f"\nCurrent archiver is:\n{archiver_url.hostname}\n"
-                                      f"\nAttempted import uses:\n{import_url.hostname}",
-                                      QMessageBox.Ok | QMessageBox.Cancel,
-                                      QMessageBox.Ok)
-            if ret == QMessageBox.Cancel:
+                                      f"\nAttempted import uses:\n{import_url.hostname}\n\n"
+                                      "\nContinue?",
+                                      QMessageBox.Yes | QMessageBox.No,
+                                      QMessageBox.No)
+            if ret == QMessageBox.No:
                 return
 
         # Parse the time range for the X-Axis
