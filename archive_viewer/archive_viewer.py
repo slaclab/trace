@@ -48,7 +48,10 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
                 "load": (self.import_save_file, "Ctrl+L")}
 
     def populate_footer(self):
-        self.ui.ftr_ver_lbl.setText(self.git_version())
+        self.logging_handler = LoggingHandler(self.ui.ftr_logging_lbl)
+        logger.addHandler(self.logging_handler)
+        logger.setLevel("NOTSET")
+
         self.ui.ftr_url_lbl.setText(f"Archiver URL: {getenv('PYDM_ARCHIVER_URL')}")
         self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
         self.ui.ftr_ver_lbl.setText(self.git_version())
@@ -66,12 +69,17 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
             The timespan setting button pressed. Determines which timespan
             to set.
         """
+        logger.debug(f"Setting plot timerange")
         if button not in self.button_spans:
             logger.error(f"{button} is not a valid timespan button")
             return
 
         enable_scroll = (button != self.ui.cursor_scale_btn)
         timespan = self.button_spans[button]
+        if enable_scroll:
+            logger.debug(f"Enabling plot autoscroll for {timespan}s")
+        else:
+            logger.debug("Disabling plot autoscroll, using mouse controls")
 
         self.ui.archiver_plot.setAutoScroll(enable_scroll, timespan)
 
