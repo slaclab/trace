@@ -92,7 +92,6 @@ class ArchiverAxisModel(BasePlotAxesModel):
         new_axis = self.get_axis(-1)
         row = self.rowCount() - 1
         self.attach_range_changed(row, new_axis)
-
     def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the axis at the given table index.
 
