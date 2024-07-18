@@ -283,6 +283,36 @@ class ScientificNotationDelegate(EditorDelegate):
         model.setData(index, data, Qt.EditRole)
 
 
+class DeleteRowDelegate(EditorDelegate):
+    """DeleteRowDelegate is a QStyledItemDelegate to display a persistent
+    QPushButton widget on a QTableView that allow's the user to delete the row.
+
+    Parameters
+    ----------
+    parent : QTableView
+        The parent object for the DeleteRowDelegate. Should be the
+        associated QTableView
+    """
+    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QPushButton:
+        """Initialize a QPushButton editor to delete the table's row."""
+        logger.debug("called method: DeleteRowDelegate.initStyleOption")
+        if index.row() >= len(self.editor_list):
+            editor = QPushButton(parent)
+            icon = editor.style().standardIcon(QStyle.SP_DialogCancelButton)
+            editor.setIcon(icon)
+            editor.setToolTip("Delete Row")
+            editor.clicked.connect(lambda: self.commitData.emit(editor))
+
+            self.editor_list.append(editor)
+            return editor
+
+        return super().createEditor(parent, option, index)
+
+    def setModelData(self, _: QPushButton, model: QAbstractTableModel, index: QModelIndex) -> None:
+        """When the setModelData slot is triggered, the row is removed."""
+        model.removeAtIndex(index)
+
+
 class ComboBoxDelegate(QStyledItemDelegate):
     """ComboBoxDelegate is a QStyledItemDelegate to display a persistent
     QComboBox widget on a QTableView.
@@ -381,57 +411,3 @@ class ComboBoxDelegate(QStyledItemDelegate):
         """Redirect menu requests to the Table View."""
         pos = self.sender().mapToParent(pos)
         self.parent().customContextMenuRequested.emit(pos)
-
-
-class DeleteRowDelegate(QStyledItemDelegate):
-    """DeleteRowDelegate is a QStyledItemDelegate to display a persistent
-    QPushButton widget on a QTableView that allow's the user to delete the row.
-
-    Parameters
-    ----------
-    parent : QTableView
-        The parent object for the DeleteRowDelegate. Should be the
-        associated QTableView
-    """
-    def __init__(self, parent: QTableView) -> None:
-        super().__init__(parent)
-        self.editor_list = []
-        model = self.parent().model()
-        model.modelAboutToBeReset.connect(self.reset_editors)
-
-    def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex) -> None:
-        """Initialize a QPushButton to delete the table's row."""
-        logger.debug("called method: DeleteRowDelegate.initStyleOption")
-        if index.row() >= len(self.editor_list):
-            editor = QPushButton(self.parent())
-            icon = editor.style().standardIcon(QStyle.SP_DialogCancelButton)
-            editor.setIcon(icon)
-            editor.setToolTip("Delete Row")
-            editor.clicked.connect(lambda: self.commitData.emit(editor))
-
-            self.editor_list.append(editor)
-            self.parent().setIndexWidget(index, editor)
-
-        return super().initStyleOption(option, index)
-
-    def destroyEditor(self, editor: QWidget, index: QModelIndex) -> None:
-        """Destroy the editor for a defined index."""
-        if index.row() < len(self.editor_list):
-            logger.debug(f"Removing {self.editor_list[index.row()]} from delegate")
-            self.editor_list[index.row()].deleteLater()
-            del self.editor_list[index.row()]
-            return
-        return super().destroyEditor(editor, index)
-
-    def setModelData(self, _: QPushButton, model: QAbstractTableModel, index: QModelIndex) -> None:
-        """When the setModelData slot is triggered, the row is removed."""
-        model.removeAtIndex(index)
-
-    def reset_editors(self):
-        for editor in self.editor_list:
-            editor_pos = editor.pos()
-            index = self.parent().indexAt(editor_pos)
-
-            editor.deleteLater()
-            self.parent().closePersistentEditor(index)
-        self.editor_list = []
