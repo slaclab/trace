@@ -5,7 +5,6 @@ from qtpy.QtCore import (Qt, QObject, QEvent, QPoint, Slot, Signal, QRegExp,
 from qtpy.QtWidgets import (QStyledItemDelegate, QSlider, QComboBox, QStyle,
                             QPushButton, QTableView, QStyleOptionViewItem,
                             QWidget, QDoubleSpinBox, QLineEdit)
-from config import logger
 from widgets import (ColorButton, CenterCheckbox)
 
 
@@ -146,7 +145,6 @@ class ColorButtonDelegate(EditorDelegate):
     def setEditorData(self, editor: ColorButton, index: QModelIndex) -> None:
         """Set the editor's data to match the table model's data."""
         value = index.data(Qt.DisplayRole)
-        logger.debug("Setting ColorButton data in delegate to: " + value)
         editor.color = QColor(value)
 
     def setModelData(self, editor: ColorButton, model: QAbstractTableModel, index: QModelIndex) -> None:
@@ -295,7 +293,6 @@ class DeleteRowDelegate(EditorDelegate):
     """
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QPushButton:
         """Initialize a QPushButton editor to delete the table's row."""
-        logger.debug("called method: DeleteRowDelegate.initStyleOption")
         if index.row() >= len(self.editor_list):
             editor = QPushButton(parent)
             icon = editor.style().standardIcon(QStyle.SP_DialogCancelButton)
@@ -342,7 +339,6 @@ class ComboBoxDelegate(QStyledItemDelegate):
         if index.row() >= len(self.editor_list):
             editor = QComboBox()
 
-            logger.debug(f"Setting input to {self.data_source}")
             if isinstance(self.data_source, dict):
                 editor.addItems(self.data_source.keys())
                 value = index.data(Qt.DisplayRole)
@@ -367,7 +363,6 @@ class ComboBoxDelegate(QStyledItemDelegate):
     def destroyEditor(self, editor: QComboBox, index: QModelIndex) -> None:
         """Destroy the editor for a defined index."""
         if index.row() < len(self.editor_list):
-            logger.debug(f"Removing {self.editor_list[index.row()]} from delegate")
             self.editor_list[index.row()].deleteLater()
             del self.editor_list[index.row()]
             return
@@ -388,7 +383,6 @@ class ComboBoxDelegate(QStyledItemDelegate):
         elif isinstance(self.data_source, QAbstractItemModel):
             self.sigTextChange.emit(index.row(), curr_text)
             data = curr_text
-        logger.debug(f"ComboBoxDelegate.editor_list: {self.editor_list}")
         model.setData(index, data, Qt.EditRole)
 
     def eventFilter(self, object: QObject, event: QEvent) -> bool:
