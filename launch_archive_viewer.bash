@@ -12,7 +12,7 @@ exit_abnormal(){
     exit 1
 }
 
-pydm --hide-nav-bar --hide-status-bar --hide-menu-bar \
+pydm --hide-nav-bar --hide-status-bar \
     archive_viewer.py
 
 exit 0

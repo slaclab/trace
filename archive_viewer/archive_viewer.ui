@@ -25,20 +25,6 @@
    <item>
     <layout class="QHBoxLayout" name="scale_ctrl_lyt">
      <item>
-      <widget class="QPushButton" name="test_export_btn">
-       <property name="text">
-        <string>Test Export</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="test_import_btn">
-       <property name="text">
-        <string>Test Import</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="scale_ctrl_spcr">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

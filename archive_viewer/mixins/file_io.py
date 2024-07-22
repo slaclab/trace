@@ -11,12 +11,8 @@ from av_file_convert import ArchiveViewerFileConverter
 
 class FileIOMixin:
     def file_io_init(self):
-        self.converter = ArchiveViewerFileConverter()
-
         self.io_path = save_file_dir
-
-        self.ui.test_export_btn.clicked.connect(self.export_save_file)
-        self.ui.test_import_btn.clicked.connect(self.import_save_file)
+        self.converter = ArchiveViewerFileConverter()
 
     def export_save_file(self):
         """Prompt the user for a file to export config data to"""

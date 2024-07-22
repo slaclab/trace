@@ -36,6 +36,11 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         app = QApplication.instance()
         app.setStyle(CenterCheckStyle())
 
+    def file_menu_items(self):
+        """Add export & import functionality to File menu"""
+        return {"save": (self.export_save_file, "Ctrl+S"),
+                "load": (self.import_save_file, "Ctrl+L")}
+
     @Slot(QAbstractButton)
     def set_plot_timerange(self, button: QAbstractButton) -> None:
         """Slot to be called when a timespan setting button is pressed.
