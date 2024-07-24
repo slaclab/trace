@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from PySide2.QtGui import QKeyEvent
+from qtpy.QtGui import QKeyEvent
 from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
                             QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView, QTableWidget)
