@@ -16,7 +16,6 @@ from widgets import (
     InsertPVDelegate
 )
 from table_models import ArchiverCurveModel
-import numpy as np
 
 
 class TracesTableMixin:
@@ -246,40 +245,29 @@ class FormulaDialog(QDialog):
         ok_button = QPushButton("OK", self)
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
+
     def keyPressEvent(self, e: QKeyEvent) -> None:
         # Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.accept_formula()
         return super().keyPressEvent(e)
+
     def exec_(self):
-        # When the formula dialog is opened (every time) we need to
-        # update it with the latest information on the curve model and
-        # also populate the text box with the pre-existing formula (if it already was there)
+        """ When the formula dialog is opened (every time) we need to
+            update it with the latest information on the curve model and
+            also populate the text box with the pre-existing formula (if it already was there)"""
         self.index = self.parent().selected_index
+        print(self.index)
         self.pv_list.setRowHidden(len(self.curveModel._row_names) - 1, True)
         for i in range(self.curveModel.rowCount() - 1):
             self.pv_list.setRowHidden(i, False)
-        if self.index:
-            index = self.curveModel.index(self.index.row(), 0)
-            curve = self.curveModel._plot._curves[self.index.row()]
-            if index.data() and isinstance(curve, FormulaCurveItem):
-                self.field.setText(str(index.data()).strip("f://"))
-            else:
-                self.field.setText("")
+        index = self.curveModel.index(self.index.row(), 0)
+        curve = self.curveModel._plot._curves[self.index.row()]
+        if index.data() and isinstance(curve, FormulaCurveItem):
+            self.field.setText(str(index.data()).strip("f://"))
+        else:
+            self.field.setText("")
         super().exec_()
-
-    def evaluate_formula(self, **kwargs: Dict[str, Any]) -> None:
-        # This function isn't used. Used to be there when an '=' existed in the calculator.
-        # Evaluate the formula expression and update the formula input field
-        # TODO: Check if PVs used are in Table Model
-        #   if yes, replace with row header; if no, add to TableModel and replace with row header
-        formula = self.field.text()
-        try:
-            result = eval(formula)
-            self.field.setText(str(result))
-        except (SyntaxError, TypeError):
-            self.field.setText("Error")
-            logger.error("Invalid formula evaluated.")
 
     def accept_formula(self, **kwargs: Dict[str, Any]) -> None:
         # Retrieve the formula and PV name and perform desired actions
