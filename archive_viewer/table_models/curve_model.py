@@ -1,12 +1,12 @@
 from typing import (Any, Optional)
 from qtpy.QtCore import (QObject, QModelIndex, Qt, Slot)
 from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
-from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem, FormulaCurveItem
+from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
 from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
 from qtpy.QtGui import QColor
 from widgets import ColorButton
 from table_models import ArchiverAxisModel
-
+from config import logger
 
 class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
     """Model used for storing and editing archiver time plot curves.
@@ -67,13 +67,15 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         ret_code = False
         index = self.index(self._plot._curves.index(curve),0)
         if column_name == "Channel":
+            curve.show()
+            self._axis_model.plot.plotItem.axes[curve.y_axis_name]["item"].show()
+
             if value == curve.address:
                 return True
 
             [ch.disconnect() for ch in curve.channels() if ch]
             curve.address = str(value)
             [ch.connect() for ch in curve.channels() if ch]
-
             if not curve.name():
                 curve.setData(name=str(value))
 
@@ -85,13 +87,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             # If we change the Y-Axis, unlink from previous and link to new
             if value == curve.y_axis_name:
                 return True
-            self.plot.plotItem.unlinkDataFromAxis(curve, curve.y_axis_name)
+            self.plot.plotItem.unlinkDataFromAxis(curve)
             self.plot.linkDataToAxis(curve, value)
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
             # Link to correct axis and unhide if necessary
-            if not curve.hidden:
-                self._axis_model.plot.plotItem.axes[curve.y_axis_name]["item"].hidden = False
-                self._axis_model.plot.plotItem.axes[curve.y_axis_name]["item"].show()
+            if curve.isVisible():
+                self.plot.plotItem.axes[curve.y_axis_name]["item"].show()
         elif column_name == "Style":
             curve.plot_style = str(value)
             ret_code = True
@@ -99,14 +100,11 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             # Handle toggling hidden
             hidden = bool(value)
             if hidden:
-                curve.hidden = True
                 curve.hide()
                 self._axis_model.plot.plotItem.autoVisible(curve.y_axis_name)
             else:
-                curve.hidden = False
                 curve.show()
                 self._axis_model.plot.plotItem.axes[curve.y_axis_name]["item"].show()
-                self._axis_model.plot.plotItem.axes[curve.y_axis_name]["item"].hidden = False
             ret_code = True
         else:
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)

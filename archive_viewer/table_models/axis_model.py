@@ -107,10 +107,9 @@ class ArchiverAxisModel(BasePlotAxesModel):
         # if self.rowCount() <= 1:
         #     self.append()
         axis = self.get_axis(index.row())
-        if hasattr(axis, "_curves"):
-            for i in range(len(axis._curves)):
-                curve = axis._curves[0]
-                self.remove_curve.emit(curve)
+        while axis._curves:
+            curve = axis._curves[0]
+            self.remove_curve.emit(curve)
         super().removeAtIndex(index)
 
     def setHidden(self, axis: BasePlotAxisItem, hidden: bool) -> None:
