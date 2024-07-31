@@ -87,9 +87,12 @@ class ArchiverAxisModel(BasePlotAxesModel):
             The name for the new axis item. If none is passed in, the
             axis is named "Axis <row_count>".
         """
-        self.axis_count += 1
         if not name:
-            name = f"Axis {self.axis_count}"
+            axis_count = self.rowCount() + 1
+            name = f"Axis {axis_count}"
+            while name in self.plot.plotItem.axes:
+                axis_count += 1
+                name = f"Axis {axis_count}"
         super().append(name)
         new_axis = self.get_axis(-1)
         new_axis.setLabel(name, color="black")
@@ -104,8 +107,6 @@ class ArchiverAxisModel(BasePlotAxesModel):
         index : QModelIndex
             An index in the row to be removed.
         """
-        # if self.rowCount() <= 1:
-        #     self.append()
         axis = self.get_axis(index.row())
         while axis._curves:
             curve = axis._curves[0]
@@ -121,14 +122,11 @@ class ArchiverAxisModel(BasePlotAxesModel):
             An index in the row to be hidde.
         """
         # Hide all curves
-        if hasattr(axis, "_curves"):
-            for curve in axis._curves:
-                if hidden:
-                    curve.hidden = True
-                    curve.hide()
-                else:
-                    curve.hidden = False
-                    curve.show()
+        for curve in axis._curves:
+            if hidden:
+                curve.hide()
+            else:
+                curve.show()
         # Hide the axis
         axis.setHidden(shouldHide=hidden)
 

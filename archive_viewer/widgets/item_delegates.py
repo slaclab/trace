@@ -99,6 +99,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
         """Initialize a QComboBox for use in the Table View."""
         if index.row() >= len(self.editor_list):
             editor = QComboBox()
+
             logger.debug(f"Setting input to {self.data_source}")
             if isinstance(self.data_source, dict):
                 editor.addItems(self.data_source.keys())
