@@ -471,21 +471,27 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="refresh_rate_lyt">
+           <layout class="QHBoxLayout" name="refresh_interval_lyt">
             <item>
-             <widget class="QLabel" name="refresh_rate_lbl">
+             <widget class="QLabel" name="refresh_interval_lbl">
               <property name="text">
                <string>Autoscroll refresh rate</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="refresh_rate_spnbx">
+             <widget class="QDoubleSpinBox" name="refresh_interval_spnbx">
+              <property name="decimals">
+               <number>1</number>
+              </property>
               <property name="minimum">
-               <number>5</number>
+               <double>0.100000000000000</double>
               </property>
               <property name="maximum">
-               <number>60</number>
+               <double>60.000000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>0.100000000000000</double>
               </property>
              </widget>
             </item>

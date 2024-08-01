@@ -5,8 +5,6 @@ from pyqtgraph import ViewBox
 class PlotConfigMixin:
     def plot_config_init(self):
         self.plot = self.ui.archiver_plot
-        self.timespan = 60
-
         self.ui.plot_title_edit.textChanged.connect(self.plot.setPlotTitle)
 
         self.ui.x_grid_chckbx.clicked.connect(self.show_x_grid)
@@ -19,7 +17,8 @@ class PlotConfigMixin:
         self.ui.background_color_lyt.insertWidget(1, background_color_button)
         background_color_button.color_changed.connect(self.plot.setBackgroundColor)
 
-        self.ui.refresh_rate_spnbx.valueChanged.connect(lambda rate: self.autoScroll(enable=True, timespan=self.timespan, refresh_rate=rate))
+        self.ui.refresh_interval_spnbx.setValue(5)
+        self.ui.refresh_interval_spnbx.valueChanged.connect(lambda interval: self.autoScroll(enable=True))
 
         self.ui.legend_chckbx.clicked.connect(self.plot.setShowLegend)
 
@@ -33,9 +32,9 @@ class PlotConfigMixin:
             mouse_mode = ViewBox.PanMode
         self.plot.plotItem.getViewBox().setMouseMode(mouse_mode)
 
-    def autoScroll(self, enable: bool = False, timespan: int = 60, refresh_rate: float = 5):
-        waitTime = int(1000/refresh_rate)
-        self.plot.setAutoScroll(enable=enable, timespan=timespan, refresh_rate=waitTime)
+    def autoScroll(self, enable: bool = False):
+        refresh_interval = int(self.ui.refresh_interval_spnbx.value() * 1000)
+        self.plot.setAutoScroll(enable=enable, timespan=self.timespan, refresh_rate=refresh_interval)
 
     def change_opacity(self, opacity: int):
         x_visible = self.ui.x_grid_chckbx.isChecked()

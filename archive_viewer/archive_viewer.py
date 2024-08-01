@@ -20,7 +20,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, PlotConfigMixin):
 
         self.curve_delegates_init()
         self.axis_delegates_init()
-
+        self.timespan = -1
         self.button_spans = {
             self.ui.half_min_scale_btn: 30,
             self.ui.min_scale_btn: 60,
@@ -54,6 +54,5 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, PlotConfigMixin):
             logger.error(f"{button} is not a valid timespan button")
             return
         enable_scroll = button != self.ui.cursor_scale_btn
-        timespan = self.button_spans[button]
-        self.timespan = timespan
-        self.ui.archiver_plot.setAutoScroll(enable_scroll, timespan, refresh_rate=self.ui.refresh_rate_spnbx.value())
+        self.timespan = self.button_spans[button]
+        self.autoScroll(enable=enable_scroll)
