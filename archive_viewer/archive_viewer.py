@@ -56,4 +56,4 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, PlotConfigMixin):
         enable_scroll = button != self.ui.cursor_scale_btn
         timespan = self.button_spans[button]
         self.timespan = timespan
-        self.ui.archiver_plot.setAutoScroll(enable_scroll, timespan, refresh_rate=self.refresh_rate_spinbox.value())
+        self.ui.archiver_plot.setAutoScroll(enable_scroll, timespan, refresh_rate=self.ui.refresh_rate_spnbx.value())
