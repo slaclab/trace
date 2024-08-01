@@ -69,8 +69,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
             return QVariant()
         # Specifically the Hidden column must be affected in axis_model as opposed to elsewhere
         elif role == Qt.CheckStateRole and self._column_names[index.column()] == "Hidden":
-            axis = self.plot._axes[index.row()]
-            self.setHidden(axis, bool(value))
+            self.plot._axes[index.row()].setHidden(bool(value))
             return True
         elif role == Qt.CheckStateRole and index.column() in self.checkable_col:
             return super().setData(index, value, Qt.EditRole)
@@ -126,12 +125,6 @@ class ArchiverAxisModel(BasePlotAxesModel):
         index : QModelIndex
             An index in the row to be hidde.
         """
-        # Hide all curves
-        for curve in axis._curves:
-            if hidden:
-                curve.hide()
-            else:
-                curve.show()
         # Hide the axis
         axis.setHidden(shouldHide=hidden)
 
