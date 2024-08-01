@@ -107,9 +107,14 @@ class ArchiverAxisModel(BasePlotAxesModel):
         index : QModelIndex
             An index in the row to be removed.
         """
+        if not index.isValid() or self.rowCount() == 1:
+            return False
         axis = self.get_axis(index.row())
         while axis._curves:
             curve = axis._curves[0]
+            if curve == self._plot._curves[-1] or len(self._plot._curves) == 1:
+                # Reasons for us to in fact not delete this axis despite manual attempt by the user
+                return
             self.remove_curve.emit(curve)
         super().removeAtIndex(index)
 

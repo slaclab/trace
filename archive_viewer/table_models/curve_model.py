@@ -68,16 +68,16 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         index = self.index(self._plot._curves.index(curve),0)
         if column_name == "Channel":
             curve.show()
-            self._axis_model.plot.plotItem.axes[curve.y_axis_name]["item"].show()
-
+            if not curve.name():
+                curve.setData(name=str(value))
+            self.plot.plotItem.autoVisible(curve.y_axis_name)
             if value == curve.address:
                 return True
 
             [ch.disconnect() for ch in curve.channels() if ch]
             curve.address = str(value)
             [ch.connect() for ch in curve.channels() if ch]
-            if not curve.name():
-                curve.setData(name=str(value))
+
 
             if value and self._plot._curves[-1] is curve:
                 self.append()
