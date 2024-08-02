@@ -10,11 +10,15 @@ from av_file_convert import ArchiveViewerFileConverter
 
 
 class FileIOMixin:
-    def file_io_init(self):
+    """Mixins class to manage the file imports and exports for Trace"""
+    def file_io_init(self) -> None:
+        """Initialize the File IO capabilities of Trace by saving a default
+        path and creating an ArchiveViewerFileConverter object
+        """
         self.io_path = save_file_dir
         self.converter = ArchiveViewerFileConverter()
 
-    def export_save_file(self):
+    def export_save_file(self) -> None:
         """Prompt the user for a file to export config data to"""
         file_name, _ = QFileDialog.getSaveFileName(self, "Save Archive Viewer",
                                                    str(self.io_path),
@@ -31,8 +35,9 @@ class FileIOMixin:
             logger.error(e)
             self.export_save_file()
 
-    def import_save_file(self):
+    def import_save_file(self) -> None:
         """Prompt the user for which config file to import from"""
+        # Get the save file from the user
         file_name, _ = QFileDialog.getOpenFileName(self, "Open Archive Viewer",
                                                    str(self.io_path),
                                                    "Python Archive Viewer (*.pyav);;"
@@ -42,6 +47,8 @@ class FileIOMixin:
         if not file_name.is_file():
             return
 
+        # Import the given file, and convert it from Java Archive Viewer's
+        # format to Trace's format if necessary
         try:
             file_data = self.converter.import_file(file_name)
             if self.converter.import_is_xml():
@@ -52,6 +59,8 @@ class FileIOMixin:
             self.import_save_file()
             return
 
+        # Confirm the PYDM_ARCHIVER_URL is the same as the imported Archiver URL
+        # If they are not the same, prompt the user to confirm continuing
         import_url = urlparse(file_data['archiver_url'])
         archiver_url = urlparse(getenv("PYDM_ARCHIVER_URL"))
         if import_url.hostname != archiver_url.hostname:
@@ -65,6 +74,7 @@ class FileIOMixin:
             if ret == QMessageBox.Cancel:
                 return
 
+        # Parse the time range for the X-Axis
         try:
             start_str = file_data['time_axis']['start']
             end_str = file_data['time_axis']['end']
@@ -76,9 +86,11 @@ class FileIOMixin:
             self.import_save_file()
             return
 
+        # Set the models to use the file data
         self.axis_table_model.set_model_axes(file_data['y-axes'])
         self.curves_model.set_model_curves(file_data['curves'])
 
+        # Enable auto scroll if the end time is "now"
         self.ui.cursor_scale_btn.click()
         if end_str == "now":
             delta = end_dt - start_dt
@@ -91,6 +103,10 @@ class FileIOMixin:
 
 
 class IOTimeParser:
+    """Collection of classmethods to parse a given date time string. The
+    string can contain an absolute date and time, or a date and time that
+    are relative to another time or even each other.
+    """
     full_relative_re = compile(r"^([+-]?\d+[yMwdHms] ?)*\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
     full_absolute_re = compile(r"^\d{4}-[01]\d-[0-3]\d\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
 
@@ -102,6 +118,11 @@ class IOTimeParser:
     def is_relative(cls, input_str: str) -> bool:
         """Check if the given string is a relative time (e.g. '+1d',
         '-8h', '-1w 08:00')
+
+        Parameters
+        ---------
+        input_str : str
+
         """
         found = cls.full_relative_re.fullmatch(input_str)
         return bool(found)

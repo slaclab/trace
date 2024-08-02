@@ -36,8 +36,8 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         app = QApplication.instance()
         app.setStyle(CenterCheckStyle())
 
-    def file_menu_items(self):
-        """Add export & import functionality to File menu"""
+    def file_menu_items(self) -> dict:
+        """Add export & import functionality to File menu; override Display.file_menu_items"""
         return {"save": (self.export_save_file, "Ctrl+S"),
                 "load": (self.import_save_file, "Ctrl+L")}
 
