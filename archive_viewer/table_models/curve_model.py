@@ -70,7 +70,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             curve.show()
             if not curve.name():
                 curve.setData(name=str(value))
-            self.plot.plotItem.autoVisible(curve.y_axis_name)
             if value == curve.address:
                 return True
 
@@ -109,6 +108,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         else:
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
         #After messing with the data, just cleanly redraw everything
+        self.plot.plotItem.autoVisible(curve.y_axis_name)
         self._plot.requestDataFromArchiver()
         self._plot.set_needs_redraw()
         self._plot.redrawPlot()
