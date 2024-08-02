@@ -25,6 +25,10 @@ else:
 
 
 class ArchiveViewerFileConverter():
+    """Converter class that will convert save files for the Java-based Archive
+    Viewer into a format readable by the Trace application. This class can also
+    be used for importing data into Trace or exporting data from it.
+    """
     # Java date time conversion regex
     full_java_absolute_re = compile(r"^[01]\d/[0-3]\d/\d{4}\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
     java_date_re = compile(r"^[01]\d/[0-3]\d/\d{4}")
@@ -193,6 +197,16 @@ class ArchiveViewerFileConverter():
     def reformat_date(cls, input_str: str) -> str:
         """Convert a time string from the format 'MM/DD/YYYY' --> 'YYYY-MM-DD'
         and retain time if included
+
+        Parameters
+        ----------
+        input_str : str
+            Date string in the format of 'MM/DD/YYYY'; can include a time
+
+        Returns
+        -------
+        str
+            Date string in the format of 'YYYY-MM-DD'
         """
         if not cls.full_java_absolute_re.fullmatch(input_str):
             return input_str
@@ -242,8 +256,19 @@ class ArchiveViewerFileConverter():
         return data_dict
 
     @staticmethod
-    def get_plot_data(plot: PyDMTimePlot) -> Dict:
-        """Extract plot, axis, and curve data from a PyDMTimePlot object"""
+    def get_plot_data(plot: PyDMTimePlot) -> dict:
+        """Extract plot, axis, and curve data from a PyDMTimePlot object
+
+        Parameters
+        ----------
+        plot : PyDMTimePlot
+            The PyDM Plotting object to extract data from. Gets plot, axis, and curve data.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of all of the relevant data for the given plot
+        """
         output_dict = {'archiver_url': getenv("PYDM_ARCHIVER_URL"),
                        'plot': {},
                        'time_axis': {},
@@ -294,8 +319,19 @@ class ArchiveViewerFileConverter():
         return QColor(srgb)
 
     @staticmethod
-    def remove_null_values(dict_in: Dict) -> Dict:
-        """Remove all key-value pairs from a given dictionary where the value is None"""
+    def remove_null_values(dict_in: dict) -> dict:
+        """Remove all key-value pairs from a given dictionary where the value is None
+
+        Parameters
+        ----------
+        dict_in : dict
+            Some dictionary, possibly containing key-value pairs where value is None
+
+        Returns
+        -------
+        dict
+            The same dictionary, but with those key-value pairs deleted
+        """
         dict_out = dict_in.copy()
         for k, v in dict_in.items():
             if v is None:
@@ -339,15 +375,16 @@ def main(input_file: Path = None, output_file: Path = None, overwrite: bool = Fa
     return 0
 
 
-if __name__ == "__main__":
-    class PathAction(Action):
-        def __call__(self, parser: ArgumentParser, namespace: Namespace, values: str, option_string: str = None) -> None:
-            """Convert filepath string from argument into  a pathlib.Path object"""
-            new_path = path.expandvars(values)
-            new_path = Path(new_path).expanduser()
-            new_path = new_path.resolve()
-            setattr(namespace, self.dest, new_path)
+class PathAction(Action):
+    def __call__(self, parser: ArgumentParser, namespace: Namespace, values: str, option_string: str = None) -> None:
+        """Convert filepath string from argument into  a pathlib.Path object"""
+        new_path = path.expandvars(values)
+        new_path = Path(new_path).expanduser()
+        new_path = new_path.resolve()
+        setattr(namespace, self.dest, new_path)
 
+
+if __name__ == "__main__":
     parser = ArgumentParser(prog="Archive Viewer File Converter",
                             description="Convert files used by the Java Archive"
                             " Viewer to a file format that can be used with the"
