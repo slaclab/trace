@@ -203,7 +203,7 @@ class FormulaDialog(QDialog):
         header = self.pv_list.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         for i in range(1, self.curveModel.columnCount() - 1):
-            #Hide all columns that arent useful, but keep one left over to add a button to
+            # Hide all columns that arent useful, but keep one left over to add a button to
             self.pv_list.setColumnHidden(i, True)
         insertButton = InsertPVDelegate(self.pv_list, self.curveModel)
         insertButton.button_clicked.connect(self.field.insert)
@@ -257,7 +257,6 @@ class FormulaDialog(QDialog):
             update it with the latest information on the curve model and
             also populate the text box with the pre-existing formula (if it already was there)"""
         self.index = self.parent().selected_index
-        print(self.index)
         self.pv_list.setRowHidden(len(self.curveModel._row_names) - 1, True)
         for i in range(self.curveModel.rowCount() - 1):
             self.pv_list.setRowHidden(i, False)
