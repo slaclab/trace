@@ -1,9 +1,9 @@
-from typing import (Any, Optional)
+from typing import (Any, List, Dict, Optional)
+from qtpy.QtGui import QColor
 from qtpy.QtCore import (QObject, QModelIndex, Qt)
 from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem, FormulaCurveItem
 from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
-from qtpy.QtGui import QColor
 from functools import partial
 import re
 from widgets import ColorButton
@@ -137,6 +137,23 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         #by default, add a blank archivePlotCurveItem such that there's an empty row to add PVs or formulas to.
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
+
+    def set_model_curves(self, curves: List[Dict]) -> None:
+        self.beginResetModel()
+        self._plot.clearCurves()
+        self._row_names = []
+
+        for c in curves:
+            for k, v in c.items():
+                if v is None:
+                    del c[k]
+            c['y_channel'] = c['channel']
+            del c['channel']
+            self._plot.addYChannel(**c)
+            self._row_names.append(self.next_header())
+        self.append()
+
+        self.endResetModel()
 
     def replaceToArchivePlot(self, curve: BasePlotCurveItem, index: QModelIndex, address: str, color: Optional[QColor] = None):
         y_axis = y_axis = self._axis_model.get_axis(index.row())
