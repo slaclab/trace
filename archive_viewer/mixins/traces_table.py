@@ -1,4 +1,5 @@
 from typing import (Dict, Any)
+from qtpy import sip
 from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
                             QVBoxLayout, QGridLayout, QLineEdit, QPushButton)

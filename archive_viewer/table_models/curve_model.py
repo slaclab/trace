@@ -1,9 +1,9 @@
-from typing import (Any, Optional)
+from typing import (Any, List, Dict, Optional)
+from qtpy.QtGui import QColor
 from qtpy.QtCore import (QObject, QModelIndex, Qt, Slot)
 from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
 from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
-from qtpy.QtGui import QColor
 from widgets import ColorButton
 from table_models import ArchiverAxisModel
 from config import logger
@@ -140,6 +140,23 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if self.rowCount() != 1:
             logger.debug("Hide blank Y-axis")
             self._axis_model.plot.plotItem.axes[y_axis.name]["item"].hide()
+
+    def set_model_curves(self, curves: List[Dict]) -> None:
+        self.beginResetModel()
+        self._plot.clearCurves()
+        self._row_names = []
+
+        for c in curves:
+            for k, v in c.items():
+                if v is None:
+                    del c[k]
+            c['y_channel'] = c['channel']
+            del c['channel']
+            self._plot.addYChannel(**c)
+            self._row_names.append(self.next_header())
+        self.append()
+
+        self.endResetModel()
 
     def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the curve at the given table index.

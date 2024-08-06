@@ -1,13 +1,13 @@
 from functools import partial
 from qtpy.QtCore import Slot
-from qtpy.QtWidgets import QAbstractButton, QApplication
+from qtpy.QtWidgets import (QAbstractButton, QApplication)
 from pydm import Display
 from config import logger
-from mixins import (TracesTableMixin, AxisTableMixin)
+from mixins import (TracesTableMixin, AxisTableMixin, FileIOMixin)
 from styles import CenterCheckStyle
 
 
-class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin):
+class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
     def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
         super(ArchiveViewer, self).__init__(parent=parent, args=args,
                                             macros=macros, ui_filename=ui_filename)
@@ -17,6 +17,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin):
 
         self.axis_table_init()
         self.traces_table_init()
+        self.file_io_init()
 
         self.curve_delegates_init()
         self.axis_delegates_init()
@@ -34,6 +35,11 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin):
 
         app = QApplication.instance()
         app.setStyle(CenterCheckStyle())
+
+    def file_menu_items(self) -> dict:
+        """Add export & import functionality to File menu; override Display.file_menu_items"""
+        return {"save": (self.export_save_file, "Ctrl+S"),
+                "load": (self.import_save_file, "Ctrl+L")}
 
     @Slot(QAbstractButton)
     def set_plot_timerange(self, button: QAbstractButton) -> None:
