@@ -72,7 +72,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 #Regardless of starting point, going to a formula is handled in this one function
                 return self.replaceToFormula(index = index, formula = value)
             elif value_is_formula and curve_is_formula:
-                pvdict = self.formulaToPVDict(index, value)
+                pvdict = self.formulaToPVDict(self._row_names[index.row()], value)
                 if pvdict:
                     curve.formula = value
                     curve.pvs = pvdict
@@ -160,6 +160,9 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return None
             elif pv == rowName:
                 print("Error, formula is recursive")
+                return None
+            elif self._row_names.index(pv) > self._row_names.index(rowName):
+                print("Error, all referenced rows must be before the formula")
                 return None
             else:
                 #if it's good, add it to the dictionary of curves. rindex = row index (int) as opposed to index, which is a QModelIndex
