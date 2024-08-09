@@ -1,11 +1,12 @@
+from abc import abstractmethod
 from typing import (Union, Tuple)
 from qtpy.QtGui import (QColor, QPainter, QRegExpValidator)
-from qtpy.QtCore import (Qt, QObject, QEvent, QPoint, Slot, Signal, QRegExp,
+from qtpy.QtCore import (Qt, QEvent, QPoint, Slot, Signal, QRegExp,
                          QAbstractTableModel, QModelIndex, QAbstractItemModel)
-from qtpy.QtWidgets import (QStyledItemDelegate, QSlider, QComboBox, QStyle,
-                            QPushButton, QTableView, QStyleOptionViewItem,
-                            QWidget, QDoubleSpinBox, QLineEdit)
-from widgets import (ColorButton, CenterCheckbox)
+from qtpy.QtWidgets import (QStyledItemDelegate, QComboBox, QStyle, QPushButton,
+                            QTableView, QStyleOptionViewItem, QWidget,
+                            QDoubleSpinBox, QLineEdit)
+from widgets import ColorButton
 
 
 class EditorDelegate(QStyledItemDelegate):
@@ -21,6 +22,26 @@ class EditorDelegate(QStyledItemDelegate):
             self.parent().openPersistentEditor(index)
         return super().paint(painter, option, index)
 
+    @abstractmethod
+    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QWidget:
+        """Editor creator function to be overridden by subclasses.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget intended to be used as the parent of the new editor
+        option : QStyleOptionViewItem
+            The item options used in creating the editor
+        index : QModelIndex
+            The index to display the editor on
+
+        Returns
+        -------
+        QWidget
+            The QWidget editor for the specified index
+        """
+        return super().createEditor(parent, option, index)
+
     def destroyEditor(self, editor: QWidget, index: QModelIndex) -> None:
         """Close the persistent editor for a defined index."""
         if index.row() < len(self.editor_list):
@@ -30,7 +51,43 @@ class EditorDelegate(QStyledItemDelegate):
             return
         return super().destroyEditor(editor, index)
 
-    def reset_editors(self):
+    @abstractmethod
+    def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
+        """Abstract method to be overridden by subclasses. Sets the
+        delegate's editor to match the table model's data.
+
+        Parameters
+        ----------
+        editor : QWidget
+            The editor which will need to be set. Changes type based on
+            how the subclass is implemented.
+        index : QModelIndex
+            The index of the editor to be changed.
+        """
+        return super().setEditorData(editor, index)
+
+    @abstractmethod
+    def setModelData(self, editor: QWidget, model: QAbstractItemModel, index: QModelIndex) -> None:
+        """Abstract method to be overridden by subclasses. Sets the
+        table's model data to match the delegate's editor.
+
+        Parameters
+        ----------
+        editor : QWidget
+            The editor containing the data to be saved in the model. Changes
+            type based on how the subclass is implemented.
+        model : QAbstractItemModel
+            The model which will need to be set.
+        index : QModelIndex
+            The index of the editor to be changed.
+        """
+        return super().setModelData(editor, model, index)
+
+    @Slot()
+    def reset_editors(self) -> None:
+        """Slot called when the delegate's model will be reset. Closes all
+        persistent editors in the delegate.
+        """
         for editor in self.editor_list:
             editor_pos = editor.pos()
             index = self.parent().indexAt(editor_pos)
