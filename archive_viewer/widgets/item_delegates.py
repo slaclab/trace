@@ -10,6 +10,16 @@ from widgets import ColorButton
 
 
 class EditorDelegate(QStyledItemDelegate):
+    """Abstract Base Class for QStyledItemDelegates that display a persistent
+    editor. When inheriting from this class, make sure to override abstract
+    methods: createEditor, setEditorData, setModelData
+
+    Parameters
+    ----------
+    parent : QTableView
+        The QTableView associated with the delegate. Used for opening
+        persistent editors.
+    """
     def __init__(self, parent: QTableView) -> None:
         super().__init__(parent)
         self.editor_list = []
@@ -17,7 +27,17 @@ class EditorDelegate(QStyledItemDelegate):
         model.modelAboutToBeReset.connect(self.reset_editors)
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
-        """Create a new persistent editor on the Table View at the given index."""
+        """Create a new persistent editor on the Table View at the given index.
+
+        Parameters
+        ----------
+        painter : QtGui.QPainter
+            The Qt Painter used to display the delegate's editors
+        option : QtWidgets.QStyleOptionViewItem
+            The style option used to render the item
+        index : QModelIndex
+            The index to display the editor on
+        """
         if index.row() == len(self.editor_list):
             self.parent().openPersistentEditor(index)
         return super().paint(painter, option, index)
@@ -43,7 +63,15 @@ class EditorDelegate(QStyledItemDelegate):
         return super().createEditor(parent, option, index)
 
     def destroyEditor(self, editor: QWidget, index: QModelIndex) -> None:
-        """Close the persistent editor for a defined index."""
+        """Close the persistent editor for a defined index.
+
+        Parameters
+        ----------
+        editor : QWidget
+            The editor to be destroyed
+        index : QModelIndex
+            The index of the editor to be destroyed
+        """
         if index.row() < len(self.editor_list):
             del self.editor_list[index.row()]
             editor.deleteLater()
@@ -108,7 +136,22 @@ class ColorButtonDelegate(EditorDelegate):
         associated QTableView
     """
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> ColorButton:
-        """Initialize a ColorButton for use in the Table View."""
+        """Initialize a ColorButton for use in the Table View.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget intended to be used as the parent of the new editor
+        option : QStyleOptionViewItem
+            The item options used in creating the editor
+        index : QModelIndex
+            The index to display the editor on
+
+        Returns
+        -------
+        ColorButton
+            The ColorButton editor for the specified index
+        """
         if index.row() >= len(self.editor_list):
             value = index.data(Qt.DisplayRole)
             editor = ColorButton(parent, color=value)
@@ -119,12 +162,30 @@ class ColorButtonDelegate(EditorDelegate):
         return super().createEditor(parent, option, index)
 
     def setEditorData(self, editor: ColorButton, index: QModelIndex) -> None:
-        """Set the editor's data to match the table model's data."""
+        """Set the editor's data to match the table model's data.
+
+        Parameters
+        ----------
+        editor : ColorButton
+            The editor which will need to be set.
+        index : QModelIndex
+            The index of the editor to be changed.
+        """
         value = index.data(Qt.DisplayRole)
         editor.color = QColor(value)
 
     def setModelData(self, editor: ColorButton, model: QAbstractTableModel, index: QModelIndex) -> None:
-        """Set the table model's data to match the editor's data."""
+        """Set the table model's data to match the editor's data.
+
+        Parameters
+        ----------
+        editor : ColorButton
+            The editor which will need to be set.
+        model : QAbstractItemModel
+            The model which will need to be set.
+        index : QModelIndex
+            The index of the editor to be changed.
+        """
         data = editor.color.name()
         model.setData(index, data, Qt.EditRole)
 
@@ -149,7 +210,17 @@ class FloatDelegate(EditorDelegate):
         self.prec = prec
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
-        """Create a new persistent editor on the Table View at the given index."""
+        """Create a new persistent editor on the Table View at the given index.
+
+        Parameters
+        ----------
+        painter : QPainter
+            The Qt Painter used to display the delegate's editors
+        option : QStyleOptionViewItem
+            The style option used to render the item
+        index : QModelIndex
+            The index to display the editor on
+        """
         deselect_lineEdit =  index.row() == len(self.editor_list)
         super().paint(painter, option, index)
 
@@ -158,7 +229,22 @@ class FloatDelegate(EditorDelegate):
             editor.lineEdit().deselect()
 
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QDoubleSpinBox:
-        """Initialize a QDoubleSpinBox to delete the table's row."""
+        """Initialize a QDoubleSpinBox to delete the table's row.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget intended to be used as the parent of the new editor
+        option : QStyleOptionViewItem
+            The item options used in creating the editor
+        index : QModelIndex
+            The index to display the editor on
+
+        Returns
+        -------
+        QDoubleSpinBox
+            The QDoubleSpinBox editor for the specified index
+        """
         if index.row() >= len(self.editor_list):
             value = index.data(Qt.DisplayRole)
             if value is None:
@@ -176,13 +262,32 @@ class FloatDelegate(EditorDelegate):
         return super().createEditor(parent, option, index)
 
     def setEditorData(self, editor: QDoubleSpinBox, index: QModelIndex) -> None:
-        """Set the editor's data to match the table model's data."""
+        """Set the editor's data to match the table model's data.
+
+        Parameters
+        ----------
+        editor : QDoubleSpinBox
+            The editor which will need to be set. Changes type based on
+            how the subclass is implemented.
+        index : QModelIndex
+            The index of the editor to be changed.
+        """
         value = index.data(Qt.DisplayRole)
         editor.setValue(value)
         editor.lineEdit().deselect()
 
     def setModelData(self, editor: QDoubleSpinBox, model: QAbstractTableModel, index: QModelIndex) -> None:
-        """Set the table model's data to match the editor's data."""
+        """Set the table model's data to match the editor's data.
+
+        Parameters
+        ----------
+        editor : QDoubleSpinBox
+            The editor containing the data to be saved in the model.
+        model : QAbstractItemModel
+            The model which will need to be set.
+        index : QModelIndex
+            The index of the editor to be changed.
+        """
         data = editor.value()
         model.setData(index, data, Qt.EditRole)
 
@@ -201,7 +306,17 @@ class ScientificNotationDelegate(EditorDelegate):
         The delegate's associated QTableView.
     """
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
-        """Create a new persistent editor on the Table View at the given index."""
+        """Create a new persistent editor on the Table View at the given index.
+
+        Parameters
+        ----------
+        painter : QPainter
+            The Qt Painter used to display the delegate's editors
+        option : QStyleOptionViewItem
+            The style option used to render the item
+        index : QModelIndex
+            The index to display the editor on
+        """
         deselect_lineEdit = index.row() == len(self.editor_list)
         super().paint(painter, option, index)
 
@@ -210,7 +325,22 @@ class ScientificNotationDelegate(EditorDelegate):
             editor.deselect()
 
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QLineEdit:
-        """Initialize a QLineEdit to delete the table's row."""
+        """Initialize a QLineEdit to delete the table's row.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget intended to be used as the parent of the new editor
+        option : QStyleOptionViewItem
+            The item options used in creating the editor
+        index : QModelIndex
+            The index to display the editor on
+
+        Returns
+        -------
+        QLineEdit
+            The QLineEdit editor for the specified index
+        """
         if index.row() >= len(self.editor_list):
             value = index.data(Qt.DisplayRole)
             if value is None:
@@ -229,7 +359,16 @@ class ScientificNotationDelegate(EditorDelegate):
         return super().createEditor(parent, option, index)
 
     def setEditorData(self, editor: QLineEdit, index: QModelIndex) -> None:
-        """Set the editor's data to match the table model's data."""
+        """Set the editor's data to match the table model's data.
+
+        Parameters
+        ----------
+        editor : QLineEdit
+            The editor which will need to be set. Changes type based on
+            how the subclass is implemented.
+        index : QModelIndex
+            The index of the editor to be changed.
+        """
         value = index.data(Qt.DisplayRole)
 
         _, sci_not, prec = self.editor_list[index.row()]
@@ -241,7 +380,17 @@ class ScientificNotationDelegate(EditorDelegate):
         editor.setText(value)
 
     def setModelData(self, editor: QLineEdit, model: QAbstractTableModel, index: QModelIndex) -> None:
-        """Set the table model's data to match the editor's data."""
+        """Set the table model's data to match the editor's data.
+
+        Parameters
+        ----------
+        editor : QLineEdit
+            The editor containing the data to be saved in the model.
+        model : QAbstractItemModel
+            The model which will need to be set.
+        index : QModelIndex
+            The index of the editor to be changed.
+        """
         text = editor.text().lower()
 
         sci_not = "e" in text
@@ -268,7 +417,22 @@ class DeleteRowDelegate(EditorDelegate):
         associated QTableView
     """
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QPushButton:
-        """Initialize a QPushButton editor to delete the table's row."""
+        """Initialize a QPushButton editor to delete the table's row.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget intended to be used as the parent of the new editor
+        option : QStyleOptionViewItem
+            The item options used in creating the editor
+        index : QModelIndex
+            The index to display the editor on
+
+        Returns
+        -------
+        QPushButton
+            The QPushButton editor for the specified index
+        """
         if index.row() >= len(self.editor_list):
             editor = QPushButton(parent)
             icon = editor.style().standardIcon(QStyle.SP_DialogCancelButton)
@@ -282,7 +446,17 @@ class DeleteRowDelegate(EditorDelegate):
         return super().createEditor(parent, option, index)
 
     def setModelData(self, _: QPushButton, model: QAbstractTableModel, index: QModelIndex) -> None:
-        """When the setModelData slot is triggered, the row is removed."""
+        """When the setModelData slot is triggered, the row is removed.
+
+        Parameters
+        ----------
+        editor : QPushButton
+            The editor which is unused.
+        model : QAbstractItemModel
+            The model which we are removing a row from.
+        index : QModelIndex
+            The index of the row to be deleted.
+        """
         model.removeAtIndex(index)
 
 
@@ -311,7 +485,15 @@ class ComboBoxDelegate(QStyledItemDelegate):
         model.modelAboutToBeReset.connect(self.reset_editors)
 
     def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex):
-        """Initialize a QComboBox for use in the Table View."""
+        """Initialize a QComboBox for use in the Table View.
+
+        Parameters
+        ----------
+        option : QStyleOptionViewItem
+            The style option used to render the QComboBox
+        index : QModelIndex
+            The index to display the QComboBox on
+        """
         if index.row() >= len(self.editor_list):
             editor = QComboBox()
 
@@ -337,7 +519,15 @@ class ComboBoxDelegate(QStyledItemDelegate):
         return super().initStyleOption(option, index)
 
     def destroyEditor(self, editor: QComboBox, index: QModelIndex) -> None:
-        """Destroy the editor for a defined index."""
+        """Destroy the editor for a defined index.
+
+        Parameters
+        ----------
+        editor : QComboBox
+            The editor to be destroyed
+        index : QModelIndex
+            The index of the editor to be destroyed
+        """
         if index.row() < len(self.editor_list):
             self.editor_list[index.row()].deleteLater()
             del self.editor_list[index.row()]
@@ -345,14 +535,33 @@ class ComboBoxDelegate(QStyledItemDelegate):
         return super().destroyEditor(editor, index)
 
     def setEditorData(self, editor: QComboBox, index: QModelIndex) -> None:
-        """Set the editor's data to match the table model's data."""
+        """Set the editor's data to match the table model's data.
+
+        Parameters
+        ----------
+        editor : QComboBox
+            The editor which will need to be set. Changes type based on
+            how the subclass is implemented.
+        index : QModelIndex
+            The index of the editor to be changed.
+        """
         value = index.data(Qt.DisplayRole)
         ind = editor.findText(value)
         if ind >= 0:
             editor.setCurrentIndex(ind)
 
     def setModelData(self, editor: QComboBox, model: QAbstractTableModel, index: QModelIndex) -> None:
-        """Set the table model's data to match the editor's data."""
+        """Set the table model's data to match the editor's data.
+
+        Parameters
+        ----------
+        editor : QComboBox
+            The editor containing the data to be saved in the model.
+        model : QAbstractItemModel
+            The model which will need to be set.
+        index : QModelIndex
+            The index of the data to be changed.
+        """
         curr_text = editor.currentText()
         if isinstance(self.data_source, dict):
             data = self.data_source[curr_text]
@@ -361,13 +570,30 @@ class ComboBoxDelegate(QStyledItemDelegate):
             data = curr_text
         model.setData(index, data, Qt.EditRole)
 
-    def eventFilter(self, object: QObject, event: QEvent) -> bool:
-        """Disable scrolling for widgets that are not the focus."""
+    def eventFilter(self, object: QComboBox, event: QEvent) -> bool:
+        """Disable scrolling for widgets that are not the focus.
+
+        Parameters
+        ----------
+        object : QComboBox
+            The QComboBox that we are watching for events on.
+        event : QEvent
+            The events that we may want to filter out.
+
+        Returns
+        -------
+        bool
+            Whether or not the event is accepted by the filter.
+        """
         if event.type() == QEvent.Wheel and not object.hasFocus():
             return True
         return super().eventFilter(object, event)
 
-    def reset_editors(self):
+    @Slot()
+    def reset_editors(self) -> None:
+        """Slot called when the delegate's model will be reset. Closes all
+        persistent editors in the delegate.
+        """
         for editor in self.editor_list:
             editor_pos = editor.pos()
             index = self.parent().indexAt(editor_pos)
@@ -378,6 +604,12 @@ class ComboBoxDelegate(QStyledItemDelegate):
 
     @Slot(QPoint)
     def combo_menu_requested(self, pos: QPoint) -> None:
-        """Redirect menu requests to the Table View."""
+        """Redirect menu requests to the Table View.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The location of where the menu was requested.
+        """
         pos = self.sender().mapToParent(pos)
         self.parent().customContextMenuRequested.emit(pos)
