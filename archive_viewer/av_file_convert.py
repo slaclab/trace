@@ -180,7 +180,7 @@ class ArchiveViewerFileConverter():
             pv_dict = {'name': pv_in['name'],
                        'channel': pv_in['name'],
                        'yAxisName': pv_in['range_axis_name'],
-                       'lineWidth': float(pv_in['draw_width']),
+                       'lineWidth': int(float(pv_in['draw_width'])),
                        'color': color.name(),
                        'thresholdColor': color.name()}
             filtered_dict = self.remove_null_values(pv_dict)
