@@ -278,7 +278,7 @@ class ArchiveViewerFileConverter():
         [start_ts, end_ts] = plot.getXAxis().range
         start_dt = datetime.fromtimestamp(start_ts)
         end_dt = datetime.fromtimestamp(end_ts)
-
+        output_dict['plot'] = plot.to_dict()
         output_dict['time_axis'] = {'name': "Main Time Axis",
                                     'start': start_dt.isoformat(sep=' ', timespec='seconds'),
                                     'end': end_dt.isoformat(sep=' ', timespec='seconds'),
