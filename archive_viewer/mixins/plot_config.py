@@ -37,6 +37,7 @@ class PlotConfigMixin:
         self.ui.legend_chckbx.setChecked(config['legend'])
         self.ui.mouse_mode_cmbbx.setCurrentIndex(int(config['mouseMode']/3))
         self.ui.crosshair_chckbx.setChecked(config['crosshair'])
+        self.ui.refresh_interval_spnbx.setValue(config['refreshInterval'])
 
     def changeMouseMode(self, mode:int):
         mouse_mode = ViewBox.RectMode
