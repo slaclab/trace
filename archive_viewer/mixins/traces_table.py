@@ -257,7 +257,6 @@ class FormulaDialog(QDialog):
             update it with the latest information on the curve model and
             also populate the text box with the pre-existing formula (if it already was there)"""
         self.index = self.parent().selected_index
-        print(self.index)
         self.pv_list.setRowHidden(len(self.curveModel._row_names) - 1, True)
         for i in range(self.curveModel.rowCount() - 1):
             self.pv_list.setRowHidden(i, False)
