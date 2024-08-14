@@ -194,8 +194,10 @@ class IOTimeParser:
         datetime
             The datetime object with the same date and the new time
         """
-        time = cls.time_re.search(time_str).group()
-        if not time:
+        # Get absolute time from string, return datetime if none
+        try:
+            time = cls.time_re.search(time_str).group()
+        except AttributeError:
             return dt
 
         if time.count(':') == 1:
