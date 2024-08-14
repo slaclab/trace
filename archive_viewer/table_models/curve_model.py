@@ -1,13 +1,14 @@
-from typing import (Any, Optional)
+from typing import (Any, List, Dict, Optional)
+from qtpy.QtGui import QColor
 from qtpy.QtCore import (QObject, QModelIndex, Qt)
 from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem, FormulaCurveItem
 from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
-from qtpy.QtGui import QColor
 from functools import partial
 import re
 from widgets import ColorButton
 from table_models import ArchiverAxisModel
+from config import logger
 
 
 class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
@@ -69,14 +70,16 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             value_is_formula = value.startswith("f://")
             curve_is_formula = isinstance(curve, FormulaCurveItem)
             if value_is_formula and not curve_is_formula:
-                #Regardless of starting point, going to a formula is handled in this one function
+                # Regardless of starting point, going to a formula is handled in this one function
                 return self.replaceToFormula(index = index, formula = value)
             elif value_is_formula and curve_is_formula:
-                pvdict = self.formulaToPVDict(self._row_names[index.row()], value)
-                if pvdict:
+                try:
+                    rowName = self._row_names[index.row()]
+                    pv_dict = self.formulaToPVDict(rowName, value)
                     curve.formula = value
-                    curve.pvs = pvdict
-                else:
+                    curve.pvs = pv_dict
+                except ValueError as e:
+                    logger.error(e)
                     return False
             elif not value_is_formula and not curve_is_formula:
                 if value == curve.address:
@@ -136,16 +139,33 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
 
+    def set_model_curves(self, curves: List[Dict]) -> None:
+        self.beginResetModel()
+        self._plot.clearCurves()
+        self._row_names = []
+
+        for c in curves:
+            for k, v in c.items():
+                if v is None:
+                    del c[k]
+            c['y_channel'] = c['channel']
+            del c['channel']
+            self._plot.addYChannel(**c)
+            self._row_names.append(self.next_header())
+        self.append()
+
+        self.endResetModel()
+
     def replaceToArchivePlot(self, curve: BasePlotCurveItem, index: QModelIndex, address: str, color: Optional[QColor] = None):
         y_axis = y_axis = self._axis_model.get_axis(index.row())
-        #saving the next line for axis fixes
-        #self.plot.plotItem.axes[self.get_data(curve=self._plot._curves[index.row()], column_name="Y-Axis Name")]
-        #Get rid of the old formula
+        # saving the next line for axis fixes
+        # self.plot.plotItem.axes[self.get_data(curve=self._plot._curves[index.row()], column_name="Y-Axis Name")]
+        # Get rid of the old formula
         self.plot.plotItem.unlinkDataFromAxis(curve.y_axis_name)
         self.plot.removeItem(curve)
         if not color:
             color = ColorButton.index_color(index.row())
-        #Create a new ArchivePlotCurveItem and link it
+        # Create a new ArchivePlotCurveItem and link it
         self._plot._curves[index.row()] = self._plot.replaceToArchivePlot(address=address, name=address, color=color, yAxisName=y_axis.name)
         self.plot.linkDataToAxis(self._plot._curves[index.row()], y_axis.name)
         del curve
@@ -154,18 +174,15 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         pvs = re.findall("{(.+?)}", formula)
         pvdict = dict()
         for pv in pvs:
-            #Check if all of the requested rows actually exist
+            # Check if all of the requested rows actually exist
             if pv not in self._row_names:
-                print("Error, " + pv + " is an invalid variable name.")
-                return None
+                raise ValueError(f"{pv} is an invalid variable name")
             elif pv == rowName:
-                print("Error, formula is recursive")
-                return None
+                raise ValueError(f"{pv} is recursive")
             elif self._row_names.index(pv) > self._row_names.index(rowName):
-                print("Error, all referenced rows must be before the formula")
-                return None
+                raise ValueError(f"Error, all referenced curves must come before the Formula")
             else:
-                #if it's good, add it to the dictionary of curves. rindex = row index (int) as opposed to index, which is a QModelIndex
+                # if it's good, add it to the dictionary of curves. rindex = row index (int) as opposed to index, which is a QModelIndex
                 rindex = self._row_names.index(pv)
                 pvdict[pv] = self._plot._curves[rindex]
         return pvdict
@@ -186,30 +203,28 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
         rowName = self._row_names[index.row()]
         pvdict = self.formulaToPVDict(rowName, formula)
-        if not pvdict:
+        if pvdict == None:
             return False
-        print("accepted formula")
         curve = self._plot._curves[index.row()]
         if not color:
             color = ColorButton.index_color(index.row())
         #          KLYS:LI22:31:KVAC
         # Handle Archives and formulas differently
         if index.row() == self.rowCount() - 1:
-            self._axis_model.append()
             self.append()
-        y_axis = self._axis_model.get_axis(index.row())
+        y_axis = self._axis_model.get_axis(-1)
         self._plot._curves[index.row()] = self._plot.addFormulaChannel(formula=formula, name=formula, pvs=pvdict,color=color, useArchiveData=True, yAxisName=y_axis.name)
         self._plot._curves[index.row()].formula_invalid_signal.connect(partial(self.invalidFormula, header = rowName))
-        #Need to check if Formula is referencing a dead row
+        # Need to check if Formula is referencing a dead row
         self.plot.plotItem.unlinkDataFromAxis(curve.y_axis_name)
         self.plot.removeItem(curve)
-        #Disconnect everything and delete it, create a new Formula with the dictionary of curve
+        # Disconnect everything and delete it, create a new Formula with the dictionary of curve
         [ch.disconnect() for ch in curve.channels() if ch]
         del curve
         return True
 
     def invalidFormula(self, header):
-        #handling row deletion if the formula is no longer valid
+        # handling row deletion if the formula is no longer valid
         rindex = self._row_names.index(header)
         index = self.index(rindex,0)
         if not index.isValid() or index.row() == (self.rowCount() - 1):
@@ -225,7 +240,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if not self._plot._curves:
             self.append()
         del curve
-        #Prompt a redraw top cascade and delete any consequential formulas
+        # Prompt a redraw top cascade and delete any consequential formulas
         self._plot.archive_data_received()
         self._plot.set_needs_redraw()
         self._plot.redrawPlot()
@@ -239,7 +254,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             An index in the row to be removed.
         """
         if isinstance(self._plot._curves[index.row()], FormulaCurveItem):
-            #Formula Curves don't have channel ddata so we should just remove it as if it were no longer valid
+            # Formula Curves don't have channel ddata so we should just remove it as if it were no longer valid
             self.invalidFormula(self._row_names[index.row()])
             return False
 
