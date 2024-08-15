@@ -222,7 +222,11 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         # Find row headers using regex
 
         rowName = self._row_names[index.row()]
-        pvdict = self.formulaToPVDict(rowName, formula)
+        try:
+            pvdict = self.formulaToPVDict(rowName, formula)
+        except ValueError as e:
+            logger.error(e)
+            return False
         if pvdict == None:
             return False
         curve = self._plot._curves[index.row()]
