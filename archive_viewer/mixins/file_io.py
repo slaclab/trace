@@ -88,7 +88,7 @@ class FileIOMixin:
 
         # Set the models to use the file data
         self.axis_table_model.set_model_axes(file_data['y-axes'])
-        self.curves_model.set_model_curves(file_data['curves'])
+        self.curves_model.set_model_curves(file_data['curves'] + file_data['formula'])
 
         # Enable auto scroll if the end time is "now"
         self.ui.cursor_scale_btn.click()

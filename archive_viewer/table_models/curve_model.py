@@ -30,6 +30,28 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._row_names = []
         self._axis_model = axis_model
 
+    def __contains__(self, key: str) -> bool:
+        """Check if the given key is a channel that already exists in the model.
+        Allows for the use of the 'in' keyword.
+
+        Parameters
+        ----------
+        key : str
+            Channel to check existence of
+
+        Returns
+        -------
+        bool
+            If the channel already exists in the model
+        """
+        for curve in self._plot._curves:
+            if hasattr(curve, "channel"):
+                if curve.address == key:
+                    return True
+            elif curve.formula == key:
+                return True
+        return False
+
     def get_data(self, column_name: str, curve: ArchivePlotCurveItem) -> Any:
         """Get data from the model based on column name.
 
@@ -74,21 +96,25 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return self.replaceToFormula(index = index, formula = value)
             elif value_is_formula and curve_is_formula:
                 try:
-                    rowName = self._row_names[index.row()]
-                    pv_dict = self.formulaToPVDict(rowName, value)
+                    pv_dict = self.formulaToPVDict(self._row_names[index.row()], value)
                     curve.formula = value
                     curve.pvs = pv_dict
                 except ValueError as e:
                     logger.error(e)
                     return False
-            elif not value_is_formula and not curve_is_formula:
-                if value == curve.address:
-                    return True
-                [ch.disconnect() for ch in curve.channels() if ch]
-                curve.address = str(value)
-                [ch.connect() for ch in curve.channels() if ch]
-            else:
-                self.replaceToArchivePlot(curve = curve, index = index, address = str(value))
+            elif not value_is_formula:
+                # Check if this thing already in curves model
+                if value in self:
+                    logger.warning("You can only have one of each PV")
+                    return False
+                if not curve_is_formula:
+                    if value == curve.address:
+                        return True
+                    [ch.disconnect() for ch in curve.channels() if ch]
+                    curve.address = str(value)
+                    [ch.connect() for ch in curve.channels() if ch]
+                else:
+                    self.replaceToArchivePlot(curve = curve, index = index, address = str(value))
 
             if not curve.name():
                 curve.setData(name=str(value))
@@ -109,10 +135,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             ret_code = True
         else:
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
-        #After messing with the data, just cleanly redraw everything
-        self._plot.requestDataFromArchiver()
-        self._plot.set_needs_redraw()
-        self._plot.redrawPlot()
+        # After messing with the data, just cleanly redraw everything
+        # self._plot.requestDataFromArchiver()
+        # self._plot.set_needs_redraw()
+        # self._plot.redrawPlot()
         return ret_code
 
     def append(self, address: Optional[str] = None, name: Optional[str] = None, color: Optional[QColor] = None) -> None:
@@ -148,12 +174,38 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             for k, v in c.items():
                 if v is None:
                     del c[k]
-            c['y_channel'] = c['channel']
-            del c['channel']
-            self._plot.addYChannel(**c)
-            self._row_names.append(self.next_header())
-        self.append()
+            if 'channel' in c:
+                c['y_channel'] = c['channel']
+                del c['channel']
+                self._plot.addYChannel(**c)
+                self._row_names.append(self.next_header())
+            else:
+                self.append()
+                headers = re.findall("{(.+?)}", c['formula'])
+                splitFormula = re.split("{.+?}", c['formula'])
+                newFormula = splitFormula.pop(0)
+                for header in headers:
+                    # For every header refereced in our formula
+                    if header in c['curveDict'].keys():
+                        # If this curve (formula or channel) is in the curves list
+                        name = c['curveDict'][header]
+                        if name in self:
+                            # Manually find it and replace the header in the formula
+                            for i in range(len(self.plot.curves)):
+                                curve = self._plot._curves[i]
+                                if ((hasattr(curve, "address") and curve.address == name)
+                                            or (hasattr(curve, "formula") and curve.formula == name)):
+                                    newFormula += "{" + self._row_names[i] + "}" + splitFormula.pop(0)
 
+                                    break
+                # change formula to match new stuff
+                index = self.index(-1,0)
+                del c['formula']
+                del c['curveDict']
+                self.replaceToFormula(index=index, formula=newFormula, **c)
+        self.append()
+        self._plot.set_needs_redraw()
+        self._plot.redrawPlot()
         self.endResetModel()
 
     def replaceToArchivePlot(self, curve: BasePlotCurveItem, index: QModelIndex, address: str, color: Optional[QColor] = None):
@@ -187,7 +239,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 pvdict[pv] = self._plot._curves[rindex]
         return pvdict
 
-    def replaceToFormula(self, index: QModelIndex, formula: str, color: Optional[QColor] = None) -> bool:
+    def replaceToFormula(self, index: QModelIndex, formula: str, color: Optional[str] = None, yAxisName: Optional[str] = None, **kwargs) -> bool:
         """Replaces existing ArchivePlotCurveItem with a new FormulaCurveItem
 
         Parameters
@@ -212,8 +264,9 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         # Handle Archives and formulas differently
         if index.row() == self.rowCount() - 1:
             self.append()
-        y_axis = self._axis_model.get_axis(-1)
-        self._plot._curves[index.row()] = self._plot.addFormulaChannel(formula=formula, name=formula, pvs=pvdict,color=color, useArchiveData=True, yAxisName=y_axis.name)
+        if not yAxisName:
+            yAxisName = curve.y_axis_name
+        self._plot._curves[index.row()] = self._plot.addFormulaChannel(formula=formula, name=formula, pvs=pvdict,color=color, useArchiveData=True, yAxisName=yAxisName)
         self._plot._curves[index.row()].formula_invalid_signal.connect(partial(self.invalidFormula, header = rowName))
         # Need to check if Formula is referencing a dead row
         self.plot.plotItem.unlinkDataFromAxis(curve.y_axis_name)
