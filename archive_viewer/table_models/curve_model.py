@@ -170,6 +170,26 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self.plot.linkDataToAxis(self._plot._curves[index.row()], y_axis.name)
         del curve
 
+    def recursionCheck(self, target: str, rowHeaders: list[str]) -> bool:
+
+        # We are handling base case in the loop so we won't worry about this rn
+
+        # Presumably we are running this every single time formulaToPVDict is called,
+        # So our target being the only one we check for is all that matters
+
+        for rowHeader in rowHeaders:
+            if rowHeader == target:
+                # We hit a dependency that is our target, fail
+                return False
+            index = self._row_names.index(rowHeader)
+            if isinstance(self._plot._curves[index], FormulaCurveItem):
+                # If this dependency is a Formula, check its children
+                if not self.recursionCheck(target, self._plot._curves[index].pvs.keys()):
+                    # One of the descendants is target, propagate upward
+                    return False
+        # If we are here, then none of the children failed
+        return True
+
     def formulaToPVDict(self, rowName: str, formula: str) -> dict:
         pvs = re.findall("{(.+?)}", formula)
         pvdict = dict()
@@ -179,12 +199,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 raise ValueError(f"{pv} is an invalid variable name")
             elif pv == rowName:
                 raise ValueError(f"{pv} is recursive")
-            elif self._row_names.index(pv) > self._row_names.index(rowName):
-                raise ValueError(f"Error, all referenced curves must come before the Formula")
             else:
                 # if it's good, add it to the dictionary of curves. rindex = row index (int) as opposed to index, which is a QModelIndex
                 rindex = self._row_names.index(pv)
                 pvdict[pv] = self._plot._curves[rindex]
+        if not self.recursionCheck(rowName, pvdict.keys()):
+            raise ValueError(f"There was a recursive dependency somewhere")
         return pvdict
 
     def replaceToFormula(self, index: QModelIndex, formula: str, color: Optional[QColor] = None) -> bool:
