@@ -170,21 +170,22 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self.plot.linkDataToAxis(self._plot._curves[index.row()], y_axis.name)
         del curve
 
-    def recursionCheck(self, target: str, rowHeaders: list[str]) -> bool:
+    def recursionCheck(self, target: str, rowHeaders: dict) -> bool:
 
         # We are handling base case in the loop so we won't worry about this rn
 
         # Presumably we are running this every single time formulaToPVDict is called,
         # So our target being the only one we check for is all that matters
+        # ^ As opposed to keeping a list of seen rows and making sure there are no repeats
+        # Which by the way wouldn't work anyway, because multiple descendants are allowed to use the same rows
 
-        for rowHeader in rowHeaders:
+        for rowHeader, curve in rowHeaders.items():
             if rowHeader == target:
                 # We hit a dependency that is our target, fail
                 return False
-            index = self._row_names.index(rowHeader)
-            if isinstance(self._plot._curves[index], FormulaCurveItem):
+            if isinstance(curve, FormulaCurveItem):
                 # If this dependency is a Formula, check its children
-                if not self.recursionCheck(target, self._plot._curves[index].pvs.keys()):
+                if not self.recursionCheck(target, curve.pvs):
                     # One of the descendants is target, propagate upward
                     return False
         # If we are here, then none of the children failed
@@ -203,7 +204,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 # if it's good, add it to the dictionary of curves. rindex = row index (int) as opposed to index, which is a QModelIndex
                 rindex = self._row_names.index(pv)
                 pvdict[pv] = self._plot._curves[rindex]
-        if not self.recursionCheck(rowName, pvdict.keys()):
+        if not self.recursionCheck(rowName, pvdict):
             raise ValueError(f"There was a recursive dependency somewhere")
         return pvdict
 
