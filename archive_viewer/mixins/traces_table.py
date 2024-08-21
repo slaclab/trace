@@ -1,8 +1,8 @@
 from typing import (Dict, Any)
 from qtpy import sip
-from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject)
+from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
-                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton)
+                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView)
 from pydm.widgets.baseplot import BasePlotCurveItem
 from pydm.widgets.baseplot_curve_editor import PlotStyleColumnDelegate
 from config import logger
@@ -24,12 +24,13 @@ class TracesTableMixin:
         self.ui.traces_tbl.customContextMenuRequested.connect(
             self.custom_context_menu)
 
-        hdr = self.ui.traces_tbl.horizontalHeader()
-        hdr.setSectionResizeMode(QHeaderView.Stretch)
+        self.hdr = self.ui.traces_tbl.horizontalHeader()
+        self.hdr.setSectionResizeMode(QHeaderView.Stretch)
         channel_col = self.curves_model.getColumnIndex("Channel")
-        hdr.setSectionResizeMode(channel_col, QHeaderView.ResizeToContents)
+        self.hdr.setSectionResizeMode(channel_col, QHeaderView.ResizeToContents)
         del_col = self.curves_model.getColumnIndex("")
-        hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
+        self.hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
+        self.setAcceptDrops(True)
 
     def curve_delegates_init(self) -> None:
         """Set column delegates for the Traces table to display widgets."""
@@ -89,6 +90,24 @@ class TracesTableMixin:
         delete_row_del = DeleteRowDelegate(self.ui.traces_tbl)
         self.ui.traces_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
 
+    def dragEnterEvent(self, e):
+        e.accept()
+
+    def dragMoveEvent(self, e):
+        e.accept()
+
+    def dropEvent(self, e):
+        data = e.mimeData().text()
+        logger.info("Accepting PVs " + data)
+        channels = data.split(", ")
+        for channel in channels:
+            index = -1
+            curve = self.curves_model.curve_at_index(index)
+            self.curves_model.set_data(column_name="Channel", curve=curve, value=channel)
+        self.ui.traces_tbl.update()
+        self.hdr.setSectionResizeMode(self.curves_model.getColumnIndex("Channel"), QHeaderView.ResizeToContents)
+        self.hdr.setSectionResizeMode(self.curves_model.getColumnIndex("Label"), QHeaderView.ResizeToContents)
+
     @Slot(QPoint)
     def custom_context_menu(self, pos: QPoint) -> None:
         """Open a custom context menu for the Traces table where the
@@ -147,10 +166,10 @@ class PVContextMenu(QMenu):
 
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent)
+
         self._selected_index = None
         self.archive_search = ArchiveSearchWidget()
         self._formula_dialog = FormulaDialog(self)
-
         # Add "SEARCH PV" option
         search_pv_action = QAction("SEARCH PV", self)
         search_pv_action.triggered.connect(self.archive_search.show)

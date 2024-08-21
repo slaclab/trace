@@ -1,6 +1,6 @@
 import logging
 from typing import (List, Optional)
-from qtpy.QtGui import QDrag
+from qtpy.QtGui import QDrag, QKeyEvent
 from qtpy.QtCore import (QAbstractTableModel, QMimeData, QModelIndex, QObject,
                          Qt, QUrl, QVariant)
 from qtpy.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
@@ -127,7 +127,7 @@ class ArchiveSearchWidget(QWidget):
         self.results_view.setProperty("showDropIndicator", False)
         self.results_view.setDragDropOverwriteMode(False)
         self.results_view.setDragEnabled(True)
-        self.results_view.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.results_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.results_view.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.results_view.setDropIndicatorShown(True)
         self.results_view.setCornerButtonEnabled(False)
@@ -156,20 +156,29 @@ class ArchiveSearchWidget(QWidget):
         data for that PV
         """
         indices = self.results_view.selectedIndexes()
-        if len(indices) > 0:
-            index = indices[0]
+        pv_list = ""
+        for index in indices:
             pv_name = self.results_table_model.results_list[index.row()]
-            drag = QDrag(self)
-            mime_data = QMimeData()
-            mime_data.setText(pv_name)
-            drag.setMimeData(mime_data)
-            drag.exec()
+            pv_list += pv_name + ", "
+        drag = QDrag(self)
+        mime_data = QMimeData()
+        mime_data.setText(pv_list[:-2])
+        drag.setMimeData(mime_data)
+        drag.exec_()
+
+    def keyPressEvent(self, e: QKeyEvent) -> None:
+        # Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
+        if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
+            self.request_archiver_info()
+        return super().keyPressEvent(e)
 
     def request_archiver_info(self) -> None:
         """Send the search request to the archiver appliance based on the search string typed into the text box"""
+        search_text = self.search_box.text()
+        search_text = search_text.replace("?", ".")
         url_string = (
             f"http://{self.archive_url_textedit.text()}/"
-            f"retrieval/bpl/searchForPVsRegex?regex=.*{self.search_box.text()}.*"
+            f"retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
         )
         request = QNetworkRequest(QUrl(url_string))
         self.network_manager.get(request)
