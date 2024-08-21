@@ -31,6 +31,7 @@ class TracesTableMixin:
         del_col = self.curves_model.getColumnIndex("")
         self.hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
         self.setAcceptDrops(True)
+        self.menu.archive_search.append_PVs_requested.connect(self.insertPVs)
 
     def curve_delegates_init(self) -> None:
         """Set column delegates for the Traces table to display widgets."""
@@ -98,6 +99,9 @@ class TracesTableMixin:
 
     def dropEvent(self, e):
         data = e.mimeData().text()
+        self.insertPVs(data)
+
+    def insertPVs(self, data: str):
         logger.info("Accepting PVs " + data)
         channels = data.split(", ")
         for channel in channels:

@@ -2,7 +2,7 @@ import logging
 from typing import (List, Optional)
 from qtpy.QtGui import QDrag, QKeyEvent
 from qtpy.QtCore import (QAbstractTableModel, QMimeData, QModelIndex, QObject,
-                         Qt, QUrl, QVariant)
+                         Qt, QUrl, QVariant, Signal)
 from qtpy.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from qtpy.QtWidgets import (QAbstractItemView, QHBoxLayout, QHeaderView, QLabel,
                             QLineEdit, QPushButton, QTableView, QVBoxLayout, QWidget)
@@ -97,7 +97,7 @@ class ArchiveSearchWidget(QWidget):
     parent : QObject, optional
         The parent item of this widget
     """
-
+    append_PVs_requested = Signal(str)
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent=parent)
 
@@ -147,7 +147,19 @@ class ArchiveSearchWidget(QWidget):
         self.layout.addLayout(self.search_layout)
         self.layout.addWidget(self.loading_label)
         self.layout.addWidget(self.results_view)
+        self.insert_button = QPushButton("Add PVs")
+        self.insert_button.clicked.connect(lambda:self.append_PVs_requested.emit(self.selectedPVs()))
+        self.results_view.doubleClicked.connect(lambda:self.append_PVs_requested.emit(self.selectedPVs()))
+        self.layout.addWidget(self.insert_button)
         self.setLayout(self.layout)
+
+    def selectedPVs(self) -> str:
+        indices = self.results_view.selectedIndexes()
+        pv_list = ""
+        for index in indices:
+            pv_name = self.results_table_model.results_list[index.row()]
+            pv_list += pv_name + ", "
+        return pv_list[:-2]
 
     def startDragAction(self, supported_actions) -> None:
         """
@@ -155,14 +167,9 @@ class ArchiveSearchWidget(QWidget):
         reason for this functionality is the ability to drag a PV name onto a plot to automatically start drawing
         data for that PV
         """
-        indices = self.results_view.selectedIndexes()
-        pv_list = ""
-        for index in indices:
-            pv_name = self.results_table_model.results_list[index.row()]
-            pv_list += pv_name + ", "
         drag = QDrag(self)
         mime_data = QMimeData()
-        mime_data.setText(pv_list[:-2])
+        mime_data.setText(self.selectedPVs())
         drag.setMimeData(mime_data)
         drag.exec_()
 
