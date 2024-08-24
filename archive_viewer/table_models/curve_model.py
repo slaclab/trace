@@ -71,7 +71,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             curve_is_formula = isinstance(curve, FormulaCurveItem)
             if value_is_formula and not curve_is_formula:
                 # Regardless of starting point, going to a formula is handled in this one function
-                return self.replaceToFormula(index = index, formula = value)
+                ret_code = self.replaceToFormula(index = index, formula = value)
             elif value_is_formula and curve_is_formula:
                 try:
                     rowName = self._row_names[index.row()]
@@ -88,7 +88,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 curve.address = str(value)
                 [ch.connect() for ch in curve.channels() if ch]
             else:
-                self.replaceToArchivePlot(curve = curve, index = index, address = str(value))
+                self.replaceToArchivePlot(curve=curve, index=index, address=value, color=curve.color)
 
             if not curve.name():
                 curve.setData(name=str(value))
@@ -157,18 +157,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self.endResetModel()
 
     def replaceToArchivePlot(self, curve: BasePlotCurveItem, index: QModelIndex, address: str, color: Optional[QColor] = None):
-        y_axis = y_axis = self._axis_model.get_axis(index.row())
-        # saving the next line for axis fixes
-        # self.plot.plotItem.axes[self.get_data(curve=self._plot._curves[index.row()], column_name="Y-Axis Name")]
-        # Get rid of the old formula
-        self.plot.plotItem.unlinkDataFromAxis(curve.y_axis_name)
+        self.append(address=address, name=address, color=color)
+        self._plot._curves[index.row()] = self._plot._curves[-1]
+        self.beginRemoveRows(QModelIndex(), index.row(), index.row())
+        self.plot._curves = self.plot._curves[:-1]
         self.plot.removeItem(curve)
-        if not color:
-            color = ColorButton.index_color(index.row())
-        # Create a new ArchivePlotCurveItem and link it
-        self._plot._curves[index.row()] = self._plot.replaceToArchivePlot(address=address, name=address, color=color, yAxisName=y_axis.name)
-        self.plot.linkDataToAxis(self._plot._curves[index.row()], y_axis.name)
-        del curve
+        self.endRemoveRows()
 
     def formulaToPVDict(self, rowName: str, formula: str) -> dict:
         pvs = re.findall("{(.+?)}", formula)
@@ -254,7 +248,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             An index in the row to be removed.
         """
         if isinstance(self._plot._curves[index.row()], FormulaCurveItem):
-            # Formula Curves don't have channel ddata so we should just remove it as if it were no longer valid
+            # Formula Curves don't have channel data so we should just remove it as if it were no longer valid
             self.invalidFormula(self._row_names[index.row()])
             return False
 
