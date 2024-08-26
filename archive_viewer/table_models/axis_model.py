@@ -2,6 +2,7 @@ from typing import (Any, List, Dict)
 from qtpy.QtCore import (Qt, QVariant, QPersistentModelIndex, QModelIndex, Signal)
 from pydm.widgets.baseplot import (BasePlot, BasePlotAxisItem)
 from pydm.widgets.axis_table_model import BasePlotAxesModel
+from config import logger
 
 
 class ArchiverAxisModel(BasePlotAxesModel):
@@ -65,6 +66,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
             The role used by the view to indicate if the model is being editted,
             by default Qt.EditRole
         """
+        logger.debug(f"Setting {self._column_names[index.column()]} on axis {index.siblingAtColumn(0).data()}")
         if not index.isValid():
             return QVariant()
         # Specifically the Hidden column must be affected in axis_model as opposed to elsewhere
@@ -86,6 +88,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
             The name for the new axis item. If none is passed in, the
             axis is named "Axis <row_count>".
         """
+        logger.debug("Adding new empty axis to the plot")
         if not name:
             axis_count = self.rowCount() + 1
             name = f"Axis {axis_count}"
@@ -125,6 +128,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
                     clean_a[k] = a[k]
             cleaned_axes.append(clean_a)
 
+        logger.debug("Clearing axes model")
         self.beginResetModel()
         self._plot.clearAxes()
         for a in cleaned_axes:
@@ -142,6 +146,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
         index : QModelIndex
             An index in the row to be removed.
         """
+        logger.debug(f"Removing axis at index {index.row()}")
         if not index.isValid() or self.rowCount() == 1:
             return False
         axis = self.get_axis(index.row())
