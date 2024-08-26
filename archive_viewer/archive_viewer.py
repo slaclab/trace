@@ -1,8 +1,10 @@
-from functools import partial
+import os
+from logging import (Handler, LogRecord)
+from subprocess import run
 from qtpy.QtCore import Slot
-from qtpy.QtWidgets import (QAbstractButton, QApplication)
+from qtpy.QtWidgets import (QAbstractButton, QApplication, QLabel)
 from pydm import Display
-from config import logger
+from config import (logger, datetime_pv)
 from mixins import (TracesTableMixin, AxisTableMixin, FileIOMixin)
 from styles import CenterCheckStyle
 
@@ -10,6 +12,10 @@ from styles import CenterCheckStyle
 class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
     def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
         super(ArchiveViewer, self).__init__(parent=parent, args=args, macros=macros, ui_filename=ui_filename)
+        self.set_footer()
+
+        app = QApplication.instance()
+        app.setStyle(CenterCheckStyle())
 
         self.ui.main_spltr.setCollapsible(0, False)
         self.ui.main_spltr.setStretchFactor(0, 1)
@@ -29,7 +35,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
             self.ui.month_scale_btn: 2628300,
             self.ui.cursor_scale_btn: -1
         }
-        self.ui.timespan_btns.buttonClicked.connect(partial(self.set_plot_timerange))
+        self.ui.timespan_btns.buttonClicked.connect(self.set_plot_timerange)
 
         plot_viewbox = self.ui.archiver_plot.plotItem.vb
         plot_viewbox.sigRangeChangedManually.connect(self.ui.cursor_scale_btn.click)
@@ -41,6 +47,21 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         """Add export & import functionality to File menu; override Display.file_menu_items"""
         return {"save": (self.export_save_file, "Ctrl+S"),
                 "load": (self.import_save_file, "Ctrl+L")}
+
+    def set_footer(self):
+        """Set footer information for application. Includes logging, nodename,
+        username, PID, git version, Archiver URL, and current datetime
+        """
+        self.logging_handler = LoggingHandler(self.ui.ftr_logging_lbl)
+        logger.addHandler(self.logging_handler)
+        logger.setLevel("NOTSET")
+
+        self.ui.ftr_node_lbl.setText(os.uname().nodename)
+        self.ui.ftr_user_lbl.setText(os.getlogin())
+        self.ui.ftr_pid_lbl.setText(str(os.getpid()))
+        self.ui.ftr_ver_lbl.setText(self.git_version())
+        self.ui.ftr_url_lbl.setText(os.getenv('PYDM_ARCHIVER_URL'))
+        self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
 
     @Slot(QAbstractButton)
     def set_plot_timerange(self, button: QAbstractButton) -> None:
@@ -55,11 +76,38 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
             The timespan setting button pressed. Determines which timespan
             to set.
         """
+        logger.debug(f"Setting plot timerange")
         if button not in self.button_spans:
             logger.error(f"{button} is not a valid timespan button")
             return
 
         enable_scroll = button != self.ui.cursor_scale_btn
         timespan = self.button_spans[button]
+        if enable_scroll:
+            logger.debug(f"Enabling plot autoscroll for {timespan}s")
+        else:
+            logger.debug("Disabling plot autoscroll, using mouse controls")
 
         self.ui.archiver_plot.setAutoScroll(enable_scroll, timespan)
+
+    @staticmethod
+    def git_version():
+        """Get the current git tag for the project"""
+        project_directory = __file__.rsplit('/', 1)[0]
+        git_cmd = run(f"cd {project_directory} && git describe --tags",
+                      text=True,
+                      shell=True,
+                      capture_output=True)
+        return git_cmd.stdout.strip()
+
+
+class LoggingHandler(Handler):
+    def __init__(self, logging_lbl: QLabel, level: int=0) -> None:
+        super().__init__(level)
+        self.logging_lbl = logging_lbl
+
+    def emit(self, record: LogRecord):
+        log = record.msg
+        if record.levelno > 20:
+            log = f"[{record.levelname}] - {log}"
+        self.logging_lbl.setText(log)
