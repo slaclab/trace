@@ -508,6 +508,8 @@ class ComboBoxDelegate(QStyledItemDelegate):
             elif isinstance(self.data_source, QAbstractItemModel):
                 editor.setModel(self.data_source)
                 editor.setModelColumn(0)
+                value = index.data(Qt.DisplayRole)
+                editor.setCurrentText(str(value))
 
             editor.setFocusPolicy(Qt.StrongFocus)
             editor.setContextMenuPolicy(Qt.CustomContextMenu)
