@@ -126,7 +126,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             ret_code = True
         else:
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
-        #After messing with the data, just cleanly redraw everything
         self.plot.plotItem.autoVisible(curve.y_axis_name)
         logger.debug("Finished setting curve data")
         return ret_code
@@ -149,9 +148,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if not color:
             color = ColorButton.index_color(self.rowCount())
         self._row_names.append(self.next_header())
-        #          KLYS:LI22:31:KVAC
         self.beginInsertRows(QModelIndex(), len(self._plot._curves), len(self._plot._curves))
-        #by default, add a blank archivePlotCurveItem such that there's an empty row to add PVs or formulas to.
+        # By default, add a blank archivePlotCurveItem such that there's an empty row to add PVs or formulas to.
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
         self._plot._curves[-1].hide()
@@ -258,9 +256,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         return self._plot.curveAtIndex(index)
 
     @Slot(object)
-    def remove_curve(self, curve: BasePlotCurveItem):
+    def remove_curve(self, curve: BasePlotCurveItem) -> None:
         """Necessary specifically for when an axis is deleted
-        To properly delete all of its connected curves"""
+        To properly delete all of its connected curves
+
+        curve: BasePlotCurveItem
+            The curve we want to delete from the model"""
         ind = self._plot._curves.index(curve)
         ind = self.index(ind, 0)
         self.removeAtIndex(ind)
