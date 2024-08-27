@@ -16,6 +16,8 @@ class TracesTableMixin:
     def traces_table_init(self) -> None:
         """Initialize the Traces table model and section."""
         self.curves_model = ArchiverCurveModel(self, self.ui.archiver_plot, self.axis_table_model)
+        self.curves_model.invalid_index_signal.connect(self.invalid_index)
+
         self.ui.traces_tbl.setModel(self.curves_model)
 
         self.menu = PVContextMenu(self)
@@ -28,6 +30,10 @@ class TracesTableMixin:
         hdr.setSectionResizeMode(channel_col, QHeaderView.ResizeToContents)
         del_col = self.curves_model.getColumnIndex("")
         hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
+
+    def invalid_index(self, index):
+        self.ui.traces_tbl.clearSelection()
+        self.ui.traces_tbl.update(index)
 
     def curve_delegates_init(self) -> None:
         """Set column delegates for the Traces table to display widgets."""

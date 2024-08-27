@@ -1,6 +1,6 @@
 from typing import (Any, List, Dict, Optional)
-from qtpy.QtGui import QColor
-from qtpy.QtCore import (QObject, QModelIndex, Qt)
+from qtpy.QtGui import (QColor, QBrush)
+from qtpy.QtCore import (QObject, QModelIndex, Qt, Signal, Slot)
 from pydm.widgets.baseplot import BasePlot
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
 from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
@@ -22,13 +22,38 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         The table model that stores the axes for the plot.
     """
 
+    invalid_index_signal = Signal(QModelIndex)
+
     def __init__(self, parent: Optional[QObject], plot: BasePlot, axis_model: ArchiverAxisModel) -> None:
         super(ArchiverCurveModel, self).__init__(plot, parent)
         # Remove columns for bar width, limits, and thresholds. Bar graph plot style is unused
         self._column_names = self._column_names[:6] + ("Style",) + self._column_names[6:10] + ("",)
         self._row_names = []
         self._axis_model = axis_model
+        self._invalid_curves = set()
         self.append()
+
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole=Qt.DisplayRole) -> Any:
+        """Get data from the model for a given index and a given data role. If
+        the curve at the given index is invalid, the Channel column is turned red.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The index for the data requested
+        role : Qt.ItemDataRole
+            The role for the data requested, by default Qt.DisplayRole
+        """
+        if (index.column() == 0) and self._plot._curves:
+            curve = self.curve_at_index(index)
+            if curve in self._invalid_curves:
+                if role == Qt.BackgroundRole:
+                    return QBrush(QColor("#ffdddd"))
+                if role == Qt.ForegroundRole:
+                    return QBrush(QColor("red"))
+                if role == Qt.ToolTipRole:
+                    return f"{curve.address} is not a valid channel"
+        return super().data(index, role)
 
     def get_data(self, column_name: str, curve: ArchivePlotCurveItem) -> Any:
         """Get data from the model based on column name.
@@ -73,16 +98,16 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return True
 
             logger.debug(f"Disconnecting old channel(s): {curve.address}")
-            [ch.disconnect() for ch in curve.channels() if ch]
             curve.address = str(value)
             logger.debug(f"Connecting new channel(s): {curve.address}")
-            [ch.connect() for ch in curve.channels() if ch]
 
             if not curve.name():
                 curve.setData(name=str(value))
 
-            if value and self._plot._curves[-1] is curve:
+            if value and self.curve_at_index(-1) is curve:
                 self.append()
+
+            self._invalid_curves.discard(curve)
 
             ret_code = True
         elif column_name == "Style":
@@ -113,19 +138,23 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if not color:
             color = ColorButton.index_color(self.rowCount())
         self._row_names.append(self.next_header())
-        #          KLYS:LI22:31:KVAC
+
         self.beginInsertRows(QModelIndex(), len(self._plot._curves), len(self._plot._curves))
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
         logger.debug("Finished adding new empty curve to plot")
 
+        curve = self.curve_at_index(-1)
+        curve.archive_channel_connection.connect(self.archive_connection_slot)
+
     def set_model_curves(self, curves: List[Dict]) -> None:
-        """Reset model curves to given list of curve properties.
+        """Reset the model to only contain the list of given curves.
 
         Parameters
         ----------
         curves : List[Dict]
-            List of curve properties.
+            The list of curves to set the model to use. Formatted as a list of
+            key-value pairs.
         """
         logger.debug("Clearing curves model.")
         self.beginResetModel()
@@ -197,12 +226,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
         return next_header
 
-    def curve_at_index(self, index: QModelIndex) -> ArchivePlotCurveItem:
+    def curve_at_index(self, index: int | QModelIndex) -> ArchivePlotCurveItem:
         """Return the curve item at the given index.
 
         Parameters
         ----------
-        index : QModelIndex
+        index : int | QModelIndex
             The table index of the requested curve.
 
         Returns
@@ -210,4 +239,28 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         ArchivePlotCurveItem
             The requested curve.
         """
+        if isinstance(index, QModelIndex):
+            index = index.row()
         return self._plot.curveAtIndex(index)
+
+    @Slot(bool)
+    def archive_connection_slot(self, connection: bool) -> None:
+        """Slot connected to curve's archive connection signal. Updates
+        the model's associated views to reflect connection changes.
+
+        Parameters
+        ----------
+        connection : bool
+            The curve's archive connection status.
+        """
+        curve = self.sender()
+
+        if connection:
+            self._invalid_curves.discard(curve)
+        else:
+            self._invalid_curves.add(curve)
+
+        print(connection, curve)
+
+        ind = self.index(self._plot._curves.index(curve), 0)
+        self.invalid_index_signal.emit(ind)
