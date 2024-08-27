@@ -117,7 +117,8 @@ class ArchiverAxisModel(BasePlotAxesModel):
         cleaned_axes = []
         for a in axes:
             clean_a = {'name': f"Axis {len(cleaned_axes) + 1}",
-                       'orientation': "left"}
+                       'orientation': "left",
+                       'label': f"Axis {len(cleaned_axes) + 1}"}
             for k, v in a.items():
                 if v is None:
                     continue
@@ -128,7 +129,8 @@ class ArchiverAxisModel(BasePlotAxesModel):
                     clean_a[k] = a[k]
             cleaned_axes.append(clean_a)
         clean_a = {'name': f"Axis {len(cleaned_axes) + 1}",
-                       'orientation': "left"}
+                       'orientation': "left",
+                       'label': f"Axis {len(cleaned_axes) + 1}"}
         cleaned_axes.append(clean_a)
         logger.debug("Clearing axes model")
         self.beginResetModel()
