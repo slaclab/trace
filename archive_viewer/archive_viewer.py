@@ -3,7 +3,7 @@ import argparse
 from typing import Tuple, List, Dict
 from logging import (Handler, LogRecord)
 from subprocess import run
-from qtpy.QtCore import Slot
+from qtpy.QtCore import (Slot, Qt)
 from qtpy.QtWidgets import (QAbstractButton, QApplication, QLabel)
 from pydm import Display
 from config import (logger, datetime_pv)
@@ -48,7 +48,9 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         for pv in startup_pvs:
             if pv in self.curves_model:
                 continue
-            self.curves_model.add_curve(pv)
+            last_row = self.curves_model.rowCount() - 1
+            index = self.curves_model.index(last_row, 0)
+            self.curves_model.setData(index, pv, Qt.EditRole)
 
     def menu_items(self) -> dict:
         """Add export & import functionality to File menu"""
