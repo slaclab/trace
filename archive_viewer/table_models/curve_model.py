@@ -7,7 +7,7 @@ from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesMod
 from config import logger
 from widgets import ColorButton
 from table_models import ArchiverAxisModel
-from config import logger
+from qtpy import sip
 
 class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
     """Model used for storing and editing archiver time plot curves.
@@ -73,6 +73,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         logger.debug(f"Setting {column_name} data for curve {curve.address}")
         ret_code = False
         index = self.index(self._plot._curves.index(curve),0)
+        if sip.isdeleted(curve):
+            return False
         if column_name == "Channel":
             curve.show()
             if not curve.name():
@@ -158,7 +160,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             self._axis_model.plot.plotItem.axes[y_axis.name]["item"].hide()
         logger.debug("Finished adding new empty curve to plot")
 
-    def set_model_curves(self, curves: List[Dict]) -> None:
+    def set_model_curves(self, curves: List[Dict] = []) -> None:
         """Reset model curves to given list of curve properties.
 
         Parameters
