@@ -41,6 +41,12 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
 
         app = QApplication.instance()
         app.setStyle(CenterCheckStyle())
+        self.axis_table_model.reset_everything.connect(self.resetPlot)
+
+    @Slot()
+    def resetPlot(self):
+        self.axis_table_model.set_model_axes()
+        self.curves_model.set_model_curves()
 
     def file_menu_items(self) -> dict:
         """Add export & import functionality to File menu; override Display.file_menu_items"""

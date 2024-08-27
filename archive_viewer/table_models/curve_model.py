@@ -132,7 +132,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         logger.debug("Finished setting curve data")
         return ret_code
 
-    def append(self, address: Optional[str] = None, name: Optional[str] = None, color: Optional[QColor] = None) -> None:
+    def append(self, address: Optional[str] = None, name: Optional[str] = None, color: Optional[QColor] = None, addAxis=True) -> None:
         """Add a new curve item to plot and the data model.
 
         Parameters
@@ -145,7 +145,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The curve's color on the plot.
         """
         logger.debug("Adding new empty curve to plot")
-        self._axis_model.append()
+        if addAxis:
+            self._axis_model.append()
         y_axis = self._axis_model.get_axis(-1)
         if not color:
             color = ColorButton.index_color(self.rowCount())
@@ -182,7 +183,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             del c['channel']
             self._plot.addYChannel(**c)
             self._row_names.append(self.next_header())
-        self.append()
+        self.append(addAxis=False)
         self.endResetModel()
         logger.debug("Finished setting curves model")
 

@@ -4,7 +4,6 @@ from pydm.widgets.baseplot import (BasePlot, BasePlotAxisItem)
 from pydm.widgets.axis_table_model import BasePlotAxesModel
 from config import logger
 
-
 class ArchiverAxisModel(BasePlotAxesModel):
     """The data model for the axes tab in the properties section. Acts
     as a go-between for the axes in a plot, and QTableView items.
@@ -17,6 +16,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
         The model's parent, by default None
     """
     remove_curve = Signal(object)
+    reset_everything = Signal()
     def __init__(self, plot: BasePlot, parent=None) -> None:
         super().__init__(plot, parent)
         self._column_names = self._column_names + ("Hidden","",)
@@ -101,7 +101,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
         row = self.rowCount() - 1
         self.attach_range_changed(row, new_axis)
 
-    def set_model_axes(self, axes: List[Dict]) -> None:
+    def set_model_axes(self, axes: List[Dict] = []) -> None:
         """Given a list of dictionaries containing axis data, clear the
         plot's axes, and set all new axes based on the provided axis data.
 
@@ -116,7 +116,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
                          'logMode': "log_mode"}
         cleaned_axes = []
         for a in axes:
-            clean_a = {'name': f"New Axis {len(cleaned_axes) + 1}",
+            clean_a = {'name': f"Axis {len(cleaned_axes) + 1}",
                        'orientation': "left"}
             for k, v in a.items():
                 if v is None:
@@ -127,7 +127,9 @@ class ArchiverAxisModel(BasePlotAxesModel):
                 else:
                     clean_a[k] = a[k]
             cleaned_axes.append(clean_a)
-
+        clean_a = {'name': f"Axis {len(cleaned_axes) + 1}",
+                       'orientation': "left"}
+        cleaned_axes.append(clean_a)
         logger.debug("Clearing axes model")
         self.beginResetModel()
         self._plot.clearAxes()
@@ -147,13 +149,17 @@ class ArchiverAxisModel(BasePlotAxesModel):
             An index in the row to be removed.
         """
         logger.debug(f"Removing axis at index {index.row()}")
-        if not index.isValid() or self.rowCount() == 1:
+        if not index.isValid():
             return False
+        if self.rowCount() == 1:
+            # If the user tries to remove the last axis, just reset everything
+            self.reset_everything.emit()
+            return
         axis = self.get_axis(index.row())
         while axis._curves:
             curve = axis._curves[0]
             if curve == self._plot._curves[-1] or len(self._plot._curves) == 1:
-                # Reasons for us to in fact not delete this axis despite manual attempt by the user
+                logger.warning("Deleting this axis would delete the last curve, which is not allowed. Please move desired curves to other axes")
                 return
             self.remove_curve.emit(curve)
         super().removeAtIndex(index)
