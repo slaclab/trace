@@ -30,7 +30,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._column_names = self._column_names[:6] + ("Style",) + self._column_names[6:10] + ("",)
         self._row_names = []
         self._axis_model = axis_model
-        self._invalid_curves = set()
+        self._invalid_live_channels = set()
+        self._invalid_arch_channels = set()
         self.append()
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole=Qt.DisplayRole) -> Any:
@@ -44,15 +45,24 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         role : Qt.ItemDataRole
             The role for the data requested, by default Qt.DisplayRole
         """
-        if (index.column() == 0) and self._plot._curves:
-            curve = self.curve_at_index(index)
-            if curve in self._invalid_curves:
-                if role == Qt.BackgroundRole:
-                    return QBrush(QColor("#ffdddd"))
-                if role == Qt.ForegroundRole:
-                    return QBrush(QColor("red"))
-                if role == Qt.ToolTipRole:
-                    return f"{curve.address} is not a valid channel"
+        col_name = self._column_names[index.column()]
+        if not self._plot._curves or (col_name not in ("Live Data", "Archive Data")):
+            return super().data(index, role)
+        elif role not in (Qt.BackgroundRole, Qt.ToolTipRole):
+            return super().data(index, role)
+
+        curve = self.curve_at_index(index)
+        invalid_cell = col_name == "Live Data" and curve in self._invalid_live_channels
+        invalid_cell |= col_name == "Archive Data" and curve in self._invalid_arch_channels
+
+        if role == Qt.BackgroundRole and invalid_cell:
+            return QBrush(QColor("#ffdddd"))
+        elif role == Qt.ToolTipRole and invalid_cell:
+            if col_name == "Live Data":
+                return f"{curve.name()} has no live connection"
+            if col_name == "Archive Data":
+                return f"{curve.name()} has no archiver connection"
+
         return super().data(index, role)
 
     def get_data(self, column_name: str, curve: ArchivePlotCurveItem) -> Any:
@@ -98,6 +108,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return True
 
             logger.debug(f"Disconnecting old channel(s): {curve.address}")
+
+            self._invalid_live_channels.discard(curve)
+            self._invalid_arch_channels.discard(curve)
+
             curve.address = str(value)
             logger.debug(f"Connecting new channel(s): {curve.address}")
 
@@ -106,8 +120,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
             if value and self.curve_at_index(-1) is curve:
                 self.append()
-
-            self._invalid_curves.discard(curve)
 
             ret_code = True
         elif column_name == "Style":
@@ -118,6 +130,22 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
         logger.debug("Finished setting curve data")
         return ret_code
+
+    def flags(self, index):
+        """Return flags that determine how users can interact with the items
+        in the table. Disables checkboxes for invalid channels.
+        """
+        flags = super().flags(index)
+
+        col_name = self._column_names[index.column()]
+        if col_name in ("Live Data", "Archive Data"):
+            curve = self.curve_at_index(index)
+            if col_name == "Live Data" and curve in self._invalid_live_channels:
+                flags &= not Qt.ItemIsEnabled
+            elif col_name == "Archive Data" and curve in self._invalid_arch_channels:
+                flags &= not Qt.ItemIsEnabled
+
+        return flags
 
     def append(self, address: Optional[str] = None, name: Optional[str] = None, color: Optional[QColor] = None) -> None:
         """Add a new curve item to plot and the data model.
@@ -145,6 +173,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         logger.debug("Finished adding new empty curve to plot")
 
         curve = self.curve_at_index(-1)
+        curve.live_channel_connection.connect(self.live_connection_slot)
         curve.archive_channel_connection.connect(self.archive_connection_slot)
 
     def set_model_curves(self, curves: List[Dict]) -> None:
@@ -244,6 +273,27 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         return self._plot.curveAtIndex(index)
 
     @Slot(bool)
+    def live_connection_slot(self, connection: bool) -> None:
+        """Slot connected to curve's live connection signal. Updates
+        the model's associated views to reflect connection changes.
+
+        Parameters
+        ----------
+        connection : bool
+            The curve's live connection status.
+        """
+        curve = self.sender()
+
+        if connection:
+            self._invalid_live_channels.discard(curve)
+        else:
+            self._invalid_live_channels.add(curve)
+
+        col = self._column_names.index("Live Data")
+        ind = self.index(self._plot._curves.index(curve), col)
+        self.invalid_index_signal.emit(ind)
+
+    @Slot(bool)
     def archive_connection_slot(self, connection: bool) -> None:
         """Slot connected to curve's archive connection signal. Updates
         the model's associated views to reflect connection changes.
@@ -256,11 +306,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         curve = self.sender()
 
         if connection:
-            self._invalid_curves.discard(curve)
+            self._invalid_arch_channels.discard(curve)
         else:
-            self._invalid_curves.add(curve)
+            self._invalid_arch_channels.add(curve)
 
-        print(connection, curve)
-
-        ind = self.index(self._plot._curves.index(curve), 0)
+        col = self._column_names.index("Archive Data")
+        ind = self.index(self._plot._curves.index(curve), col)
         self.invalid_index_signal.emit(ind)
