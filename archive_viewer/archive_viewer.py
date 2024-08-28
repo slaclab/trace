@@ -71,6 +71,12 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
 
         # Add style to center checkboxes in table cells
         app.setStyle(CenterCheckStyle())
+        self.axis_table_model.reset_everything.connect(self.resetPlot)
+
+    @Slot()
+    def resetPlot(self):
+        self.axis_table_model.set_model_axes()
+        self.curves_model.set_model_curves()
 
         # Adjust settings for main_spltr
         self.ui.main_spltr.setCollapsible(0, False)
