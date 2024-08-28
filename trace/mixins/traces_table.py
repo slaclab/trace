@@ -35,6 +35,8 @@ class TracesTableMixin:
     def traces_table_init(self) -> None:
         """Initialize the Traces table model and section."""
         self.curves_model = ArchiverCurveModel(self, self.ui.main_plot, self.axis_table_model)
+        self.curves_model.invalid_index_signal.connect(self.update_index)
+
         self.ui.traces_tbl.setModel(self.curves_model)
 
         self.menu = PVContextMenu(self)
@@ -119,6 +121,18 @@ class TracesTableMixin:
         self.ui.traces_tbl.update()
         self.hdr.setSectionResizeMode(self.curves_model.getColumnIndex("Channel"), QHeaderView.ResizeToContents)
         self.hdr.setSectionResizeMode(self.curves_model.getColumnIndex("Label"), QHeaderView.ResizeToContents)
+
+    @Slot(QModelIndex)
+    def update_index(self, index: QModelIndex) -> None:
+        """Update the given index in the model and clear the selection model.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The index in the table view to update
+        """
+        self.ui.traces_tbl.clearSelection()
+        self.ui.traces_tbl.update(index)
 
     @Slot(QPoint)
     def custom_context_menu(self, pos: QPoint) -> None:
