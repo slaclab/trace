@@ -263,6 +263,9 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         """Necessary specifically for when an axis is deleted
         To properly delete all of its connected curves
 
+        Parameters
+        ----------
+
         curve: BasePlotCurveItem
             The curve we want to delete from the model"""
         ind = self._plot._curves.index(curve)
