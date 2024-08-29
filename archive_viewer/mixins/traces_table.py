@@ -16,8 +16,6 @@ class TracesTableMixin:
     def traces_table_init(self) -> None:
         """Initialize the Traces table model and section."""
         self.curves_model = ArchiverCurveModel(self, self.ui.archiver_plot, self.axis_table_model)
-        self.curves_model.append()
-
         self.ui.traces_tbl.setModel(self.curves_model)
 
         self.menu = PVContextMenu(self)
@@ -35,7 +33,6 @@ class TracesTableMixin:
         """Set column delegates for the Traces table to display widgets."""
         axis_col = self.curves_model.getColumnIndex("Y-Axis Name")
         axis_combo_del = ComboBoxDelegate(self.ui.traces_tbl, self.axis_table_model)
-        axis_combo_del.sigTextChange.connect(self.axis_change)
         self.ui.traces_tbl.setItemDelegateForColumn(axis_col, axis_combo_del)
 
         color_col = self.curves_model.getColumnIndex("Color")
@@ -43,11 +40,8 @@ class TracesTableMixin:
         self.ui.traces_tbl.setItemDelegateForColumn(color_col, color_button_del)
 
         style_col = self.curves_model.getColumnIndex("Style")
-        style_del = PlotStyleColumnDelegate(self,
-                                       self.curves_model,
-                                       self.ui.traces_tbl)
-        style_del.toggleColumnVisibility()
-        self.ui.traces_tbl.setItemDelegateForColumn(style_col, style_del)
+        style_combo_del = ComboBoxDelegate(self.ui.traces_tbl, {"Direct": None, "Step": "right"})
+        self.ui.traces_tbl.setItemDelegateForColumn(style_col, style_combo_del)
 
         styles = BasePlotCurveItem.lines
         line_style_col = self.curves_model.getColumnIndex("Line Style")
@@ -68,22 +62,6 @@ class TracesTableMixin:
         symbol_size_col = self.curves_model.getColumnIndex("Symbol Size")
         symbol_size_del = ComboBoxDelegate(self.ui.traces_tbl, size_data)
         self.ui.traces_tbl.setItemDelegateForColumn(symbol_size_col, symbol_size_del)
-
-        bar_width_col = self.curves_model.getColumnIndex("Bar Width")
-        bar_width_del = FloatDelegate(self.ui.traces_tbl, init_range=(.1, 5))
-        self.ui.traces_tbl.setItemDelegateForColumn(bar_width_col, bar_width_del)
-
-        upper_limit_col = self.curves_model.getColumnIndex("Upper Limit")
-        upper_limit_del = FloatDelegate(self.ui.traces_tbl, init_range=(0, float("inf")))
-        self.ui.traces_tbl.setItemDelegateForColumn(upper_limit_col, upper_limit_del)
-
-        lower_limit_col = self.curves_model.getColumnIndex("Lower Limit")
-        lower_limit_del = FloatDelegate(self.ui.traces_tbl, init_range=(0, float("inf")))
-        self.ui.traces_tbl.setItemDelegateForColumn(lower_limit_col, lower_limit_del)
-
-        limit_color_col = self.curves_model.getColumnIndex("Limit Color")
-        limit_color_del = ColorButtonDelegate(self.ui.traces_tbl)
-        self.ui.traces_tbl.setItemDelegateForColumn(limit_color_col, limit_color_del)
 
         delete_col = self.curves_model.getColumnIndex("")
         delete_row_del = DeleteRowDelegate(self.ui.traces_tbl)
@@ -110,26 +88,9 @@ class TracesTableMixin:
         logger.debug(f"ColorButton column selected: {is_color}")
 
         if index.isValid() and not is_color:
+            logger.debug(f"Opening context menu at index {index}")
             self.menu.selected_index = index
             self.menu.popup(table.viewport().mapToGlobal(pos))
-
-    @Slot(int, str)
-    def axis_change(self, row: int, axis_name: str) -> None:
-        """Slot for connecting a curve to a specified axis.
-
-        Parameters
-        ----------
-        row : int
-            The row of the table associated with the curve changed
-        axis_name : str
-            The name of the new axis the curve should be on
-        """
-        if not axis_name:
-            return
-        # Get the curve and check if it has been deleted
-        curve = self.curves_model.curve_at_index(row)
-        if not sip.isdeleted(curve):
-            self.ui.archiver_plot.plotItem.linkDataToAxis(curve, axis_name)
 
 
 class PVContextMenu(QMenu):
