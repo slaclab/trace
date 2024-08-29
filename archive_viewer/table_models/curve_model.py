@@ -1,13 +1,13 @@
 from typing import (Any, List, Dict, Optional)
 from qtpy.QtGui import QColor
-from qtpy.QtCore import (QObject, QModelIndex, Qt)
-from pydm.widgets.baseplot import BasePlot
+from qtpy.QtCore import (QObject, QModelIndex, Qt, Slot)
+from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
 from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
 from config import logger
 from widgets import ColorButton
 from table_models import ArchiverAxisModel
-
+from qtpy import sip
 
 class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
     """Model used for storing and editing archiver time plot curves.
@@ -25,9 +25,11 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
     def __init__(self, parent: Optional[QObject], plot: BasePlot, axis_model: ArchiverAxisModel) -> None:
         super(ArchiverCurveModel, self).__init__(plot, parent)
         # Remove columns for bar width, limits, and thresholds. Bar graph plot style is unused
-        self._column_names = self._column_names[:6] + ("Style",) + self._column_names[6:10] + ("",)
+        self._column_names = self._column_names[:6] + ("Style",) + self._column_names[6:10] + ("Hidden", "",)
         self._row_names = []
         self._axis_model = axis_model
+        self._axis_model.remove_curve.connect(self.remove_curve)
+        self.checkable_cols.add(self.getColumnIndex("Hidden"))
         self.append()
 
     def __contains__(self, key: str) -> bool:
@@ -62,6 +64,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return "Step"
             elif not curve.stepMode:
                 return "Direct"
+        if column_name == "Hidden":
+            return not curve.isVisible()
         return super(ArchiverCurveModel, self).get_data(column_name, curve)
 
     def set_data(self, column_name: str, curve: ArchivePlotCurveItem, value: Any) -> bool:
@@ -84,7 +88,13 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         """
         logger.debug(f"Setting {column_name} data for curve {curve.address}")
         ret_code = False
+        index = self.index(self._plot._curves.index(curve),0)
+        if sip.isdeleted(curve):
+            return False
         if column_name == "Channel":
+            curve.show()
+            if not curve.name():
+                curve.setData(name=str(value))
             if value == curve.address:
                 return True
 
@@ -94,8 +104,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             logger.debug(f"Connecting new channel(s): {curve.address}")
             [ch.connect() for ch in curve.channels() if ch]
 
-            if not curve.name():
-                curve.setData(name=str(value))
 
             if value and self._plot._curves[-1] is curve:
                 self.append()
@@ -104,16 +112,46 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             self.plot._legend.removeItem(curve.name())
             curve.setData(name=str(value))
             self.plot._legend.addItem(curve, curve.name())
+        elif column_name == "Y-Axis Name":
+            # If we change the Y-Axis, unlink from previous and link to new
+            if value == curve.y_axis_name:
+                return True
+            self.plot.plotItem.unlinkDataFromAxis(curve)
+            self.plot.linkDataToAxis(curve, value)
+            ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
+            # Link to correct axis and unhide if necessary
+            if curve.isVisible():
+                self.plot.plotItem.axes[curve.y_axis_name]["item"].show()
         elif column_name == "Style":
             curve.stepMode = value
             ret_code = True
+        elif column_name == "Hidden":
+            # Handle toggling hidden
+            hidden = bool(value)
+            if hidden:
+                curve.hide()
+                self._axis_model.plot.plotItem.autoVisible(curve.y_axis_name)
+            else:
+                curve.show()
+                self._axis_model.plot.plotItem.axes[curve.y_axis_name]["item"].show()
+            ret_code = True
+        elif column_name == "Hidden":
+            # Handle toggling hidden
+            hidden = bool(value)
+            if hidden:
+                curve.hide()
+                self._axis_model.plot.plotItem.autoVisible(curve.y_axis_name)
+            else:
+                curve.show()
+                self._axis_model.plot.plotItem.axes[curve.y_axis_name]["item"].show()
+            ret_code = True
         else:
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
-
+        self.plot.plotItem.autoVisible(curve.y_axis_name)
         logger.debug("Finished setting curve data")
         return ret_code
 
-    def append(self, address: Optional[str] = None, name: Optional[str] = None, color: Optional[QColor] = None) -> None:
+    def append(self, address: Optional[str] = None, name: Optional[str] = None, color: Optional[QColor] = None, addAxis=True) -> None:
         """Add a new curve item to plot and the data model.
 
         Parameters
@@ -126,19 +164,23 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The curve's color on the plot.
         """
         logger.debug("Adding new empty curve to plot")
-        if self.rowCount() != 1:
+        if addAxis:
             self._axis_model.append()
         y_axis = self._axis_model.get_axis(-1)
         if not color:
             color = ColorButton.index_color(self.rowCount())
         self._row_names.append(self.next_header())
-        #          KLYS:LI22:31:KVAC
         self.beginInsertRows(QModelIndex(), len(self._plot._curves), len(self._plot._curves))
+        # By default, add a blank archivePlotCurveItem such that there's an empty row to add PVs or formulas to.
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
+        self._plot._curves[-1].hide()
+        if self.rowCount() != 1:
+            logger.debug("Hide blank Y-axis")
+            self._axis_model.plot.plotItem.axes[y_axis.name]["item"].hide()
         logger.debug("Finished adding new empty curve to plot")
 
-    def set_model_curves(self, curves: List[Dict]) -> None:
+    def set_model_curves(self, curves: List[Dict] = []) -> None:
         """Reset model curves to given list of curve properties.
 
         Parameters
@@ -160,7 +202,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             del c['channel']
             self._plot.addYChannel(**c)
             self._row_names.append(self.next_header())
-        self.append()
+        self.append(addAxis=False)
         self.endResetModel()
         logger.debug("Finished setting curves model")
 
@@ -176,10 +218,14 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if not index.isValid() or index.row() == (self.rowCount() - 1):
             return False
         del self._row_names[index.row()]
+        curve = self._plot._curves[index.row()]
+        [ch.disconnect() for ch in curve.channels() if ch]
         ret = super(ArchiverCurveModel, self).removeAtIndex(index)
-
         if not self._plot._curves:
             self.append()
+        self._plot.archive_data_received()
+        self._plot.set_needs_redraw()
+        self._plot.redrawPlot()
         logger.debug(f"Finished removing curve previously at index {index.row()}")
         return ret
 
@@ -230,3 +276,17 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The requested curve.
         """
         return self._plot.curveAtIndex(index)
+
+    @Slot(object)
+    def remove_curve(self, curve: BasePlotCurveItem) -> None:
+        """Necessary specifically for when an axis is deleted
+        To properly delete all of its connected curves
+
+        Parameters
+        ----------
+
+        curve: BasePlotCurveItem
+            The curve we want to delete from the model"""
+        ind = self._plot._curves.index(curve)
+        ind = self.index(ind, 0)
+        self.removeAtIndex(ind)

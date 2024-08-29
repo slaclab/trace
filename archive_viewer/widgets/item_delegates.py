@@ -116,6 +116,7 @@ class EditorDelegate(QStyledItemDelegate):
         """Slot called when the delegate's model will be reset. Closes all
         persistent editors in the delegate.
         """
+
         for editor in self.editor_list:
             editor_pos = editor.pos()
             index = self.parent().indexAt(editor_pos)
@@ -405,6 +406,19 @@ class ScientificNotationDelegate(EditorDelegate):
         data = float(text)
         model.setData(index, data, Qt.EditRole)
 
+    @Slot()
+    def reset_editors(self) -> None:
+        """Slot called when the delegate's model will be reset. Closes all
+        persistent editors in the delegate.
+        """
+        for editor in self.editor_list:
+            editor_pos = editor[0].pos()
+            index = self.parent().indexAt(editor_pos)
+
+            editor[0].deleteLater()
+            self.parent().closePersistentEditor(index)
+        self.editor_list = []
+
 
 class DeleteRowDelegate(EditorDelegate):
     """DeleteRowDelegate is a QStyledItemDelegate to display a persistent
@@ -508,6 +522,8 @@ class ComboBoxDelegate(QStyledItemDelegate):
             elif isinstance(self.data_source, QAbstractItemModel):
                 editor.setModel(self.data_source)
                 editor.setModelColumn(0)
+                value = index.data(Qt.DisplayRole)
+                editor.setCurrentText(str(value))
 
             editor.setFocusPolicy(Qt.StrongFocus)
             editor.setContextMenuPolicy(Qt.CustomContextMenu)
