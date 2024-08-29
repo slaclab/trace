@@ -92,16 +92,27 @@ class TracesTableMixin:
         self.ui.traces_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
 
     def dragEnterEvent(self, e):
+        """Handle something (like PV names) being dragged into the table"""
         e.accept()
 
     def dragMoveEvent(self, e):
+        """Handle something (like PV names) being dragged through the table"""
         e.accept()
 
     def dropEvent(self, e):
+        """Handle something (like PV names) being dropped into the table"""
         data = e.mimeData().text()
         self.insertPVs(data)
 
     def insertPVs(self, data: str):
+        """Parse the incoming PV name data
+        One by one, add them to the end of the curves model
+        Resize the table to match the longest PV name/label
+
+        Parameters
+        ---------------
+        data: str
+            The list of pvs in string format i.e. \"<pv1>, <pv2>, <pv3>\" etc."""
         logger.info("Accepting PVs " + data)
         channels = data.split(", ")
         for channel in channels:

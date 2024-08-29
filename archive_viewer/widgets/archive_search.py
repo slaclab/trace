@@ -154,6 +154,9 @@ class ArchiveSearchWidget(QWidget):
         self.setLayout(self.layout)
 
     def selectedPVs(self) -> str:
+        """Figure out based on which indexes were selected, the list of PVs (by string name)
+        The user was hoping to insert into the table. Concatenate them into string form i.e.
+        <pv1>, <pv2>, <pv3>"""
         indices = self.results_view.selectedIndexes()
         pv_list = ""
         for index in indices:
@@ -174,7 +177,7 @@ class ArchiveSearchWidget(QWidget):
         drag.exec_()
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        # Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
+        """Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula"""
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.request_archiver_info()
         return super().keyPressEvent(e)
