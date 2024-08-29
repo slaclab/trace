@@ -27,7 +27,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
 
         self.curve_delegates_init()
         self.axis_delegates_init()
-
+        self.axis_table_model.reset_everything.connect(self.resetPlot)
         # Create reference dict for timespan_btns button group
         self.button_spans = {self.ui.half_min_scale_btn: 30,
                              self.ui.min_scale_btn: 60,
@@ -71,16 +71,15 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
 
         # Add style to center checkboxes in table cells
         app.setStyle(CenterCheckStyle())
-        self.axis_table_model.reset_everything.connect(self.resetPlot)
+
+        # Adjust settings for main_spltr
+        self.ui.main_spltr.setCollapsible(0, False)
+        self.ui.main_spltr.setStretchFactor(0, 1)
 
     @Slot()
     def resetPlot(self):
         self.axis_table_model.set_model_axes()
         self.curves_model.set_model_curves()
-
-        # Adjust settings for main_spltr
-        self.ui.main_spltr.setCollapsible(0, False)
-        self.ui.main_spltr.setStretchFactor(0, 1)
 
     def set_footer(self):
         """Set footer information for application. Includes logging, nodename,
