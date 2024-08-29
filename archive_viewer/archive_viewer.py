@@ -119,10 +119,11 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
         enable_scroll = button != self.ui.cursor_scale_btn
         self.timespan = self.button_spans[button]
         if enable_scroll:
-            logger.debug(f"Enabling plot autoscroll for {timespan}s")
+            logger.debug(f"Enabling plot autoscroll for {self.timespan}s")
         else:
             logger.debug("Disabling plot autoscroll, using mouse controls")
         self.autoScroll(enable=enable_scroll)
+
     def parse_macros_and_args(self, macros: Dict[str, str | list], args: List[str]) -> Tuple[str, list]:
         """Parse user provided macros and args into lists of PVs to use on
         startup or which file to import on startup
