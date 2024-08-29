@@ -34,15 +34,18 @@ class PlotConfigMixin:
         self.ui.mouse_mode_cmbbx.currentIndexChanged.connect(self.changeMouseMode)
 
     def plot_setup(self, config: Dict):
-        self.ui.plot_title_edit.setText(config['title'])
-        self.ui.x_grid_chckbx.setChecked(config['xGrid'])
-        self.ui.y_grid_chckbx.setChecked(config['yGrid'])
-        self.ui.opacity_sldr.setValue(config['opacity'])
-        self.background_color_button.color = QColor(config['backgroundColor'])
-        self.ui.legend_chckbx.setChecked(config['legend'])
-        self.ui.mouse_mode_cmbbx.setCurrentIndex(int(config['mouseMode']/3))
-        self.ui.crosshair_chckbx.setChecked(config['crosshair'])
-        self.ui.refresh_interval_spnbx.setValue(config['refreshInterval'])
+        """Read in the full config dictionary, making sure not to fail if a user manually typed
+        the import file out. For each config preset, set the widgets to match the value, which will
+        send signals out that will actually cause the plot to change"""
+        if 'title' in config: self.ui.plot_title_edit.setText(config['title'])
+        if 'xGrid' in config: self.ui.x_grid_chckbx.setChecked(config['xGrid'])
+        if 'yGrid' in config: self.ui.y_grid_chckbx.setChecked(config['yGrid'])
+        if 'opacity' in config: self.ui.opacity_sldr.setValue(config['opacity'])
+        if 'backgroundColor' in config: self.background_color_button.color = QColor(config['backgroundColor'])
+        if 'legend' in config: self.ui.legend_chckbx.setChecked(config['legend'])
+        if 'mouseMode' in config: self.ui.mouse_mode_cmbbx.setCurrentIndex(int(config['mouseMode']/3))
+        if 'crosshair' in config: self.ui.crosshair_chckbx.setChecked(config['crosshair'])
+        if 'refreshInterval' in config: self.ui.refresh_interval_spnbx.setValue(config['refreshInterval'])
 
     def changeMouseMode(self, mode:int):
         """If the user wants to have their mouse in PAN or RECT mode"""
