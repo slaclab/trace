@@ -7,15 +7,14 @@ from qtpy.QtCore import (Slot, Qt)
 from qtpy.QtWidgets import (QAbstractButton, QApplication, QLabel)
 from pydm import Display
 from config import (logger, datetime_pv)
-from mixins import (TracesTableMixin, AxisTableMixin, FileIOMixin)
+from mixins import TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin
 from styles import CenterCheckStyle
 from av_file_convert import PathAction
 
 
-class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
+class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
     def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
-        super(ArchiveViewer, self).__init__(parent=parent, args=args,
-                                            macros=macros, ui_filename=ui_filename)
+        super(ArchiveViewer, self).__init__(parent=parent, args=args, macros=macros, ui_filename=ui_filename)
         # Set up PyDMApplication
         self.configure_app()
         self.set_footer()
@@ -23,18 +22,21 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         # Initialize the Mixins
         self.axis_table_init()
         self.traces_table_init()
+        self.plot_config_init()
         self.file_io_init()
 
         self.curve_delegates_init()
         self.axis_delegates_init()
-        self.axis_table_model.reset_everything.connect(self.resetPlot)
+        self.timespan = -1        self.axis_table_model.reset_everything.connect(self.resetPlot)
         # Create reference dict for timespan_btns button group
-        self.button_spans = {self.ui.half_min_scale_btn: 30,
-                             self.ui.min_scale_btn: 60,
-                             self.ui.hour_scale_btn: 3600,
-                             self.ui.week_scale_btn: 604800,
-                             self.ui.month_scale_btn: 2628300,
-                             self.ui.cursor_scale_btn: -1}
+        self.button_spans = {
+            self.ui.half_min_scale_btn: 30,
+            self.ui.min_scale_btn: 60,
+            self.ui.hour_scale_btn: 3600,
+            self.ui.week_scale_btn: 604800,
+            self.ui.month_scale_btn: 2628300,
+            self.ui.cursor_scale_btn: -1
+        }
         self.ui.timespan_btns.buttonClicked.connect(self.set_plot_timerange)
 
         # Click "Cursor" button on plot-mouse interaction
@@ -113,16 +115,13 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         if button not in self.button_spans:
             logger.error(f"{button} is not a valid timespan button")
             return
-
-        enable_scroll = (button != self.ui.cursor_scale_btn)
-        timespan = self.button_spans[button]
+        enable_scroll = button != self.ui.cursor_scale_btn
+        self.timespan = self.button_spans[button]
         if enable_scroll:
             logger.debug(f"Enabling plot autoscroll for {timespan}s")
         else:
             logger.debug("Disabling plot autoscroll, using mouse controls")
-
-        self.ui.archiver_plot.setAutoScroll(enable_scroll, timespan)
-
+        self.autoScroll(enable=enable_scroll)
     def parse_macros_and_args(self, macros: Dict[str, str | list], args: List[str]) -> Tuple[str, list]:
         """Parse user provided macros and args into lists of PVs to use on
         startup or which file to import on startup
