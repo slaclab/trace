@@ -647,6 +647,8 @@ class InsertPVDelegate(EditorDelegate):
         self.model = self.parent().model()
 
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QPushButton:
+        """Create the editor, which in this case is a QPushButton that when pressed will send out the corresponding
+        row name string insert to be put into the formula, in the formula dialogue"""
         if index.row() >= len(self.editor_list):
             editor = QPushButton(parent)
             editor.setText("Insert")

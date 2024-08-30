@@ -3,9 +3,8 @@ from qtpy.QtGui import QKeyEvent
 from qtpy import sip
 from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
-                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView, QTableWidget)
+                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView)
 from pydm.widgets.baseplot import BasePlotCurveItem
-from pydm.widgets.baseplot_curve_editor import PlotStyleColumnDelegate
 from config import logger
 from pydm.widgets.archiver_time_plot import FormulaCurveItem
 from widgets import (
@@ -13,7 +12,6 @@ from widgets import (
     ColorButtonDelegate,
     ComboBoxDelegate,
     DeleteRowDelegate,
-    FloatDelegate,
     InsertPVDelegate
 )
 from table_models import ArchiverCurveModel
@@ -162,7 +160,7 @@ class FormulaDialog(QDialog):
         self.field = QLineEdit(self)
         self.curveModel = self.parent().parent().curves_model
         self.pv_list = QTableView(self)
-        #We're going to copy the list of PVs from the curve model. We're also not going to allow the user to make edits to the list of PVs
+        # We're going to copy the list of PVs from the curve model. We're also not going to allow the user to make edits to the list of PVs
         self.pv_list.setModel(self.curveModel)
         self.pv_list.setEditTriggers(QAbstractItemView.EditTriggers(0))
         self.pv_list.setMaximumWidth(1000)
@@ -216,7 +214,7 @@ class FormulaDialog(QDialog):
         self.showPVList()
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        # Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
+        """Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula"""
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.accept_formula()
         return super().keyPressEvent(e)
@@ -245,12 +243,11 @@ class FormulaDialog(QDialog):
             self.field.setText("")
         super().exec_()
 
-
-    def accept_formula(self, **kwargs: Dict[str, Any]) -> None:
-        # Retrieve the formula and PV name and perform desired actions
-        # We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window
+    @Slot()
+    def accept_formula(self) -> None:
+        """ Retrieve the formula and PV name and perform desired actions
+         We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window"""
         formula = "f://" + self.field.text()
-        # pv_name = self.pv_name_input.text()
         passed = self.curveModel.replaceToFormula(index = self.curveModel.index(self.parent().selected_index.row(), 0), formula = formula)
         if passed:
             self.field.setText("")
