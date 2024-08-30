@@ -27,7 +27,8 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
 
         self.curve_delegates_init()
         self.axis_delegates_init()
-        self.timespan = -1        self.axis_table_model.reset_everything.connect(self.resetPlot)
+        self.timespan = -1
+        self.axis_table_model.reset_everything.connect(self.resetPlot)
         # Create reference dict for timespan_btns button group
         self.button_spans = {
             self.ui.half_min_scale_btn: 30,
@@ -118,7 +119,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
         enable_scroll = button != self.ui.cursor_scale_btn
         self.timespan = self.button_spans[button]
         if enable_scroll:
-            logger.debug(f"Enabling plot autoscroll for {timespan}s")
+            logger.debug(f"Enabling plot autoscroll for {self.timespan}s")
         else:
             logger.debug("Disabling plot autoscroll, using mouse controls")
         self.autoScroll(enable=enable_scroll)
