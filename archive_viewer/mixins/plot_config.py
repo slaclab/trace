@@ -1,8 +1,7 @@
-from widgets import ColorButton
-from pyqtgraph import ViewBox
 from typing import Dict
 from qtpy.QtGui import QColor
-from time import sleep
+from pyqtgraph import ViewBox
+from widgets import ColorButton
 
 class PlotConfigMixin:
     def plot_config_init(self):
