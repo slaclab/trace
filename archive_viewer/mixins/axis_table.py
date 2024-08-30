@@ -14,7 +14,6 @@ class AxisTableMixin:
     def axis_table_init(self) -> None:
         """Initializer for the Axis Table Model and Table View."""
         self.axis_table_model = ArchiverAxisModel(self.ui.archiver_plot, self)
-
         self.ui.time_axis_tbl.setModel(self.axis_table_model)
 
         hdr = self.ui.time_axis_tbl.horizontalHeader()
