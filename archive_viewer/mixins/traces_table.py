@@ -185,6 +185,7 @@ class FormulaDialog(QDialog):
         self.pv_list.setModel(self.curveModel)
         self.pv_list.setEditTriggers(QAbstractItemView.EditTriggers(0))
         self.pv_list.setMaximumWidth(1000)
+        self.pv_list.setMaximumHeight(1000)
         header = self.pv_list.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         for i in range(1, self.curveModel.columnCount() - 1):
@@ -218,8 +219,9 @@ class FormulaDialog(QDialog):
             # PV currently does nothing, this is a remnant
             # From when we would have the pv_list open in a new window
             if button_text == "PV":
-                # TODO: Either give a function for this button or replace it
-                pass
+                self.PVButton = button
+                self.PVButton.setCheckable(True)
+                self.PVButton.clicked.connect(self.showPVList)
             elif button_text == "Clear":
                 button.clicked.connect(lambda _: self.field.clear())
             else:
@@ -230,12 +232,21 @@ class FormulaDialog(QDialog):
         ok_button = QPushButton("OK", self)
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
+        self.showPVList()
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
         # Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.accept_formula()
         return super().keyPressEvent(e)
+
+    @Slot()
+    def showPVList(self):
+        show = self.PVButton.isChecked()
+        if show:
+            self.pv_list.show()
+        else:
+            self.pv_list.hide()
 
     def exec_(self):
         """ When the formula dialog is opened (every time) we need to
@@ -252,6 +263,7 @@ class FormulaDialog(QDialog):
         else:
             self.field.setText("")
         super().exec_()
+
 
     def accept_formula(self, **kwargs: Dict[str, Any]) -> None:
         # Retrieve the formula and PV name and perform desired actions
