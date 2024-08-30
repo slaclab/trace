@@ -1,8 +1,9 @@
 from typing import (Dict, Any)
 from qtpy import sip
-from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
+from qtpy.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
+from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
-                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView)
+                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton)
 from pydm.widgets.baseplot import BasePlotCurveItem
 from pydm.widgets.baseplot_curve_editor import PlotStyleColumnDelegate
 from config import logger
@@ -91,20 +92,20 @@ class TracesTableMixin:
         delete_row_del = DeleteRowDelegate(self.ui.traces_tbl)
         self.ui.traces_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
 
-    def dragEnterEvent(self, e):
+    def dragEnterEvent(self, e: QDragEnterEvent) -> None:
         """Handle something (like PV names) being dragged into the table"""
-        e.accept()
+        e.acceptProposedAction()
 
-    def dragMoveEvent(self, e):
+    def dragMoveEvent(self, e: QDragMoveEvent) -> None:
         """Handle something (like PV names) being dragged through the table"""
-        e.accept()
+        e.acceptProposedAction()
 
-    def dropEvent(self, e):
+    def dropEvent(self, e: QDropEvent) -> None:
         """Handle something (like PV names) being dropped into the table"""
         data = e.mimeData().text()
         self.insertPVs(data)
 
-    def insertPVs(self, data: str):
+    def insertPVs(self, data: str) -> None:
         """Parse the incoming PV name data
         One by one, add them to the end of the curves model
         Resize the table to match the longest PV name/label
@@ -167,18 +168,9 @@ class TracesTableMixin:
 
 
 class PVContextMenu(QMenu):
-    # TODO: Change this QMenu so functions that change data stay in table object
-    #   - Move functions to table widget
-    #   - Init parameters: dict("ACTION_NAME": function)
-    #   - Init: Loop through dict values:
-    #       - Create action w/ name
-    #       - action.triggered.connect(function)
-    #       - self.addAction(action)
-
-    # data_changed_signal = Signal(int)
-
-    # TODO: Archived PVs are no longer draggable from the search tool. Find out why
-
+    """Right clicking on the curves table opens 3 options - to open a PV search tool,
+    Open a formula dialogue, or import a csv. Importing a csv seems to have not yet been
+    implemented, but Formulae and PV search are."""
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent)
 

@@ -1,5 +1,5 @@
 import logging
-from typing import (List, Optional)
+from typing import (List)
 from qtpy.QtGui import QDrag, QKeyEvent
 from qtpy.QtCore import (QAbstractTableModel, QMimeData, QModelIndex, QObject,
                          Qt, QUrl, QVariant, Signal)
@@ -186,6 +186,7 @@ class ArchiveSearchWidget(QWidget):
         """Send the search request to the archiver appliance based on the search string typed into the text box"""
         search_text = self.search_box.text()
         search_text = search_text.replace("?", ".")
+        search_text = search_text.replace("*", ".")
         url_string = (
             f"http://{self.archive_url_textedit.text()}/"
             f"retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
