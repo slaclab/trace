@@ -27,7 +27,8 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
 
         self.curve_delegates_init()
         self.axis_delegates_init()
-        self.timespan = -1        self.axis_table_model.reset_everything.connect(self.resetPlot)
+        self.timespan = -1
+        self.axis_table_model.reset_everything.connect(self.resetPlot)
         # Create reference dict for timespan_btns button group
         self.button_spans = {
             self.ui.half_min_scale_btn: 30,
