@@ -79,11 +79,6 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
         self.ui.main_spltr.setCollapsible(0, False)
         self.ui.main_spltr.setStretchFactor(0, 1)
 
-    @Slot()
-    def resetPlot(self):
-        self.axis_table_model.set_model_axes()
-        self.curves_model.set_model_curves()
-
     def set_footer(self):
         """Set footer information for application. Includes logging, nodename,
         username, PID, git version, Archiver URL, and current datetime
@@ -99,30 +94,6 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
         self.ui.ftr_url_lbl.setText(os.getenv('PYDM_ARCHIVER_URL'))
         self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
 
-    @Slot(QAbstractButton)
-    def set_plot_timerange(self, button: QAbstractButton) -> None:
-        """Slot to be called when a timespan setting button is pressed.
-        This will enable autoscrolling along the x-axis and disable mouse
-        controls. If the "Cursor" button is pressed, then autoscrolling is
-        disabled and mouse controls are enabled.
-
-        Parameters
-        ----------
-        button : QAbstractButton
-            The timespan setting button pressed. Determines which timespan
-            to set.
-        """
-        logger.debug(f"Setting plot timerange")
-        if button not in self.button_spans:
-            logger.error(f"{button} is not a valid timespan button")
-            return
-        enable_scroll = button != self.ui.cursor_scale_btn
-        self.timespan = self.button_spans[button]
-        if enable_scroll:
-            logger.debug(f"Enabling plot autoscroll for {timespan}s")
-        else:
-            logger.debug("Disabling plot autoscroll, using mouse controls")
-        self.autoScroll(enable=enable_scroll)
     def parse_macros_and_args(self, macros: Dict[str, str | list], args: List[str]) -> Tuple[str, list]:
         """Parse user provided macros and args into lists of PVs to use on
         startup or which file to import on startup
@@ -195,6 +166,37 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
                       shell=True,
                       capture_output=True)
         return git_cmd.stdout.strip()
+
+    @Slot()
+    def resetPlot(self) -> None:
+        """Reset the Axis model and the Curve model to empty states"""
+        self.axis_table_model.set_model_axes()
+        self.curves_model.set_model_curves()
+
+    @Slot(QAbstractButton)
+    def set_plot_timerange(self, button: QAbstractButton) -> None:
+        """Slot to be called when a timespan setting button is pressed.
+        This will enable autoscrolling along the x-axis and disable mouse
+        controls. If the "Cursor" button is pressed, then autoscrolling is
+        disabled and mouse controls are enabled.
+
+        Parameters
+        ----------
+        button : QAbstractButton
+            The timespan setting button pressed. Determines which timespan
+            to set.
+        """
+        logger.debug(f"Setting plot timerange")
+        if button not in self.button_spans:
+            logger.error(f"{button} is not a valid timespan button")
+            return
+        enable_scroll = button != self.ui.cursor_scale_btn
+        self.timespan = self.button_spans[button]
+        if enable_scroll:
+            logger.debug(f"Enabling plot autoscroll for {self.timespan}s")
+        else:
+            logger.debug("Disabling plot autoscroll, using mouse controls")
+        self.autoScroll(enable=enable_scroll)
 
 
 class LoggingHandler(Handler):
