@@ -226,11 +226,19 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
     def recursionCheck(self, target: str, rowHeaders: dict) -> bool:
         """Internal method that uses DFS to confirm there are not cyclical formula dependencies
 
-        We are handling base case in the loop so we won't worry about this rn
-        Presumably we are running this every single time formulaToPVDict is called,
-        So our target being the only one we check for is all that matters
-        ^ As opposed to keeping a list of seen rows and making sure there are no repeats
-        Which by the way wouldn't work anyway, because multiple descendants are allowed to use the same rows"""
+        We are handling base case in the loop
+        We are running this every single time formulaToPVDict is called,
+        so our target is the only fail check
+
+        Parameters
+        --------------
+        target: str
+            The row header that initially called this check. If we find it, there is a cyclical dependency
+
+        rowHeaders: dict()
+            This contains rowHeader -> BasePlotCurveItem so we can find all of our dependencies
+                From this we know which Formula we then have to traverse to confirm we are good
+        """
 
         for rowHeader, curve in rowHeaders.items():
             if rowHeader == target:
