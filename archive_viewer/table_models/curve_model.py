@@ -262,6 +262,35 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self.plot.removeItem(curve)
         self.endRemoveRows()
 
+    def recursionCheck(self, target: str, rowHeaders: dict) -> bool:
+        """Internal method that uses DFS to confirm there are not cyclical formula dependencies
+
+        We are handling base case in the loop
+        We are running this every single time formulaToPVDict is called,
+        so our target is the only fail check
+
+        Parameters
+        --------------
+        target: str
+            The row header that initially called this check. If we find it, there is a cyclical dependency
+
+        rowHeaders: dict()
+            This contains rowHeader -> BasePlotCurveItem so we can find all of our dependencies
+                From this we know which Formula we then have to traverse to confirm we are good
+        """
+
+        for rowHeader, curve in rowHeaders.items():
+            if rowHeader == target:
+                # We hit a dependency that is our target, fail
+                return False
+            if isinstance(curve, FormulaCurveItem):
+                # If this dependency is a Formula, check its children
+                if not self.recursionCheck(target, curve.pvs):
+                    # One of the descendants is target, propagate upward
+                    return False
+        # If we are here, then none of the children failed
+        return True
+
     def formulaToPVDict(self, rowName: str, formula: str) -> dict:
         """Take in a formula and return a dictionary with keys of row headers and values of the BasePlotCurveItems"""
         pvs = re.findall("{(.+?)}", formula)
@@ -272,12 +301,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 raise ValueError(f"{pv} is an invalid variable name")
             elif pv == rowName:
                 raise ValueError(f"{pv} is recursive")
-            elif self._row_names.index(pv) > self._row_names.index(rowName):
-                raise ValueError(f"Error, all referenced curves must come before the Formula")
             else:
                 # If it's good, add it to the dictionary of curves. rindex = row index (int) as opposed to index, which is a QModelIndex
                 rindex = self._row_names.index(pv)
                 pvdict[pv] = self._plot._curves[rindex]
+        if not self.recursionCheck(rowName, pvdict):
+            raise ValueError(f"There was a recursive dependency somewhere")
         if not pvdict:
             try:
                 eval(formula[4:])
