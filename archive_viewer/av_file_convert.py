@@ -10,7 +10,7 @@ from argparse import (ArgumentParser, Action, Namespace)
 from qtpy.QtGui import QColor
 from collections import OrderedDict
 from pydm.widgets.timeplot import PyDMTimePlot
-
+import re
 
 if __name__ in logging.Logger.manager.loggerDict:
     logger = logging.getLogger(__name__)
@@ -117,7 +117,7 @@ class ArchiveViewerFileConverter():
         elif isinstance(output_data, PyDMTimePlot):
             output_data = self.get_plot_data(output_data)
 
-        for obj in output_data['y-axes'] + output_data['curves']:
+        for obj in output_data['y-axes'] + output_data['curves'] + output_data['formula']:
             for k, v in obj.copy().items():
                 if v is None:
                     del obj[k]
@@ -186,9 +186,22 @@ class ArchiveViewerFileConverter():
             filtered_dict = self.remove_null_values(pv_dict)
             converted_data['curves'].append(filtered_dict)
 
+        converted_data['formula'] = []
         for formula_in in data_in['formula']:
-            # TODO convert formulas once formulas are implemented for ArchiveViewer
-            pass
+            color = self.srgb_to_qColor(pv_in['color'])
+            formula = "f://" + formula_in["term"]
+            for curve in formula_in["curveDict"].keys():
+                insert = "{" + curve + "}"
+                formula = re.sub(curve, insert, formula)
+            formula_dict = {'name': formula_in['name'],
+                            'formula': formula,
+                            'curveDict': formula_in['curveDict'],
+                            'yAxisName': formula_in['range_axis_name'],
+                            'lineWidth': float(formula_in['draw_width']),
+                            'color': color.name(),
+                            'thresholdColor': color.name()}
+            filtered_dict = self.remove_null_values(formula_dict)
+            converted_data['formula'].append(filtered_dict)
 
         self.stored_data = converted_data
         return self.stored_data
@@ -247,12 +260,23 @@ class ArchiveViewerFileConverter():
         data_dict['plot_title'] = xml.find("plot_title").text
         data_dict['legend_configuration'] = xml.find("legend_configuration").attrib
 
-        for key in ("time_axis", "range_axis", "pv", "formula"):
+        for key in ("time_axis", "range_axis", "pv"):
             for element in xml.findall(key):
                 ele_dict = element.attrib
                 ele_dict |= {sub_ele.tag: sub_ele.text for sub_ele in element}
                 data_dict[key].append(ele_dict)
-
+        key = "formula"
+        for element in xml.findall(key):
+            ele_dict = element.attrib
+            curveDict = dict()
+            for sub_ele in element:
+                if sub_ele.tag == "argument_ave":
+                    tempDict = sub_ele.attrib
+                    curveDict[tempDict["variable"]] = tempDict["name"]
+                else:
+                    ele_dict |= {sub_ele.tag: sub_ele.text}
+            ele_dict['curveDict'] = curveDict
+            data_dict[key].append(ele_dict)
         return data_dict
 
     @staticmethod
@@ -273,7 +297,8 @@ class ArchiveViewerFileConverter():
                        'plot': {},
                        'time_axis': {},
                        'y-axes': [],
-                       'curves': []}
+                       'curves': [],
+                       'formula': []}
 
         [start_ts, end_ts] = plot.getXAxis().range
         start_dt = datetime.fromtimestamp(start_ts)
@@ -290,9 +315,14 @@ class ArchiveViewerFileConverter():
 
         for c in plot.getCurves():
             curve_dict = json.loads(c, object_pairs_hook=OrderedDict)
-            if not curve_dict['channel']:
-                continue
-            output_dict['curves'].append(curve_dict)
+            if 'channel' in curve_dict:
+                if not curve_dict['channel']:
+                    continue
+                output_dict['curves'].append(curve_dict)
+            else:
+                if not curve_dict['formula']:
+                    continue
+                output_dict['formula'].append(curve_dict)
 
         return output_dict
 
