@@ -56,28 +56,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return True
         return False
 
-    def __contains__(self, key: str) -> bool:
-        """Check if the given key is a channel that already exists in the model.
-        Allows for the use of the 'in' keyword.
-
-        Parameters
-        ----------
-        key : str
-            Channel to check existence of
-
-        Returns
-        -------
-        bool
-            If the channel already exists in the model
-        """
-        for curve in self._plot._curves:
-            if hasattr(curve, "channel"):
-                if curve.address == key:
-                    return True
-            elif curve.formula == key:
-                return True
-        return False
-
     def get_data(self, column_name: str, curve: ArchivePlotCurveItem) -> Any:
         """Get data from the model based on column name.
 
@@ -148,8 +126,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                     logger.warning("You can only have one of each PV")
                     return False
                 if not curve_is_formula:
-                    if value == curve.address:
-                        return True
                     logger.debug(f"Disconnecting old channel(s): {curve.address}")
                     [ch.disconnect() for ch in curve.channels() if ch]
                     curve.address = str(value)
@@ -234,34 +210,38 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._row_names = []
 
         for c in curves:
-            logger.debug(f"Adding curve: {c['channel']}")
+
             for k, v in c.items():
                 if v is None:
                     del c[k]
             if 'channel' in c:
+                logger.debug(f"Adding curve: {c['channel']}")
                 c['y_channel'] = c['channel']
                 del c['channel']
                 self._plot.addYChannel(**c)
                 self._row_names.append(self.next_header())
             else:
+                logger.debug(f"Adding formula: {c['formula']}")
                 self.append()
                 headers = re.findall("{(.+?)}", c['formula'])
                 splitFormula = re.split("{.+?}", c['formula'])
                 newFormula = splitFormula.pop(0)
                 for header in headers:
-                    # For every header refereced in our formula
-                    if header in c['curveDict'].keys():
-                        # If this curve (formula or channel) is in the curves list
-                        name = c['curveDict'][header]
-                        if name in self:
-                            # Manually find it and replace the header in the formula
-                            for i in range(len(self.plot.curves)):
-                                curve = self._plot._curves[i]
-                                if ((hasattr(curve, "address") and curve.address == name)
-                                            or (hasattr(curve, "formula") and curve.formula == name)):
-                                    newFormula += "{" + self._row_names[i] + "}" + splitFormula.pop(0)
-
-                                    break
+                    # For every header referenced in our formula
+                    if header not in c['curveDict'].keys():
+                        continue
+                    # Confirmed the header is in our curves list
+                    name = c['curveDict'][header]
+                    if name not in self:
+                        continue
+                    # Manually find it and replace the header in the formula
+                    for i in range(len(self.plot.curves)):
+                        curve = self._plot._curves[i]
+                        found_curve = hasattr(curve, "address") and curve.address == name
+                        found_curve |= hasattr(curve, "formula") and curve.formula == name
+                        if found_curve:
+                            newFormula += "{" + self._row_names[i] + "}" + splitFormula.pop(0)
+                            break
                 # change formula to match new stuff
                 index = self.index(-1,0)
                 del c['formula']
