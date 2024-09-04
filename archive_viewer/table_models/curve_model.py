@@ -262,7 +262,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
         rowName = self._row_names[index.row()]
         pvdict = self.formulaToPVDict(rowName, formula)
-        print("we got here")
         curve = self._plot._curves[index.row()]
         if not color:
             color = ColorButton.index_color(index.row())

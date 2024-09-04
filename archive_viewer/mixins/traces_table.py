@@ -200,6 +200,7 @@ class FormulaDialog(QDialog):
             if button_text == "PV":
                 self.PVButton = button
                 self.PVButton.setCheckable(True)
+                self.PVButton.setChecked(True)
                 self.PVButton.clicked.connect(self.showPVList)
             elif button_text == "Clear":
                 button.clicked.connect(lambda _: self.field.clear())
