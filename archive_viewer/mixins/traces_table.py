@@ -1,6 +1,7 @@
 from typing import Dict, Any
 from qtpy.QtGui import QKeyEvent
 from qtpy import sip
+from qtpy.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
 from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
                             QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView)
@@ -27,12 +28,14 @@ class TracesTableMixin:
         self.menu = PVContextMenu(self)
         self.ui.traces_tbl.customContextMenuRequested.connect(self.custom_context_menu)
 
-        hdr = self.ui.traces_tbl.horizontalHeader()
-        hdr.setSectionResizeMode(QHeaderView.Stretch)
+        self.hdr = self.ui.traces_tbl.horizontalHeader()
+        self.hdr.setSectionResizeMode(QHeaderView.Stretch)
         channel_col = self.curves_model.getColumnIndex("Channel")
-        hdr.setSectionResizeMode(channel_col, QHeaderView.ResizeToContents)
+        self.hdr.setSectionResizeMode(channel_col, QHeaderView.ResizeToContents)
         del_col = self.curves_model.getColumnIndex("")
-        hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
+        self.hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
+        self.setAcceptDrops(True)
+        self.menu.archive_search.append_PVs_requested.connect(self.insertPVs)
 
     def curve_delegates_init(self) -> None:
         """Set column delegates for the Traces table to display widgets."""
@@ -72,6 +75,38 @@ class TracesTableMixin:
         delete_row_del = DeleteRowDelegate(self.ui.traces_tbl)
         self.ui.traces_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
 
+    def dragEnterEvent(self, e: QDragEnterEvent) -> None:
+        """Handle something (like PV names) being dragged into the table"""
+        e.acceptProposedAction()
+
+    def dragMoveEvent(self, e: QDragMoveEvent) -> None:
+        """Handle something (like PV names) being dragged through the table"""
+        e.acceptProposedAction()
+
+    def dropEvent(self, e: QDropEvent) -> None:
+        """Handle something (like PV names) being dropped into the table"""
+        data = e.mimeData().text()
+        self.insertPVs(data)
+
+    def insertPVs(self, data: str) -> None:
+        """Parse the incoming PV name data
+        One by one, add them to the end of the curves model
+        Resize the table to match the longest PV name/label
+
+        Parameters
+        ---------------
+        data: str
+            The list of pvs in string format i.e. \"<pv1>, <pv2>, <pv3>\" etc."""
+        logger.info("Accepting PVs " + data)
+        channels = data.split(", ")
+        for channel in channels:
+            index = -1
+            curve = self.curves_model.curve_at_index(index)
+            self.curves_model.set_data(column_name="Channel", curve=curve, value=channel)
+        self.ui.traces_tbl.update()
+        self.hdr.setSectionResizeMode(self.curves_model.getColumnIndex("Channel"), QHeaderView.ResizeToContents)
+        self.hdr.setSectionResizeMode(self.curves_model.getColumnIndex("Label"), QHeaderView.ResizeToContents)
+
     @Slot(QPoint)
     def custom_context_menu(self, pos: QPoint) -> None:
         """Open a custom context menu for the Traces table where the
@@ -99,24 +134,15 @@ class TracesTableMixin:
 
 
 class PVContextMenu(QMenu):
-    # TODO: Change this QMenu so functions that change data stay in table object
-    #   - Move functions to table widget
-    #   - Init parameters: dict("ACTION_NAME": function)
-    #   - Init: Loop through dict values:
-    #       - Create action w/ name
-    #       - action.triggered.connect(function)
-    #       - self.addAction(action)
-
-    # data_changed_signal = Signal(int)
-
-    # TODO: Archived PVs are no longer draggable from the search tool. Find out why
-
+    """Right clicking on the curves table opens 3 options - to open a PV search tool,
+    Open a formula dialogue, or import a csv. Importing a csv seems to have not yet been
+    implemented, but Formulae and PV search are."""
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent)
+
         self._selected_index = None
         self.archive_search = ArchiveSearchWidget()
         self._formula_dialog = FormulaDialog(self)
-
         # Add "SEARCH PV" option
         search_pv_action = QAction("SEARCH PV", self)
         search_pv_action.triggered.connect(self.archive_search.show)

@@ -1,8 +1,8 @@
 import logging
-from typing import (List, Optional)
-from qtpy.QtGui import QDrag
+from typing import (List)
+from qtpy.QtGui import QDrag, QKeyEvent
 from qtpy.QtCore import (QAbstractTableModel, QMimeData, QModelIndex, QObject,
-                         Qt, QUrl, QVariant)
+                         Qt, QUrl, QVariant, Signal)
 from qtpy.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from qtpy.QtWidgets import (QAbstractItemView, QHBoxLayout, QHeaderView, QLabel,
                             QLineEdit, QPushButton, QTableView, QVBoxLayout, QWidget)
@@ -97,7 +97,7 @@ class ArchiveSearchWidget(QWidget):
     parent : QObject, optional
         The parent item of this widget
     """
-
+    append_PVs_requested = Signal(str)
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent=parent)
 
@@ -127,7 +127,7 @@ class ArchiveSearchWidget(QWidget):
         self.results_view.setProperty("showDropIndicator", False)
         self.results_view.setDragDropOverwriteMode(False)
         self.results_view.setDragEnabled(True)
-        self.results_view.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.results_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.results_view.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.results_view.setDropIndicatorShown(True)
         self.results_view.setCornerButtonEnabled(False)
@@ -147,7 +147,22 @@ class ArchiveSearchWidget(QWidget):
         self.layout.addLayout(self.search_layout)
         self.layout.addWidget(self.loading_label)
         self.layout.addWidget(self.results_view)
+        self.insert_button = QPushButton("Add PVs")
+        self.insert_button.clicked.connect(lambda:self.append_PVs_requested.emit(self.selectedPVs()))
+        self.results_view.doubleClicked.connect(lambda:self.append_PVs_requested.emit(self.selectedPVs()))
+        self.layout.addWidget(self.insert_button)
         self.setLayout(self.layout)
+
+    def selectedPVs(self) -> str:
+        """Figure out based on which indexes were selected, the list of PVs (by string name)
+        The user was hoping to insert into the table. Concatenate them into string form i.e.
+        <pv1>, <pv2>, <pv3>"""
+        indices = self.results_view.selectedIndexes()
+        pv_list = ""
+        for index in indices:
+            pv_name = self.results_table_model.results_list[index.row()]
+            pv_list += pv_name + ", "
+        return pv_list[:-2]
 
     def startDragAction(self, supported_actions) -> None:
         """
@@ -155,21 +170,26 @@ class ArchiveSearchWidget(QWidget):
         reason for this functionality is the ability to drag a PV name onto a plot to automatically start drawing
         data for that PV
         """
-        indices = self.results_view.selectedIndexes()
-        if len(indices) > 0:
-            index = indices[0]
-            pv_name = self.results_table_model.results_list[index.row()]
-            drag = QDrag(self)
-            mime_data = QMimeData()
-            mime_data.setText(pv_name)
-            drag.setMimeData(mime_data)
-            drag.exec()
+        drag = QDrag(self)
+        mime_data = QMimeData()
+        mime_data.setText(self.selectedPVs())
+        drag.setMimeData(mime_data)
+        drag.exec_()
+
+    def keyPressEvent(self, e: QKeyEvent) -> None:
+        """Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula"""
+        if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
+            self.request_archiver_info()
+        return super().keyPressEvent(e)
 
     def request_archiver_info(self) -> None:
         """Send the search request to the archiver appliance based on the search string typed into the text box"""
+        search_text = self.search_box.text()
+        search_text = search_text.replace("?", ".")
+        search_text = search_text.replace("*", ".")
         url_string = (
             f"http://{self.archive_url_textedit.text()}/"
-            f"retrieval/bpl/searchForPVsRegex?regex=.*{self.search_box.text()}.*"
+            f"retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
         )
         request = QNetworkRequest(QUrl(url_string))
         self.network_manager.get(request)

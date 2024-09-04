@@ -435,12 +435,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
         return next_header
 
-    def curve_at_index(self, index: QModelIndex) -> ArchivePlotCurveItem:
+    def curve_at_index(self, index: int | QModelIndex) -> ArchivePlotCurveItem:
         """Return the curve item at the given index.
 
         Parameters
         ----------
-        index : QModelIndex
+        index : int | QModelIndex
             The table index of the requested curve.
 
         Returns
@@ -448,6 +448,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         ArchivePlotCurveItem
             The requested curve.
         """
+        if isinstance(index, QModelIndex):
+            index = index.row()
         return self._plot.curveAtIndex(index)
 
     @Slot(object)
