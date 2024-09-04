@@ -1,13 +1,15 @@
+import re
 from typing import (Any, List, Dict, Optional)
+from functools import partial
 from qtpy.QtGui import QColor
 from qtpy.QtCore import (QObject, QModelIndex, Qt, Slot)
+from qtpy import sip
 from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
-from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
+from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem, FormulaCurveItem
 from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
 from config import logger
 from widgets import ColorButton
 from table_models import ArchiverAxisModel
-from qtpy import sip
 
 class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
     """Model used for storing and editing archiver time plot curves.
@@ -68,7 +70,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             return not curve.isVisible()
         return super(ArchiverCurveModel, self).get_data(column_name, curve)
 
-    def set_data(self, column_name: str, curve: ArchivePlotCurveItem, value: Any) -> bool:
+    def set_data(self, column_name: str, curve: BasePlotCurveItem, value: Any) -> bool:
         """Set data on the input curve for the given name and value.
 
         Parameters
@@ -86,29 +88,45 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         bool
             If the data was successfully set.
         """
-        logger.debug(f"Setting {column_name} data for curve {curve.address}")
+        logger.debug(f"Setting {column_name} data for curve {curve.name}")
         ret_code = False
         index = self.index(self._plot._curves.index(curve),0)
         if sip.isdeleted(curve):
             return False
         if column_name == "Channel":
             curve.show()
-            if not curve.name():
-                curve.setData(name=str(value))
-            if value == curve.address:
-                return True
-
-            logger.debug(f"Disconnecting old channel(s): {curve.address}")
-            [ch.disconnect() for ch in curve.channels() if ch]
-            curve.address = str(value)
-            logger.debug(f"Connecting new channel(s): {curve.address}")
-            [ch.connect() for ch in curve.channels() if ch]
-
-
+            # If we are changing the channel, then we need to check the current type, and the type we're going to
+            index = self.index(self._plot._curves.index(curve),0)
+            value_is_formula = value.startswith("f://")
+            curve_is_formula = isinstance(curve, FormulaCurveItem)
+            if value_is_formula and not curve_is_formula:
+                # Regardless of starting point, going to a formula is handled in this one function
+                try:
+                    ret_code = self.replaceToFormula(index = index, formula = value)
+                except (SyntaxError, ValueError) as e:
+                    logger.error(e)
+                    return False
+            elif value_is_formula and curve_is_formula:
+                try:
+                    rowName = self._row_names[index.row()]
+                    pv_dict = self.formulaToPVDict(rowName, value)
+                    curve.formula = value
+                    curve.pvs = pv_dict
+                except (SyntaxError, ValueError) as e:
+                    logger.error(e)
+                    return False
+            elif not value_is_formula and not curve_is_formula:
+                if value == curve.address:
+                    return True
+                logger.debug(f"Disconnecting old channel(s): {curve.address}")
+                [ch.disconnect() for ch in curve.channels() if ch]
+                curve.address = str(value)
+                logger.debug(f"Connecting new channel(s): {curve.address}")
+                [ch.connect() for ch in curve.channels() if ch]
+            else:
+                self.replaceToArchivePlot(curve=curve, index=index, address=value, color=curve.color)
             if value and self._plot._curves[-1] is curve:
                 self.append()
-
-            ret_code = True
             self.plot._legend.removeItem(curve.name())
             curve.setData(name=str(value))
             self.plot._legend.addItem(curve, curve.name())
@@ -124,16 +142,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 self.plot.plotItem.axes[curve.y_axis_name]["item"].show()
         elif column_name == "Style":
             curve.stepMode = value
-            ret_code = True
-        elif column_name == "Hidden":
-            # Handle toggling hidden
-            hidden = bool(value)
-            if hidden:
-                curve.hide()
-                self._axis_model.plot.plotItem.autoVisible(curve.y_axis_name)
-            else:
-                curve.show()
-                self._axis_model.plot.plotItem.axes[curve.y_axis_name]["item"].show()
             ret_code = True
         elif column_name == "Hidden":
             # Handle toggling hidden
@@ -206,6 +214,95 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self.endResetModel()
         logger.debug("Finished setting curves model")
 
+    def replaceToArchivePlot(self, curve: BasePlotCurveItem, index: QModelIndex, address: str, color: Optional[QColor] = None):
+        """Replace the existing curve with a new ArchivePlotCurveItem"""
+        self.append(address=address, name=address, color=color)
+        self._plot._curves[index.row()] = self._plot._curves[-1]
+        self.beginRemoveRows(QModelIndex(), self.rowCount() - 1, self.rowCount() - 1)
+        self.plot._curves = self.plot._curves[:-1]
+        self.plot.removeItem(curve)
+        self.endRemoveRows()
+
+    def formulaToPVDict(self, rowName: str, formula: str) -> dict:
+        """Take in a formula and return a dictionary with keys of row headers and values of the BasePlotCurveItems"""
+        pvs = re.findall("{(.+?)}", formula)
+        pvdict = dict()
+        for pv in pvs:
+            # Check if all of the requested rows actually exist
+            if pv not in self._row_names:
+                raise ValueError(f"{pv} is an invalid variable name")
+            elif pv == rowName:
+                raise ValueError(f"{pv} is recursive")
+            elif self._row_names.index(pv) > self._row_names.index(rowName):
+                raise ValueError(f"Error, all referenced curves must come before the Formula")
+            else:
+                # If it's good, add it to the dictionary of curves. rindex = row index (int) as opposed to index, which is a QModelIndex
+                rindex = self._row_names.index(pv)
+                pvdict[pv] = self._plot._curves[rindex]
+        if not pvdict:
+            try:
+                eval(formula[4:])
+            except SyntaxError:
+                raise SyntaxError("Invalid Input")
+        return pvdict
+
+    def replaceToFormula(self, index: QModelIndex, formula: str, color: Optional[QColor] = None) -> bool:
+        """Replaces existing ArchivePlotCurveItem with a new FormulaCurveItem
+
+        Parameters
+        ----------
+        formula : str
+            The Formula we want to graph
+        name : str, optional
+            The display name for the curve.
+        color : Optional[QColor], optional
+            The curve's color on the plot.
+        """
+        # Find row headers using regex
+
+        rowName = self._row_names[index.row()]
+        pvdict = self.formulaToPVDict(rowName, formula)
+        curve = self._plot._curves[index.row()]
+        if not color:
+            color = ColorButton.index_color(index.row())
+        #          KLYS:LI22:31:KVAC
+        # Handle Archives and formulas differently
+        if index.row() == self.rowCount() - 1:
+            self.append()
+        y_axis = curve.y_axis_name
+        FormulaCurve = self.plot.addFormulaChannel(formula=formula, name=formula, pvs=pvdict, color=color, yAxisName=y_axis)
+        self._plot._curves[index.row()] = FormulaCurve
+        FormulaCurve.formula_invalid_signal.connect(partial(self.invalidFormula, header = rowName))
+        # Need to check if Formula is referencing a dead row
+        FormulaCurve.redrawCurve()
+        self.plot.removeItem(curve)
+        # Disconnect everything and delete it, create a new Formula with the dictionary of curve
+        [ch.disconnect() for ch in curve.channels() if ch]
+        del curve
+        return True
+
+    def invalidFormula(self, header):
+        """Handling row deletion if the formula is no longer valid"""
+        rindex = self._row_names.index(header)
+        index = self.index(rindex,0)
+        if not index.isValid() or index.row() == (self.rowCount() - 1):
+            return False
+        del self._row_names[index.row()]
+        curve = self._plot._curves[rindex]
+        self.beginRemoveRows(QModelIndex(), index.row(), index.row())
+        if curve.y_axis_name in self._plot.plotItem.axes:
+            self.plot.plotItem.unlinkDataFromAxis(curve.y_axis_name)
+        self.plot.removeItem(curve)
+        self.plot._curves.remove(curve)
+        self.endRemoveRows()
+        if not self._plot._curves:
+            self.append()
+        del curve
+        # Prompt a redraw top cascade and delete any consequential formulas
+        self._plot.archive_data_received()
+        self._plot.set_needs_redraw()
+        self._plot.redrawPlot()
+
     def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the curve at the given table index.
 
@@ -215,6 +312,11 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             An index in the row to be removed.
         """
         logger.debug(f"Removing curve at index {index.row()}")
+        if isinstance(self._plot._curves[index.row()], FormulaCurveItem):
+            # Formula Curves don't have channel data so we should just remove it as if it were no longer valid
+            self.invalidFormula(self._row_names[index.row()])
+            return False
+
         if not index.isValid() or index.row() == (self.rowCount() - 1):
             return False
         del self._row_names[index.row()]
@@ -227,6 +329,9 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._plot.set_needs_redraw()
         self._plot.redrawPlot()
         logger.debug(f"Finished removing curve previously at index {index.row()}")
+        self._plot.archive_data_received()
+        self._plot.set_needs_redraw()
+        self._plot.redrawPlot()
         return ret
 
     def headerData(self, section, orientation, role=Qt.DisplayRole) -> Any:

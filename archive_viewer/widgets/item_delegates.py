@@ -629,3 +629,34 @@ class ComboBoxDelegate(QStyledItemDelegate):
         """
         pos = self.sender().mapToParent(pos)
         self.parent().customContextMenuRequested.emit(pos)
+
+
+class InsertPVDelegate(EditorDelegate):
+    """InsertPVDelegate is a QStyledItemDelegate to display a persistent
+    QPushButton widget on the FormulaDialog that allow's the user to insert the PV.
+
+    Parameters
+    ----------
+    parent : FormulaDialog
+        The parent object for the InsertPVDelegate. Should be the
+        associated QTableView
+    """
+    button_clicked = Signal(str)
+    def __init__(self, parent: QTableView):
+        super().__init__(parent)
+        self.model = self.parent().model()
+
+    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QPushButton:
+        """Create the editor, which in this case is a QPushButton that when pressed will send out the corresponding
+        row name string insert to be put into the formula, in the formula dialogue"""
+        if index.row() >= len(self.editor_list):
+            editor = QPushButton(parent)
+            editor.setText("Insert")
+            editor.setToolTip("Insert PV")
+            # We don't want to allow people to select the button, only click it
+            editor.setFocusPolicy(Qt.NoFocus)
+            editor.pressed.connect(lambda: self.button_clicked.emit("{"+ self.model._row_names[index.row()]+"}"))
+
+            self.editor_list.append(editor)
+            return editor
+        return super().createEditor(parent, option, index)
