@@ -1,5 +1,5 @@
 from .archive_search import ArchiveSearchWidget
-from .table_widgets import (ColorButton, CenterCheckbox)
-from .item_delegates import (CheckboxDelegate, ColorButtonDelegate, ComboBoxDelegate,
-                             SliderDelegate, DeleteRowDelegate, FloatDelegate,
-                             ScientificNotationDelegate)
+from .table_widgets import ColorButton
+from .item_delegates import (ColorButtonDelegate, ComboBoxDelegate,
+                             DeleteRowDelegate, FloatDelegate,
+                             ScientificNotationDelegate, InsertPVDelegate)
