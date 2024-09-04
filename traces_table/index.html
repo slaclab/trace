@@ -481,6 +481,48 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#archive_viewer.mixins.traces_table.FormulaDialog" class="md-nav__link">
+    <span class="md-ellipsis">
+      FormulaDialog
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FormulaDialog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#archive_viewer.mixins.traces_table.FormulaDialog.accept_formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      accept_formula
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#archive_viewer.mixins.traces_table.FormulaDialog.exec_" class="md-nav__link">
+    <span class="md-ellipsis">
+      exec_
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#archive_viewer.mixins.traces_table.FormulaDialog.keyPressEvent" class="md-nav__link">
+    <span class="md-ellipsis">
+      keyPressEvent
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#archive_viewer.mixins.traces_table.PVContextMenu" class="md-nav__link">
     <span class="md-ellipsis">
       PVContextMenu
@@ -613,6 +655,48 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#archive_viewer.mixins.traces_table.FormulaDialog" class="md-nav__link">
+    <span class="md-ellipsis">
+      FormulaDialog
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FormulaDialog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#archive_viewer.mixins.traces_table.FormulaDialog.accept_formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      accept_formula
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#archive_viewer.mixins.traces_table.FormulaDialog.exec_" class="md-nav__link">
+    <span class="md-ellipsis">
+      exec_
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#archive_viewer.mixins.traces_table.FormulaDialog.keyPressEvent" class="md-nav__link">
+    <span class="md-ellipsis">
+      keyPressEvent
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#archive_viewer.mixins.traces_table.PVContextMenu" class="md-nav__link">
     <span class="md-ellipsis">
       PVContextMenu
@@ -736,6 +820,382 @@
 
 
 
+<h2 id="archive_viewer.mixins.traces_table.FormulaDialog" class="doc doc-heading">
+            <code>FormulaDialog</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="qtpy.QtWidgets.QDialog">QDialog</span></code></p>
+
+
+        <p>Formula Dialog - when a user right clicks on a row in the list of curves, they have the option to input a formula
+They could opt to type it instead, but this opens a box that is a nicer UI for inputting a formula.</p>
+
+              <details class="quote">
+                <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">FormulaDialog</span><span class="p">(</span><span class="n">QDialog</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Formula Dialog - when a user right clicks on a row in the list of curves, they have the option to input a formula</span>
+<span class="sd">    They could opt to type it instead, but this opens a box that is a nicer UI for inputting a formula.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">QObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">&quot;Formula Input&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Create the layout for the dialog</span>
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># Create the QLineEdit for formula input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">curves_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span> <span class="o">=</span> <span class="n">QTableView</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># We&#39;re going to copy the list of PVs from the curve model. We&#39;re also not going to allow the user to make edits to the list of PVs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setEditTriggers</span><span class="p">(</span><span class="n">QAbstractItemView</span><span class="o">.</span><span class="n">EditTriggers</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setMaximumWidth</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setMaximumHeight</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">horizontalHeader</span><span class="p">()</span>
+        <span class="n">header</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">QHeaderView</span><span class="o">.</span><span class="n">Stretch</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">columnCount</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="c1"># Hide all columns that arent useful, but keep one left over to add a button to</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setColumnHidden</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">insertButton</span> <span class="o">=</span> <span class="n">InsertPVDelegate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="p">)</span>
+        <span class="n">insertButton</span><span class="o">.</span><span class="n">button_clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">insert</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setItemDelegateForColumn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">columnCount</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">insertButton</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">selected_index</span>
+
+        <span class="c1"># Define the list of calculator buttons.</span>
+        <span class="c1"># It&#39;s a bunch of preset buttons, but users can type other functions under math.</span>
+        <span class="n">buttons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;7&quot;</span><span class="p">,</span>       <span class="s2">&quot;8&quot;</span><span class="p">,</span>     <span class="s2">&quot;9&quot;</span><span class="p">,</span>      <span class="s2">&quot;+&quot;</span><span class="p">,</span>     <span class="s2">&quot;(&quot;</span><span class="p">,</span>      <span class="s2">&quot;)&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;4&quot;</span><span class="p">,</span>       <span class="s2">&quot;5&quot;</span><span class="p">,</span>     <span class="s2">&quot;6&quot;</span><span class="p">,</span>      <span class="s2">&quot;-&quot;</span><span class="p">,</span>    <span class="s2">&quot;^2&quot;</span><span class="p">,</span> <span class="s2">&quot;sqrt()&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;1&quot;</span><span class="p">,</span>       <span class="s2">&quot;2&quot;</span><span class="p">,</span>     <span class="s2">&quot;3&quot;</span><span class="p">,</span>      <span class="s2">&quot;*&quot;</span><span class="p">,</span>   <span class="s2">&quot;^-1&quot;</span><span class="p">,</span>  <span class="s2">&quot;ln()&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;0&quot;</span><span class="p">,</span>       <span class="s2">&quot;e&quot;</span><span class="p">,</span>    <span class="s2">&quot;pi&quot;</span><span class="p">,</span>      <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;sin()&quot;</span><span class="p">,</span> <span class="s2">&quot;asin()&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;.&quot;</span><span class="p">,</span>   <span class="s2">&quot;abs()&quot;</span><span class="p">,</span> <span class="s2">&quot;min()&quot;</span><span class="p">,</span>      <span class="s2">&quot;^&quot;</span><span class="p">,</span> <span class="s2">&quot;cos()&quot;</span><span class="p">,</span> <span class="s2">&quot;acos()&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;PV&quot;</span><span class="p">,</span>  <span class="s2">&quot;Clear&quot;</span><span class="p">,</span> <span class="s2">&quot;max()&quot;</span><span class="p">,</span> <span class="s2">&quot;mean()&quot;</span><span class="p">,</span> <span class="s2">&quot;tan()&quot;</span><span class="p">,</span> <span class="s2">&quot;atan()&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Create the calculator buttons and connect them to the input field</span>
+        <span class="n">grid_layout</span> <span class="o">=</span> <span class="n">QGridLayout</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">button_text</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">buttons</span><span class="p">):</span>
+            <span class="n">button</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="n">button_text</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">i</span> <span class="o">//</span> <span class="mi">6</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">6</span>
+            <span class="n">grid_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">button</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+            <span class="c1"># Connect the button clicked signal to the appropriate action</span>
+            <span class="c1"># PV currently does nothing, this is a remnant</span>
+            <span class="c1"># From when we would have the pv_list open in a new window</span>
+            <span class="k">if</span> <span class="n">button_text</span> <span class="o">==</span> <span class="s2">&quot;PV&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">PVButton</span> <span class="o">=</span> <span class="n">button</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">PVButton</span><span class="o">.</span><span class="n">setCheckable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">PVButton</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">PVButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">showPVList</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">button_text</span> <span class="o">==</span> <span class="s2">&quot;Clear&quot;</span><span class="p">:</span>
+                <span class="n">button</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">clear</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">button</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">button_text</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="n">grid_layout</span><span class="p">)</span>
+
+        <span class="c1"># Add an &quot;OK&quot; button to accept the formula and close the dialog</span>
+        <span class="n">ok_button</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">ok_button</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accept_formula</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">ok_button</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">showPVList</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">keyPressEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">QKeyEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">key</span><span class="p">()</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Key_Return</span> <span class="ow">or</span> <span class="n">e</span><span class="o">.</span><span class="n">key</span><span class="p">()</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Key_Enter</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accept_formula</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">keyPressEvent</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="nd">@Slot</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">showPVList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">show</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PVButton</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">exec_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; When the formula dialog is opened (every time) we need to</span>
+<span class="sd">            update it with the latest information on the curve model and</span>
+<span class="sd">            also populate the text box with the pre-existing formula (if it already was there)&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">selected_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setRowHidden</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">_row_names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">rowCount</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setRowHidden</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">_plot</span><span class="o">.</span><span class="n">_curves</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">row</span><span class="p">()]</span>
+        <span class="k">if</span> <span class="n">index</span><span class="o">.</span><span class="n">data</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">curve</span><span class="p">,</span> <span class="n">FormulaCurveItem</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">data</span><span class="p">())</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;f://&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+
+    <span class="nd">@Slot</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">accept_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Retrieve the formula and PV name and perform desired actions</span>
+<span class="sd">         We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window&quot;&quot;&quot;</span>
+        <span class="n">formula</span> <span class="o">=</span> <span class="s2">&quot;f://&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+        <span class="n">passed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">replaceToFormula</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">selected_index</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="mi">0</span><span class="p">),</span> <span class="n">formula</span> <span class="o">=</span> <span class="n">formula</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">passed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="archive_viewer.mixins.traces_table.FormulaDialog.accept_formula" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">accept_formula</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Retrieve the formula and PV name and perform desired actions
+We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window</p>
+
+            <details class="quote">
+              <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">accept_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Retrieve the formula and PV name and perform desired actions</span>
+<span class="sd">     We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window&quot;&quot;&quot;</span>
+    <span class="n">formula</span> <span class="o">=</span> <span class="s2">&quot;f://&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+    <span class="n">passed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">replaceToFormula</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">selected_index</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="mi">0</span><span class="p">),</span> <span class="n">formula</span> <span class="o">=</span> <span class="n">formula</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">passed</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="archive_viewer.mixins.traces_table.FormulaDialog.exec_" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">exec_</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>When the formula dialog is opened (every time) we need to
+update it with the latest information on the curve model and
+also populate the text box with the pre-existing formula (if it already was there)</p>
+
+            <details class="quote">
+              <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">exec_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; When the formula dialog is opened (every time) we need to</span>
+<span class="sd">        update it with the latest information on the curve model and</span>
+<span class="sd">        also populate the text box with the pre-existing formula (if it already was there)&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">selected_index</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setRowHidden</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">_row_names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">rowCount</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="o">.</span><span class="n">setRowHidden</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">_plot</span><span class="o">.</span><span class="n">_curves</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">row</span><span class="p">()]</span>
+    <span class="k">if</span> <span class="n">index</span><span class="o">.</span><span class="n">data</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">curve</span><span class="p">,</span> <span class="n">FormulaCurveItem</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">data</span><span class="p">())</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;f://&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="archive_viewer.mixins.traces_table.FormulaDialog.keyPressEvent" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">keyPressEvent</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula</p>
+
+            <details class="quote">
+              <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">keyPressEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">QKeyEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">key</span><span class="p">()</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Key_Return</span> <span class="ow">or</span> <span class="n">e</span><span class="o">.</span><span class="n">key</span><span class="p">()</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Key_Enter</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accept_formula</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">keyPressEvent</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h2 id="archive_viewer.mixins.traces_table.PVContextMenu" class="doc doc-heading">
             <code>PVContextMenu</code>
 
@@ -750,12 +1210,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
 <span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
@@ -796,7 +1251,12 @@
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
-<span class="normal">142</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">PVContextMenu</span><span class="p">(</span><span class="n">QMenu</span><span class="p">):</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">PVContextMenu</span><span class="p">(</span><span class="n">QMenu</span><span class="p">):</span>
     <span class="c1"># TODO: Change this QMenu so functions that change data stay in table object</span>
     <span class="c1">#   - Move functions to table widget</span>
     <span class="c1">#   - Init parameters: dict(&quot;ACTION_NAME&quot;: function)</span>
@@ -906,13 +1366,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">20</span>
 <span class="normal">21</span>
 <span class="normal">22</span>
 <span class="normal">23</span>
@@ -985,7 +1439,12 @@
 <span class="normal">90</span>
 <span class="normal">91</span>
 <span class="normal">92</span>
-<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TracesTableMixin</span><span class="p">:</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span>
+<span class="normal">97</span>
+<span class="normal">98</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TracesTableMixin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixins class for the Traces tab of the settings section.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">traces_table_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Traces table model and section.&quot;&quot;&quot;</span>
@@ -993,8 +1452,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">menu</span> <span class="o">=</span> <span class="n">PVContextMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="o">.</span><span class="n">customContextMenuRequested</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">custom_context_menu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="o">.</span><span class="n">customContextMenuRequested</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">custom_context_menu</span><span class="p">)</span>
 
         <span class="n">hdr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="o">.</span><span class="n">horizontalHeader</span><span class="p">()</span>
         <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="n">QHeaderView</span><span class="o">.</span><span class="n">Stretch</span><span class="p">)</span>
@@ -1095,12 +1553,7 @@
 
             <details class="quote">
               <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">37</span>
 <span class="normal">38</span>
 <span class="normal">39</span>
 <span class="normal">40</span>
@@ -1131,7 +1584,12 @@
 <span class="normal">65</span>
 <span class="normal">66</span>
 <span class="normal">67</span>
-<span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">curve_delegates_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">curve_delegates_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set column delegates for the Traces table to display widgets.&quot;&quot;&quot;</span>
     <span class="n">axis_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">getColumnIndex</span><span class="p">(</span><span class="s2">&quot;Y-Axis Name&quot;</span><span class="p">)</span>
     <span class="n">axis_combo_del</span> <span class="o">=</span> <span class="n">ComboBoxDelegate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_table_model</span><span class="p">)</span>
@@ -1194,12 +1652,7 @@ not open a context menu.</p>
 
             <details class="quote">
               <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">75</span>
 <span class="normal">76</span>
 <span class="normal">77</span>
 <span class="normal">78</span>
@@ -1217,7 +1670,12 @@ not open a context menu.</p>
 <span class="normal">90</span>
 <span class="normal">91</span>
 <span class="normal">92</span>
-<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QPoint</span><span class="p">)</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span>
+<span class="normal">97</span>
+<span class="normal">98</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QPoint</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">custom_context_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="n">QPoint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Open a custom context menu for the Traces table where the</span>
 <span class="sd">    user right-clicks. If the ColorButton is right-clicked, then do</span>
@@ -1262,13 +1720,7 @@ not open a context menu.</p>
 
             <details class="quote">
               <summary>Source code in <code>archive_viewer/mixins/traces_table.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">22</span>
 <span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
@@ -1276,14 +1728,18 @@ not open a context menu.</p>
 <span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">traces_table_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">traces_table_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the Traces table model and section.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span> <span class="o">=</span> <span class="n">ArchiverCurveModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">archiver_plot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_table_model</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">menu</span> <span class="o">=</span> <span class="n">PVContextMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="o">.</span><span class="n">customContextMenuRequested</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">custom_context_menu</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="o">.</span><span class="n">customContextMenuRequested</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">custom_context_menu</span><span class="p">)</span>
 
     <span class="n">hdr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">traces_tbl</span><span class="o">.</span><span class="n">horizontalHeader</span><span class="p">()</span>
     <span class="n">hdr</span><span class="o">.</span><span class="n">setSectionResizeMode</span><span class="p">(</span><span class="n">QHeaderView</span><span class="o">.</span><span class="n">Stretch</span><span class="p">)</span>
