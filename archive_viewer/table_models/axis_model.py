@@ -46,6 +46,8 @@ class ArchiverAxisModel(BasePlotAxesModel):
         """
         if not index.isValid():
             return QVariant()
+        elif role == Qt.CheckStateRole and self._column_names[index.column()] == "Hidden":
+            return Qt.Unchecked if self.plot._axes[index.row()].isVisible() else Qt.Checked
         elif role == Qt.CheckStateRole and index.column() in self.checkable_col:
             value = super().data(index, Qt.DisplayRole)
             return Qt.Checked if value else Qt.Unchecked
