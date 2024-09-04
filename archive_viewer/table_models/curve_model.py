@@ -330,10 +330,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             self.append()
         if not yAxisName:
             yAxisName = curve.y_axis_name
-        self._plot._curves[index.row()] = self._plot.addFormulaChannel(formula=formula, name=formula, pvs=pvdict,color=color, useArchiveData=True, yAxisName=yAxisName)
-        self._plot._curves[index.row()].formula_invalid_signal.connect(partial(self.invalidFormula, header = rowName))
+        FormulaCurve =  self._plot.addFormulaChannel(formula=formula, name=formula, pvs=pvdict,color=color, useArchiveData=True, yAxisName=yAxisName)
+        self._plot._curves[index.row()] = FormulaCurve
+        FormulaCurve.formula_invalid_signal.connect(partial(self.invalidFormula, header = rowName))
         # Need to check if Formula is referencing a dead row
-        FormulaCurve.redrawCurve()
         self.plot.removeItem(curve)
         # Disconnect everything and delete it, create a new Formula with the dictionary of curve
         [ch.disconnect() for ch in curve.channels() if ch]
