@@ -3,9 +3,8 @@ from qtpy.QtGui import QKeyEvent
 from qtpy import sip
 from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
-                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView, QTableWidget)
+                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView)
 from pydm.widgets.baseplot import BasePlotCurveItem
-from pydm.widgets.baseplot_curve_editor import PlotStyleColumnDelegate
 from config import logger
 from pydm.widgets.archiver_time_plot import FormulaCurveItem
 from widgets import (
@@ -13,7 +12,6 @@ from widgets import (
     ColorButtonDelegate,
     ComboBoxDelegate,
     DeleteRowDelegate,
-    FloatDelegate,
     InsertPVDelegate
 )
 from table_models import ArchiverCurveModel
@@ -24,8 +22,6 @@ class TracesTableMixin:
     def traces_table_init(self) -> None:
         """Initialize the Traces table model and section."""
         self.curves_model = ArchiverCurveModel(self, self.ui.archiver_plot, self.axis_table_model)
-        self.curves_model.append()
-
         self.ui.traces_tbl.setModel(self.curves_model)
 
         self.menu = PVContextMenu(self)
@@ -42,7 +38,6 @@ class TracesTableMixin:
         """Set column delegates for the Traces table to display widgets."""
         axis_col = self.curves_model.getColumnIndex("Y-Axis Name")
         axis_combo_del = ComboBoxDelegate(self.ui.traces_tbl, self.axis_table_model)
-        axis_combo_del.sigTextChange.connect(self.axis_change)
         self.ui.traces_tbl.setItemDelegateForColumn(axis_col, axis_combo_del)
 
         color_col = self.curves_model.getColumnIndex("Color")
@@ -50,11 +45,8 @@ class TracesTableMixin:
         self.ui.traces_tbl.setItemDelegateForColumn(color_col, color_button_del)
 
         style_col = self.curves_model.getColumnIndex("Style")
-        style_del = PlotStyleColumnDelegate(self,
-                                       self.curves_model,
-                                       self.ui.traces_tbl)
-        style_del.toggleColumnVisibility()
-        self.ui.traces_tbl.setItemDelegateForColumn(style_col, style_del)
+        style_combo_del = ComboBoxDelegate(self.ui.traces_tbl, {"Direct": None, "Step": "right"})
+        self.ui.traces_tbl.setItemDelegateForColumn(style_col, style_combo_del)
 
         styles = BasePlotCurveItem.lines
         line_style_col = self.curves_model.getColumnIndex("Line Style")
@@ -75,22 +67,6 @@ class TracesTableMixin:
         symbol_size_col = self.curves_model.getColumnIndex("Symbol Size")
         symbol_size_del = ComboBoxDelegate(self.ui.traces_tbl, size_data)
         self.ui.traces_tbl.setItemDelegateForColumn(symbol_size_col, symbol_size_del)
-
-        bar_width_col = self.curves_model.getColumnIndex("Bar Width")
-        bar_width_del = FloatDelegate(self.ui.traces_tbl, init_range=(.1, 5))
-        self.ui.traces_tbl.setItemDelegateForColumn(bar_width_col, bar_width_del)
-
-        upper_limit_col = self.curves_model.getColumnIndex("Upper Limit")
-        upper_limit_del = FloatDelegate(self.ui.traces_tbl, init_range=(0, float("inf")))
-        self.ui.traces_tbl.setItemDelegateForColumn(upper_limit_col, upper_limit_del)
-
-        lower_limit_col = self.curves_model.getColumnIndex("Lower Limit")
-        lower_limit_del = FloatDelegate(self.ui.traces_tbl, init_range=(0, float("inf")))
-        self.ui.traces_tbl.setItemDelegateForColumn(lower_limit_col, lower_limit_del)
-
-        limit_color_col = self.curves_model.getColumnIndex("Limit Color")
-        limit_color_del = ColorButtonDelegate(self.ui.traces_tbl)
-        self.ui.traces_tbl.setItemDelegateForColumn(limit_color_col, limit_color_del)
 
         delete_col = self.curves_model.getColumnIndex("")
         delete_row_del = DeleteRowDelegate(self.ui.traces_tbl)
@@ -117,26 +93,9 @@ class TracesTableMixin:
         logger.debug(f"ColorButton column selected: {is_color}")
 
         if index.isValid() and not is_color:
+            logger.debug(f"Opening context menu at index {index}")
             self.menu.selected_index = index
             self.menu.popup(table.viewport().mapToGlobal(pos))
-
-    @Slot(int, str)
-    def axis_change(self, row: int, axis_name: str) -> None:
-        """Slot for connecting a curve to a specified axis.
-
-        Parameters
-        ----------
-        row : int
-            The row of the table associated with the curve changed
-        axis_name : str
-            The name of the new axis the curve should be on
-        """
-        if not axis_name:
-            return
-        # Get the curve and check if it has been deleted
-        curve = self.curves_model.curve_at_index(row)
-        if not sip.isdeleted(curve):
-            self.ui.archiver_plot.plotItem.linkDataToAxis(curve, axis_name)
 
 
 class PVContextMenu(QMenu):
@@ -201,16 +160,17 @@ class FormulaDialog(QDialog):
         self.field = QLineEdit(self)
         self.curveModel = self.parent().parent().curves_model
         self.pv_list = QTableView(self)
-        #We're going to copy the list of PVs from the curve model. We're also not going to allow the user to make edits to the list of PVs
+        # We're going to copy the list of PVs from the curve model. We're also not going to allow the user to make edits to the list of PVs
         self.pv_list.setModel(self.curveModel)
         self.pv_list.setEditTriggers(QAbstractItemView.EditTriggers(0))
         self.pv_list.setMaximumWidth(1000)
+        self.pv_list.setMaximumHeight(1000)
         header = self.pv_list.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         for i in range(1, self.curveModel.columnCount() - 1):
             # Hide all columns that arent useful, but keep one left over to add a button to
             self.pv_list.setColumnHidden(i, True)
-        insertButton = InsertPVDelegate(self.pv_list, self.curveModel)
+        insertButton = InsertPVDelegate(self.pv_list)
         insertButton.button_clicked.connect(self.field.insert)
         self.pv_list.setItemDelegateForColumn(self.curveModel.columnCount() - 1, insertButton)
         layout.addWidget(self.pv_list)
@@ -238,8 +198,10 @@ class FormulaDialog(QDialog):
             # PV currently does nothing, this is a remnant
             # From when we would have the pv_list open in a new window
             if button_text == "PV":
-                # TODO: Either give a function for this button or replace it
-                pass
+                self.PVButton = button
+                self.PVButton.setCheckable(True)
+                self.PVButton.setChecked(True)
+                self.PVButton.clicked.connect(self.showPVList)
             elif button_text == "Clear":
                 button.clicked.connect(lambda _: self.field.clear())
             else:
@@ -250,12 +212,21 @@ class FormulaDialog(QDialog):
         ok_button = QPushButton("OK", self)
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
+        self.showPVList()
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        # Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
+        """Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula"""
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.accept_formula()
         return super().keyPressEvent(e)
+
+    @Slot()
+    def showPVList(self):
+        show = self.PVButton.isChecked()
+        if show:
+            self.pv_list.show()
+        else:
+            self.pv_list.hide()
 
     def exec_(self):
         """ When the formula dialog is opened (every time) we need to
@@ -273,11 +244,11 @@ class FormulaDialog(QDialog):
             self.field.setText("")
         super().exec_()
 
-    def accept_formula(self, **kwargs: Dict[str, Any]) -> None:
-        # Retrieve the formula and PV name and perform desired actions
-        # We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window
+    @Slot()
+    def accept_formula(self) -> None:
+        """ Retrieve the formula and PV name and perform desired actions
+         We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window"""
         formula = "f://" + self.field.text()
-        # pv_name = self.pv_name_input.text()
         passed = self.curveModel.replaceToFormula(index = self.curveModel.index(self.parent().selected_index.row(), 0), formula = formula)
         if passed:
             self.field.setText("")
