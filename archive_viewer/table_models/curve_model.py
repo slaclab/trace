@@ -32,6 +32,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._axis_model = axis_model
         self._axis_model.remove_curve.connect(self.remove_curve)
         self.checkable_cols.add(self.getColumnIndex("Hidden"))
+        self.defaultColorIndex = 0
         self.append()
 
     def __contains__(self, key: str) -> bool:
@@ -184,7 +185,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             self._axis_model.append()
         y_axis = self._axis_model.get_axis(-1)
         if not color:
-            color = ColorButton.index_color(self.rowCount())
+            color = ColorButton.index_color(self.defaultColorIndex)
+            self.defaultColorIndex += 1
         self._row_names.append(self.next_header())
         self.beginInsertRows(QModelIndex(), len(self._plot._curves), len(self._plot._curves))
         # By default, add a blank archivePlotCurveItem such that there's an empty row to add PVs or formulas to.
@@ -208,7 +210,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self.beginResetModel()
         self._plot.clearCurves()
         self._row_names = []
-
+        self.defaultColorIndex = 0
         for c in curves:
 
             for k, v in c.items():
@@ -332,7 +334,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         pvdict = self.formulaToPVDict(rowName, formula)
         curve = self._plot._curves[index.row()]
         if not color:
-            color = ColorButton.index_color(index.row())
+            color = curve.color
         #          KLYS:LI22:31:KVAC
         # Handle Archives and formulas differently
         if index.row() == self.rowCount() - 1:
