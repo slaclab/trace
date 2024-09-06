@@ -26,6 +26,9 @@ class EditorDelegate(QStyledItemDelegate):
         model = self.parent().model()
         model.modelAboutToBeReset.connect(self.reset_editors)
 
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
+
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
         """Create a new persistent editor on the Table View at the given index.
 
@@ -473,8 +476,7 @@ class DeleteRowDelegate(EditorDelegate):
         """
         model.removeAtIndex(index)
 
-
-class ComboBoxDelegate(QStyledItemDelegate):
+class ComboBoxDelegate(EditorDelegate):
     """ComboBoxDelegate is a QStyledItemDelegate to display a persistent
     QComboBox widget on a QTableView.
 
@@ -486,34 +488,19 @@ class ComboBoxDelegate(QStyledItemDelegate):
     data_source : ArchiverAxisModel, list, dict
         The initial dataset to use when populating the QComboBox.
     """
-    sigTextChange = Signal(int, str)
-
     def __init__(self, parent: QTableView, data_source: Union[QAbstractItemModel, list, dict]) -> None:
         super().__init__(parent)
         if isinstance(data_source, list):
             data_source = {v: v for v in data_source}
         self.data_source = data_source
 
-        self.editor_list = []
-        model = self.parent().model()
-        model.modelAboutToBeReset.connect(self.reset_editors)
-
-    def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex):
-        """Initialize a QComboBox for use in the Table View.
-
-        Parameters
-        ----------
-        option : QStyleOptionViewItem
-            The style option used to render the QComboBox
-        index : QModelIndex
-            The index to display the QComboBox on
-        """
+    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QWidget:
         if index.row() >= len(self.editor_list):
-            editor = QComboBox()
+            editor = QComboBox(parent)
+            value = index.data(Qt.DisplayRole)
 
             if isinstance(self.data_source, dict):
                 editor.addItems(self.data_source.keys())
-                value = index.data(Qt.DisplayRole)
                 if str(value) in self.data_source:
                     editor.setCurrentText(str(value))
                 else:
@@ -522,7 +509,6 @@ class ComboBoxDelegate(QStyledItemDelegate):
             elif isinstance(self.data_source, QAbstractItemModel):
                 editor.setModel(self.data_source)
                 editor.setModelColumn(0)
-                value = index.data(Qt.DisplayRole)
                 editor.setCurrentText(str(value))
 
             editor.setFocusPolicy(Qt.StrongFocus)
@@ -531,24 +517,8 @@ class ComboBoxDelegate(QStyledItemDelegate):
             editor.currentIndexChanged.connect(lambda: self.commitData.emit(editor))
 
             self.editor_list.append(editor)
-            self.parent().setIndexWidget(index, editor)
+            return editor
         return super().initStyleOption(option, index)
-
-    def destroyEditor(self, editor: QComboBox, index: QModelIndex) -> None:
-        """Destroy the editor for a defined index.
-
-        Parameters
-        ----------
-        editor : QComboBox
-            The editor to be destroyed
-        index : QModelIndex
-            The index of the editor to be destroyed
-        """
-        if index.row() < len(self.editor_list):
-            self.editor_list[index.row()].deleteLater()
-            del self.editor_list[index.row()]
-            return
-        return super().destroyEditor(editor, index)
 
     def setEditorData(self, editor: QComboBox, index: QModelIndex) -> None:
         """Set the editor's data to match the table model's data.
@@ -561,10 +531,13 @@ class ComboBoxDelegate(QStyledItemDelegate):
         index : QModelIndex
             The index of the editor to be changed.
         """
+
         value = index.data(Qt.DisplayRole)
-        ind = editor.findText(value)
-        if ind >= 0:
-            editor.setCurrentIndex(ind)
+        if isinstance(value, str):
+            value = editor.findText(value)
+
+        if isinstance(value, int):
+            editor.setCurrentIndex(value)
 
     def setModelData(self, editor: QComboBox, model: QAbstractTableModel, index: QModelIndex) -> None:
         """Set the table model's data to match the editor's data.
@@ -582,7 +555,6 @@ class ComboBoxDelegate(QStyledItemDelegate):
         if isinstance(self.data_source, dict):
             data = self.data_source[curr_text]
         elif isinstance(self.data_source, QAbstractItemModel):
-            self.sigTextChange.emit(index.row(), curr_text)
             data = curr_text
         model.setData(index, data, Qt.EditRole)
 
@@ -605,19 +577,6 @@ class ComboBoxDelegate(QStyledItemDelegate):
             return True
         return super().eventFilter(object, event)
 
-    @Slot()
-    def reset_editors(self) -> None:
-        """Slot called when the delegate's model will be reset. Closes all
-        persistent editors in the delegate.
-        """
-        for editor in self.editor_list:
-            editor_pos = editor.pos()
-            index = self.parent().indexAt(editor_pos)
-
-            editor.deleteLater()
-            self.parent().closePersistentEditor(index)
-        self.editor_list = []
-
     @Slot(QPoint)
     def combo_menu_requested(self, pos: QPoint) -> None:
         """Redirect menu requests to the Table View.
@@ -629,7 +588,6 @@ class ComboBoxDelegate(QStyledItemDelegate):
         """
         pos = self.sender().mapToParent(pos)
         self.parent().customContextMenuRequested.emit(pos)
-
 
 class InsertPVDelegate(EditorDelegate):
     """InsertPVDelegate is a QStyledItemDelegate to display a persistent
