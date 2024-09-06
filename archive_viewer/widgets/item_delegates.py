@@ -114,6 +114,21 @@ class EditorDelegate(QStyledItemDelegate):
         """
         return super().setModelData(editor, model, index)
 
+    def updateEditorGeometry(self, editor: QWidget, option: QStyleOptionViewItem, _: QModelIndex) -> None:
+        """Updates the geometry of the given index using the specified option.
+
+        Parameters
+        ----------
+        editor : QWidget
+            The editor which will need to be set. Changes type based on
+            how the subclass is implemented.
+        option : QStyleOptionViewItem
+            The item options used in creating the editor
+        _ : QModelIndex
+            Index for the editor (unused)
+        """
+        editor.setGeometry(option.rect)
+
     @Slot()
     def reset_editors(self) -> None:
         """Slot called when the delegate's model will be reset. Closes all
@@ -476,6 +491,7 @@ class DeleteRowDelegate(EditorDelegate):
         """
         model.removeAtIndex(index)
 
+
 class ComboBoxDelegate(EditorDelegate):
     """ComboBoxDelegate is a QStyledItemDelegate to display a persistent
     QComboBox widget on a QTableView.
@@ -494,7 +510,23 @@ class ComboBoxDelegate(EditorDelegate):
             data_source = {v: v for v in data_source}
         self.data_source = data_source
 
-    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QWidget:
+    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QComboBox:
+        """Editor creator function to be overridden by subclasses.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget intended to be used as the parent of the new editor
+        option : QStyleOptionViewItem
+            The item options used in creating the editor
+        index : QModelIndex
+            The index to display the editor on
+
+        Returns
+        -------
+        QComboBox
+            The QComboBox editor for the specified index
+        """
         if index.row() >= len(self.editor_list):
             editor = QComboBox(parent)
             value = index.data(Qt.DisplayRole)
