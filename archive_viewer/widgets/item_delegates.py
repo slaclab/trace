@@ -111,6 +111,21 @@ class EditorDelegate(QStyledItemDelegate):
         """
         return super().setModelData(editor, model, index)
 
+    def updateEditorGeometry(self, editor: QWidget, option: QStyleOptionViewItem, _: QModelIndex) -> None:
+        """Updates the geometry of the given index using the specified option.
+
+        Parameters
+        ----------
+        editor : QWidget
+            The editor which will need to be set. Changes type based on
+            how the subclass is implemented.
+        option : QStyleOptionViewItem
+            The item options used in creating the editor
+        _ : QModelIndex
+            Index for the editor (unused)
+        """
+        editor.setGeometry(option.rect)
+
     @Slot()
     def reset_editors(self) -> None:
         """Slot called when the delegate's model will be reset. Closes all
