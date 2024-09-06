@@ -49,7 +49,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             If the channel already exists in the model
         """
         for curve in self._plot._curves:
-            if hasattr(curve, "channel"):
+            if isinstance(curve, ArchivePlotCurveItem):
                 if curve.address == key:
                     return True
             elif curve.formula == key:
@@ -137,6 +137,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             self.plot._legend.removeItem(curve.name())
             curve.setData(name=str(value))
             self.plot._legend.addItem(curve, curve.name())
+            self.plot.plotItem.axes[curve.y_axis_name]["item"].setLabel(curve.name())
         elif column_name == "Y-Axis Name":
             # If we change the Y-Axis, unlink from previous and link to new
             if value == curve.y_axis_name:
@@ -358,6 +359,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._plot._curves[index.row()] = FormulaCurve
         FormulaCurve.formula_invalid_signal.connect(partial(self.invalidFormula, header = rowName))
         # Need to check if Formula is referencing a dead row
+        self.plot.plotItem.unlinkDataFromAxis(curve)
         self.plot.removeItem(curve)
         # Disconnect everything and delete it, create a new Formula with the dictionary of curve
         [ch.disconnect() for ch in curve.channels() if ch]
