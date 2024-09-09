@@ -426,8 +426,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         color : Optional[QColor], optional
             The curve's color on the plot.
         """
-        # Find row headers using regex
-
         rowName = self._row_names[index.row()]
         pvdict = self.formulaToPVDict(rowName, formula)
         curve = self._plot._curves[index.row()]
@@ -450,6 +448,11 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         # Disconnect everything and delete it, create a new Formula with the dictionary of curve
         [ch.disconnect() for ch in curve.channels() if ch]
         del curve
+
+        FormulaCurve.formula_invalid_signal.connect(partial(self.invalidFormula, header = rowName))
+        FormulaCurve.live_channel_connection.connect(self.live_connection_slot)
+        FormulaCurve.archive_channel_connection.connect(self.archive_connection_slot)
+        FormulaCurve.connection_status_check()
         return True
 
     def invalidFormula(self, header):
