@@ -606,9 +606,14 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             self._invalid_live_channels.discard(curve)
         else:
             self._invalid_live_channels.add(curve)
+            inter = self._invalid_live_channels & self._invalid_arch_channels
+            if curve in inter:
+                curve.hide()
+                self._axis_model.plot.plotItem.autoVisible(curve.y_axis_name)
 
+        row = self._plot._curves.index(curve)
         col = self._column_names.index("Live Data")
-        ind = self.index(self._plot._curves.index(curve), col)
+        ind = self.index(row, col)
         self.invalid_index_signal.emit(ind)
 
     @Slot(bool)
@@ -627,7 +632,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             self._invalid_arch_channels.discard(curve)
         else:
             self._invalid_arch_channels.add(curve)
+            inter = self._invalid_live_channels & self._invalid_arch_channels
+            if curve in inter:
+                curve.hide()
+                self._axis_model.plot.plotItem.autoVisible(curve.y_axis_name)
 
+        row = self._plot._curves.index(curve)
         col = self._column_names.index("Archive Data")
-        ind = self.index(self._plot._curves.index(curve), col)
+        ind = self.index(row, col)
         self.invalid_index_signal.emit(ind)
