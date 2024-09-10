@@ -345,6 +345,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._plot._curves[index.row()] = FormulaCurve
         FormulaCurve.formula_invalid_signal.connect(partial(self.invalidFormula, header = rowName))
         # Need to check if Formula is referencing a dead row
+        self.plot.plotItem.unlinkDataFromAxis(curve)
         self.plot.removeItem(curve)
         # Disconnect everything and delete it, create a new Formula with the dictionary of curve
         [ch.disconnect() for ch in curve.channels() if ch]
