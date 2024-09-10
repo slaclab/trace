@@ -136,9 +136,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                     self.replaceToArchivePlot(curve=curve, index=index, address=value, color=curve.color)
             if value and self._plot._curves[-1] is curve:
                 self.append()
-            self.plot._legend.removeItem(curve.name())
             curve.setData(name=str(value))
-            self.plot._legend.addItem(curve, curve.name())
         elif column_name == "Y-Axis Name":
             # If we change the Y-Axis, unlink from previous and link to new
             if value == curve.y_axis_name:
