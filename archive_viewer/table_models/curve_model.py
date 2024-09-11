@@ -75,6 +75,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return "Direct"
         if column_name == "Hidden":
             return not curve.isVisible()
+        if column_name == "Line Width":
+            return str(int(curve.lineWidth)) + "px"
+        if column_name == "Symbol Size":
+            return str(int(curve.symbolSize))  + "px"
         return super(ArchiverCurveModel, self).get_data(column_name, curve)
 
     def set_data(self, column_name: str, curve: BasePlotCurveItem, value: Any) -> bool:
