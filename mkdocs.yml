@@ -8,6 +8,8 @@ nav:
     - API Reference:
         - Archive Viewer: archive_viewer.md
         - Traces Table: traces_table.md
+        - Axis Table: axis_table.md
+        - Plot Config: plot_config.py
 theme:
   icon:
     repo: fontawesome/brands/github
@@ -39,4 +41,3 @@ plugins:
     - search
     - mkdocstrings:
         default_handler: python
-
