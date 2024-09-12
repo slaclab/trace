@@ -47,7 +47,7 @@ class ArchiveViewerFileConverter():
 
     def import_file(self, file_name: Union[str, Path] = None) -> Dict:
         """Import Archive Viewer save data from the provided file. The file
-        should be one of two types: '.pyav' or '.xml'. The data is returned as
+        should be one of two types: '.trc' or '.xml'. The data is returned as
         well as saved in the stored_data property.
 
         Parameters
@@ -83,7 +83,7 @@ class ArchiveViewerFileConverter():
 
     def export_file(self, file_name: Union[str, Path] = None, output_data: Union[Dict, PyDMTimePlot] = None) -> None:
         """Export the provided Archive Viewer save data to the provided file.
-        The file to export to should be of type '.pyav'. The provided data can
+        The file to export to should be of type '.trc'. The provided data can
         be either a dictionary or a PyDMTimePlot object. If no data is provided,
         then the converter's previously imported data is exported.
 
@@ -91,22 +91,22 @@ class ArchiveViewerFileConverter():
         ----------
         file_name : str or pathlib.Path
             The absolute file path of the file that save data should be written
-            to. Should be of file type '.pyav'.
+            to. Should be of file type '.trc'.
         output_data : dict or PyDMTimePlot, optional
             The data that should be exported, by default uses previously imported data
 
         Raises
         ------
         FileNotFoundError
-            If the provided file name does not match the expected output file type '.pyav'
+            If the provided file name does not match the expected output file type '.trc'
         ValueError
             If no output data is provided and the converter hasn't imported data previously
         """
         if file_name:
             self.output_file = Path(file_name)
         if not self.output_file.suffix:
-            self.output_file = self.output_file.with_suffix(".pyav")
-        elif not self.output_file.match("*.pyav"):
+            self.output_file = self.output_file.with_suffix(".trc")
+        elif not self.output_file.match("*.trc"):
             raise FileNotFoundError(f"Incorrect output file format: {self.output_file.suffix}")
 
         if not output_data:
@@ -380,10 +380,10 @@ def main(input_file: Path = None, output_file: Path = None, overwrite: bool = Fa
 
     # Check that the output file is usable
     if not output_file:
-        output_file = input_file.with_suffix(".pyav")
+        output_file = input_file.with_suffix(".trc")
     elif not output_file.suffix:
-        output_file = output_file.with_suffix(".pyav")
-    elif not output_file.match("*.pyav"):
+        output_file = output_file.with_suffix(".trc")
+    elif not output_file.match("*.trc"):
         raise FileNotFoundError(f"Incorrect output file format: {output_file}")
 
     # Check if file exists, and if it does if the overwrite flag is used
