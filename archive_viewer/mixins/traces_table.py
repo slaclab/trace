@@ -1,6 +1,5 @@
-from typing import Dict, Any
+import re
 from qtpy.QtGui import QKeyEvent
-from qtpy import sip
 from qtpy.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
 from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
@@ -36,6 +35,7 @@ class TracesTableMixin:
         self.hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
         self.setAcceptDrops(True)
         self.menu.archive_search.append_PVs_requested.connect(self.insertPVs)
+        self.curves_model.multiplePVInsert.connect(self.insertPVs)
 
     def curve_delegates_init(self) -> None:
         """Set column delegates for the Traces table to display widgets."""
@@ -96,9 +96,9 @@ class TracesTableMixin:
         Parameters
         ---------------
         data: str
-            The list of pvs in string format i.e. \"<pv1>, <pv2>, <pv3>\" etc."""
+            The list of pvs in string format with any white space or comma separation"""
         logger.info("Accepting PVs " + data)
-        channels = data.split(", ")
+        channels = re.split('[\s,]+', data)
         for channel in channels:
             index = -1
             curve = self.curves_model.curve_at_index(index)

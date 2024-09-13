@@ -2,7 +2,7 @@ import re
 from typing import (Any, List, Dict, Optional)
 from functools import partial
 from qtpy.QtGui import QColor
-from qtpy.QtCore import (QObject, QModelIndex, Qt, Slot)
+from qtpy.QtCore import (QObject, QModelIndex, Qt, Slot, Signal)
 from qtpy import sip
 from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem, FormulaCurveItem
@@ -23,6 +23,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
     axis_model : ArchiverAxisModel
         The table model that stores the axes for the plot.
     """
+    multiplePVInsert = Signal(str)
 
     def __init__(self, parent: Optional[QObject], plot: BasePlot, axis_model: ArchiverAxisModel) -> None:
         super(ArchiverCurveModel, self).__init__(plot, parent)
@@ -105,6 +106,9 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if sip.isdeleted(curve):
             return False
         if column_name == "Channel":
+            if re.search('[\s,]', value):
+                self.multiplePVInsert.emit(value)
+                return False
             curve.show()
             # If we are changing the channel, then we need to check the current type, and the type we're going to
             index = self.index(self._plot._curves.index(curve),0)
