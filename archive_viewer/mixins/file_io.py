@@ -22,7 +22,7 @@ class FileIOMixin:
         """Prompt the user for a file to export config data to"""
         file_name, _ = QFileDialog.getSaveFileName(self, "Save Archive Viewer",
                                                    str(self.io_path),
-                                                   "Python Archive Viewer (*.pyav)")
+                                                   "Python Archive Viewer (*.trc)")
         file_name = Path(file_name)
         if file_name.is_dir():
             logger.warning("No file name provided to export save file to")
@@ -42,7 +42,7 @@ class FileIOMixin:
         if not file_name:
             file_name, _ = QFileDialog.getOpenFileName(self, "Open Archive Viewer",
                                                        str(self.io_path),
-                                                       "Python Archive Viewer (*.pyav);;"
+                                                       "Python Archive Viewer (*.trc);;"
                                                        + "Java Archive Viewer (*.xml);;"
                                                        + "All Files (*)")
         file_name = Path(file_name)

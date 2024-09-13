@@ -1,0 +1,99 @@
+{
+    "archiver_url": "http://lcls-archapp.slac.stanford.edu",
+    "plot": {
+        "refreshInterval": 0.0,
+        "title": "",
+        "xGrid": false,
+        "yGrid": false,
+        "opacity": 128,
+        "backgroundColor": "#ffffff",
+        "legend": false,
+        "crosshair": false,
+        "mouseMode": 1
+    },
+    "time_axis": {
+        "name": "Main Time Axis",
+        "start": "2024-09-04 11:03:44",
+        "end": "2024-09-04 12:03:44",
+        "location": "bottom"
+    },
+    "y-axes": [
+        {
+            "name": "Axis 1",
+            "orientation": "left",
+            "minRange": -1.3843656974520628e-09,
+            "maxRange": 4.752694382245206e-08,
+            "autoRange": true,
+            "logMode": false
+        },
+        {
+            "name": "Axis 2",
+            "orientation": "left",
+            "minRange": 9.047133561624635e-10,
+            "maxRange": 1.3621653831337537e-08,
+            "autoRange": true,
+            "logMode": false
+        },
+        {
+            "name": "Axis 3",
+            "orientation": "left",
+            "minRange": 1.3015564414604301e-08,
+            "maxRange": 4.65547480853957e-08,
+            "autoRange": true,
+            "logMode": false
+        },
+        {
+            "name": "Axis 4",
+            "orientation": "left",
+            "minRange": -1.04,
+            "maxRange": 1.04,
+            "autoRange": true,
+            "logMode": false
+        }
+    ],
+    "curves": [
+        {
+            "useArchiveData": true,
+            "liveData": true,
+            "channel": "KLYS:LI22:31:KVAC",
+            "name": "KLYS:LI22:31:KVAC",
+            "color": "#008cf9",
+            "lineStyle": 1,
+            "lineWidth": 1,
+            "symbolSize": 10,
+            "yAxisName": "Axis 1",
+            "thresholdColor": "white"
+        },
+        {
+            "useArchiveData": true,
+            "liveData": true,
+            "channel": "KLYS:LI22:41:KVAC",
+            "name": "KLYS:LI22:41:KVAC",
+            "color": "#006e00",
+            "lineStyle": 1,
+            "lineWidth": 1,
+            "symbolSize": 10,
+            "yAxisName": "Axis 1",
+            "thresholdColor": "white"
+        }
+    ],
+    "formula": [
+        {
+            "useArchiveData": true,
+            "liveData": true,
+            "plot_style": "Line",
+            "formula": "f://{A}+{B}",
+            "curveDict": {
+                "A": "KLYS:LI22:31:KVAC",
+                "B": "KLYS:LI22:41:KVAC"
+            },
+            "name": "f://{A}+{B}",
+            "color": "#b80058",
+            "lineStyle": 1,
+            "lineWidth": 1,
+            "symbolSize": 10,
+            "yAxisName": "Axis 1",
+            "thresholdColor": "white"
+        }
+    ]
+}
