@@ -9,7 +9,7 @@ nav:
         - Archive Viewer: archive_viewer.md
         - Traces Table: traces_table.md
         - Axis Table: axis_table.md
-        - Plot Config: plot_config.py
+        - Plot Config: plot_config.md
 theme:
   icon:
     repo: fontawesome/brands/github
