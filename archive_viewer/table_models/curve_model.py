@@ -75,6 +75,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return "Direct"
         if column_name == "Hidden":
             return not curve.isVisible()
+        if column_name == "Line Width":
+            return str(int(curve.lineWidth)) + "px"
+        if column_name == "Symbol Size":
+            return str(int(curve.symbolSize))  + "px"
         return super(ArchiverCurveModel, self).get_data(column_name, curve)
 
     def set_data(self, column_name: str, curve: BasePlotCurveItem, value: Any) -> bool:
@@ -135,9 +139,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                     self.replaceToArchivePlot(curve=curve, index=index, address=value, color=curve.color)
             if value and self._plot._curves[-1] is curve:
                 self.append()
-            self.plot._legend.removeItem(curve.name())
             curve.setData(name=str(value))
-            self.plot._legend.addItem(curve, curve.name())
             self.plot.plotItem.axes[curve.y_axis_name]["item"].setLabel(curve.name())
         elif column_name == "Y-Axis Name":
             # If we change the Y-Axis, unlink from previous and link to new

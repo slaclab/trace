@@ -187,6 +187,7 @@ class ArchiveSearchWidget(QWidget):
         search_text = self.search_box.text()
         search_text = search_text.replace("?", ".")
         search_text = search_text.replace("*", ".")
+        search_text = search_text.replace("%", ".")
         url_string = (
             f"http://{self.archive_url_textedit.text()}/"
             f"retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
