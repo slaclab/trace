@@ -51,7 +51,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             If the channel already exists in the model
         """
         for curve in self._plot._curves:
-            if hasattr(curve, "channel"):
+            if isinstance(curve, ArchivePlotCurveItem):
                 if curve.address == key:
                     return True
             elif curve.formula == key:
@@ -111,7 +111,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return False
             curve.show()
             # If we are changing the channel, then we need to check the current type, and the type we're going to
-            index = self.index(self._plot._curves.index(curve),0)
             value_is_formula = value.startswith("f://")
             curve_is_formula = isinstance(curve, FormulaCurveItem)
             if value_is_formula and not curve_is_formula:
@@ -145,6 +144,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             if value and self._plot._curves[-1] is curve:
                 self.append()
             curve.setData(name=str(value))
+            self.plot.plotItem.axes[curve.y_axis_name]["item"].setLabel(curve.name())
         elif column_name == "Y-Axis Name":
             # If we change the Y-Axis, unlink from previous and link to new
             if value == curve.y_axis_name:
@@ -171,6 +171,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         else:
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
         self.plot.plotItem.autoVisible(curve.y_axis_name)
+        self.dataChanged.emit(index, index)
         logger.debug("Finished setting curve data")
         return ret_code
 
@@ -202,6 +203,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if self.rowCount() != 1:
             logger.debug("Hide blank Y-axis")
             self._axis_model.plot.plotItem.axes[y_axis.name]["item"].hide()
+        self._plot._curves[-1].unitSignal.connect(partial(self.setAxis, curve=self._plot._curves[-1]))
         logger.debug("Finished adding new empty curve to plot")
 
     def set_model_curves(self, curves: List[Dict] = []) -> None:
@@ -260,6 +262,20 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._plot.redrawPlot()
         self.endResetModel()
         logger.debug("Finished setting curves model")
+
+    @Slot(str)
+    def setAxis(self, units: str, curve: BasePlotCurveItem):
+        """When we receive a unit of the curve, we will connect it to the correct axis"""
+        index = self.index(self._plot._curves.index(curve),0)
+
+        self.parent().update()
+        oldYAxis = curve.y_axis_name
+        if units not in self.plot.plotItem.axes:
+            self._axis_model.append(name=units)
+        self.setData(self.index(index.row(), self._column_names.index("Y-Axis Name")), units, Qt.EditRole)
+        if not self.plot.plotItem.axes[oldYAxis]["item"]._curves:
+            self._axis_model.removeAxis(oldYAxis)
+
 
     def replaceToArchivePlot(self, curve: BasePlotCurveItem, index: QModelIndex, address: str, color: Optional[QColor] = None):
         """Replace the existing curve with a new ArchivePlotCurveItem"""
@@ -368,7 +384,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         curve = self._plot._curves[rindex]
         self.beginRemoveRows(QModelIndex(), index.row(), index.row())
         if curve.y_axis_name in self._plot.plotItem.axes:
-            self.plot.plotItem.unlinkDataFromAxis(curve.y_axis_name)
+            self.plot.plotItem.unlinkDataFromAxis(curve)
         self.plot.removeItem(curve)
         self.plot._curves.remove(curve)
         self.endRemoveRows()

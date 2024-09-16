@@ -168,6 +168,12 @@ class ArchiverAxisModel(BasePlotAxesModel):
             self.remove_curve.emit(curve)
         super().removeAtIndex(index)
 
+    def removeAxis(self, axisName: str):
+        """Wrapper to remove axis by name. Searches through axes, finds the one with a matching name, removes at index"""
+        for i, axis in enumerate(self.plot._axes):
+            if axis.name == axisName:
+                self.removeAtIndex(self.index(i, 0))
+
     def setHidden(self, axis: BasePlotAxisItem, hidden: bool) -> None:
         """Hides the axis at the given table index.
 

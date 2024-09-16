@@ -26,6 +26,9 @@ class EditorDelegate(QStyledItemDelegate):
         model = self.parent().model()
         model.modelAboutToBeReset.connect(self.reset_editors)
 
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
+
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
         """Create a new persistent editor on the Table View at the given index.
 
@@ -560,6 +563,7 @@ class ComboBoxDelegate(EditorDelegate):
         index : QModelIndex
             The index of the editor to be changed.
         """
+
         value = index.data(Qt.DisplayRole)
         if isinstance(value, str):
             value = editor.findText(value)
@@ -616,7 +620,6 @@ class ComboBoxDelegate(EditorDelegate):
         """
         pos = self.sender().mapToParent(pos)
         self.parent().customContextMenuRequested.emit(pos)
-
 
 class InsertPVDelegate(EditorDelegate):
     """InsertPVDelegate is a QStyledItemDelegate to display a persistent
