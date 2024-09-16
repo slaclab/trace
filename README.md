@@ -1,2 +1,2 @@
-# Archive-Viewer
-PyDM based archive viewer. In Development.
+# Trace
+PyDM based archive viewer and striptool. In Development.

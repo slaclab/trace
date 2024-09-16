@@ -138,3 +138,4 @@ dmypy.json
 
 # Debugger
 debug_archive_viewer.bash
+debug_trace.bash

@@ -1,3 +1,3 @@
-# Archive Viewer
+# Trace
 
-::: archive_viewer.archive_viewer
+::: trace.main

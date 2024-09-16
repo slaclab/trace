@@ -335,13 +335,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The curve's color on the plot.
         """
         # Find row headers using regex
-
         rowName = self._row_names[index.row()]
         pvdict = self.formulaToPVDict(rowName, formula)
         curve = self._plot._curves[index.row()]
         if not color:
             color = curve.color
-        #          KLYS:LI22:31:KVAC
+
         # Handle Archives and formulas differently
         if index.row() == self.rowCount() - 1:
             self.append()

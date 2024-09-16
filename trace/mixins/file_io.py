@@ -6,23 +6,23 @@ from datetime import (datetime, timedelta)
 from urllib.parse import urlparse
 from qtpy.QtWidgets import (QMessageBox, QFileDialog)
 from config import (logger, save_file_dir)
-from av_file_convert import ArchiveViewerFileConverter
+from trace_file_convert import TraceFileConverter
 
 
 class FileIOMixin:
     """Mixins class to manage the file imports and exports for Trace"""
     def file_io_init(self) -> None:
         """Initialize the File IO capabilities of Trace by saving a default
-        path and creating an ArchiveViewerFileConverter object
+        path and creating an TraceFileConverter object
         """
         self.io_path = save_file_dir
-        self.converter = ArchiveViewerFileConverter()
+        self.converter = TraceFileConverter()
 
     def export_save_file(self) -> None:
         """Prompt the user for a file to export config data to"""
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save Archive Viewer",
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save Trace",
                                                    str(self.io_path),
-                                                   "Python Archive Viewer (*.trc)")
+                                                   "Trace Save File (*.trc)")
         file_name = Path(file_name)
         if file_name.is_dir():
             logger.warning("No file name provided to export save file to")
@@ -31,7 +31,7 @@ class FileIOMixin:
         try:
             logger.debug(f"Attempting to export to file: {file_name}")
             self.io_path = file_name.parent
-            self.converter.export_file(file_name, self.ui.archiver_plot)
+            self.converter.export_file(file_name, self.ui.main_plot)
         except FileNotFoundError as e:
             logger.error(e)
             self.export_save_file()
@@ -40,9 +40,9 @@ class FileIOMixin:
         """Prompt the user for which config file to import from"""
         # Get the save file from the user
         if not file_name:
-            file_name, _ = QFileDialog.getOpenFileName(self, "Open Archive Viewer",
+            file_name, _ = QFileDialog.getOpenFileName(self, "Open Trace",
                                                        str(self.io_path),
-                                                       "Python Archive Viewer (*.trc);;"
+                                                       "Trace Save File (*.trc);;"
                                                        + "Java Archive Viewer (*.xml);;"
                                                        + "All Files (*)")
         file_name = Path(file_name)
@@ -102,11 +102,11 @@ class FileIOMixin:
         if end_str == "now":
             delta = end_dt - start_dt
             timespan = delta.total_seconds()
-            self.ui.archiver_plot.setAutoScroll(True, timespan)
+            self.ui.main_plot.setAutoScroll(True, timespan)
         else:
             x_range = (start_dt.timestamp(), end_dt.timestamp())
-            self.ui.archiver_plot.plotItem.disableXAutoRange()
-            self.ui.archiver_plot.plotItem.setXRange(*x_range)
+            self.ui.main_plot.plotItem.disableXAutoRange()
+            self.ui.main_plot.plotItem.setXRange(*x_range)
 
 
 class IOTimeParser:

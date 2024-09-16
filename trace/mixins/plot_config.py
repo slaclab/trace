@@ -11,7 +11,7 @@ class PlotConfigMixin:
         for each of these widgets to connect to internally.
         """
 
-        self.plot = self.ui.archiver_plot
+        self.plot = self.ui.main_plot
         self.ui.plot_title_edit.textChanged.connect(self.plot.setPlotTitle)
 
         self.ui.x_grid_chckbx.stateChanged.connect(self.show_x_grid)

@@ -1,11 +1,9 @@
 #!/bin/bash
 
-cd "$(dirname "${BASH_SOURCE[0]}")/archive_viewer/"
+cd "$(dirname "${BASH_SOURCE[0]}")/trace/"
 
 usage(){
-    echo "PyDM Archive Viewer"
-    echo "Usage:" 1>&2
-    echo "  launch_archive_viewer.bash" 1>&2
+    pydm main.py --help
 }
 exit_abnormal(){
     usage
@@ -25,10 +23,8 @@ do
     shift
 done
 
-echo $@
-
 pydm --hide-nav-bar --hide-status-bar \
     -m "$MACROS" \
-    archive_viewer.py "$ARGS"
+    main.py "$ARGS"
 
 exit 0

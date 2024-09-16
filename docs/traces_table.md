@@ -17,4 +17,4 @@ CSV Import - this is a work in progress, but currently does nothing
 
 In addition, users can paste multiple PVs at once into the table in one row's channel box, and it will append them as separate PVs, as long as their names are separated by commas or white space.
 
-::: archive_viewer.mixins.traces_table
+::: trace.mixins.traces_table
