@@ -9,12 +9,12 @@ from pydm import Display
 from config import (logger, datetime_pv)
 from mixins import TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin
 from styles import CenterCheckStyle
-from av_file_convert import PathAction
+from trace_file_convert import PathAction
 
 
-class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
+class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
     def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
-        super(ArchiveViewer, self).__init__(parent=parent, args=args, macros=macros, ui_filename=ui_filename)
+        super(TraceDisplay, self).__init__(parent=parent, args=args, macros=macros, ui_filename=ui_filename)
         # Set up PyDMApplication
         self.configure_app()
         self.set_footer()
@@ -41,7 +41,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
         self.ui.timespan_btns.buttonClicked.connect(self.set_plot_timerange)
 
         # Click "Cursor" button on plot-mouse interaction
-        plot_viewbox = self.ui.archiver_plot.plotItem.vb
+        plot_viewbox = self.ui.main_plot.plotItem.vb
         plot_viewbox.sigRangeChangedManually.connect(self.ui.cursor_scale_btn.click)
 
         # Parse macros & arguments, then include them in startup
@@ -76,6 +76,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
         app.setStyle(CenterCheckStyle())
 
         # Adjust settings for main_spltr
+        self.ui.main_spltr.setSizes([1, 200])
         self.ui.main_spltr.setCollapsible(0, False)
         self.ui.main_spltr.setStretchFactor(0, 1)
 
@@ -157,8 +158,10 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, Plot
 
         # Parse arguments and ignore unknowns
         trace_args, unknown = trace_parser.parse_known_args(args)
-        if unknown:
-            logger.warning(f"Not using unknown arguments: {unknown}")
+        for u in unknown:
+            if not u:
+                continue
+            logger.warning(f"Not using unknown arguments: {u}")
 
         # Get the file to import from if one is provided. Prioritize args over macro
         input_file = trace_args.input_file

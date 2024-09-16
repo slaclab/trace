@@ -1,4 +1,4 @@
-name: archive-viewer-dev
+name: trace-dev
 channels:
   - conda-forge
 dependencies:
@@ -16,4 +16,3 @@ dependencies:
   - pip
   - pip:
     - ufmt
-    

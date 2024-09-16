@@ -10,4 +10,4 @@ Deleting an axis deletes all of its curves. Deleting the last axis resets the wh
 
 Default behavior is that when a PV is added, it will create a new axis with the axis label matching the PV name; but if the PV has units, it will be moved onto an axis with that unit as its label, creating one if such an axis does not exist.
 
-::: archive_viewer.mixins.axis_table
+::: trace.mixins.axis_table

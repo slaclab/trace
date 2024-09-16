@@ -1,6 +1,6 @@
-# Archive Viewer
+# Trace
 
-The [Archive Viewer](https://github.com/slaclab/Archive-Viewer) is a python application 
+[Trace](https://github.com/slaclab/trace) is a python application
 
 
 

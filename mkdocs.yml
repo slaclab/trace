@@ -1,12 +1,12 @@
-site_name: Archive Viewer
-repo_url: https://github.com/slaclab/Archive-Viewer
-repo_name: slaclab/Archive-Viewer
+site_name: Trace
+repo_url: https://github.com/slaclab/trace
+repo_name: slaclab/trace
 
 nav:
     - Home: index.md
     - Installation: installation.md
     - API Reference:
-        - Archive Viewer: archive_viewer.md
+        - Trace: trace.md
         - Traces Table: traces_table.md
         - Axis Table: axis_table.md
         - Plot Config: plot_config.md

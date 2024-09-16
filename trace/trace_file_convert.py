@@ -24,7 +24,7 @@ else:
     handler.setLevel("INFO")
 
 
-class ArchiveViewerFileConverter():
+class TraceFileConverter():
     """Converter class that will convert save files for the Java-based Archive
     Viewer into a format readable by the Trace application. This class can also
     be used for importing data into Trace or exporting data from it.
@@ -391,7 +391,7 @@ def main(input_file: Path = None, output_file: Path = None, overwrite: bool = Fa
         raise FileNotFoundError(f"Output file exists but overwrite not enabled: {output_file}")
 
     # Complete the requested conversion
-    converter = ArchiveViewerFileConverter()
+    converter = TraceFileConverter()
 
     converter.import_file(input_file)
     converter.convert_data()
@@ -415,10 +415,9 @@ class PathAction(Action):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(prog="Archive Viewer File Converter",
+    parser = ArgumentParser(prog="Trace File Converter",
                             description="Convert files used by the Java Archive"
-                            " Viewer to a file format that can be used with the"
-                            " newer PyDM Archive Viewer.")
+                            " Viewer to a file format that can be used with Trace.")
     parser.add_argument("input_file",
                         action=PathAction,
                         type=str,

@@ -13,7 +13,7 @@ class AxisTableMixin:
 
     def axis_table_init(self) -> None:
         """Initializer for the Axis Table Model and Table View."""
-        self.axis_table_model = ArchiverAxisModel(self.ui.archiver_plot, self)
+        self.axis_table_model = ArchiverAxisModel(self.ui.main_plot, self)
         self.ui.time_axis_tbl.setModel(self.axis_table_model)
 
         hdr = self.ui.time_axis_tbl.horizontalHeader()
@@ -21,7 +21,7 @@ class AxisTableMixin:
         del_col = self.axis_table_model.getColumnIndex("")
         hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
 
-        plot_viewbox = self.ui.archiver_plot.plotItem.vb
+        plot_viewbox = self.ui.main_plot.plotItem.vb
         plot_viewbox.sigXRangeChanged.connect(self.set_axis_datetimes)
         plot_viewbox.sigRangeChangedManually.connect(lambda *_: self.set_axis_datetimes())
 
@@ -71,13 +71,13 @@ class AxisTableMixin:
                 proc_range[ind] = val.toSecsSinceEpoch()
             # Values that are None use the existing range value
             elif not val:
-                proc_range[ind] = self.ui.archiver_plot.getXAxis().range[ind]
+                proc_range[ind] = self.ui.main_plot.getXAxis().range[ind]
         proc_range.sort()
 
         logger.debug(f"Setting plot's X-Axis range to {proc_range}")
-        self.ui.archiver_plot.plotItem.vb.blockSignals(True)
-        self.ui.archiver_plot.plotItem.setXRange(*proc_range)
-        self.ui.archiver_plot.plotItem.vb.blockSignals(False)
+        self.ui.main_plot.plotItem.vb.blockSignals(True)
+        self.ui.main_plot.plotItem.setXRange(*proc_range)
+        self.ui.main_plot.plotItem.vb.blockSignals(False)
 
     @Slot(object, object)
     def set_axis_datetimes(self, _: ViewBox = None, time_range: Tuple[float, float] = None) -> None:
@@ -92,7 +92,7 @@ class AxisTableMixin:
             The new range values for the QDateTimeEdits, by default None
         """
         if not time_range:
-            time_range = self.ui.archiver_plot.getXAxis().range
+            time_range = self.ui.main_plot.getXAxis().range
         if min(time_range) <= 0:
             return
 

@@ -1,2 +1,2 @@
-Installing Archive Viewer
+Installing Trace
 =========================

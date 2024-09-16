@@ -21,7 +21,7 @@ class TracesTableMixin:
     """Mixins class for the Traces tab of the settings section."""
     def traces_table_init(self) -> None:
         """Initialize the Traces table model and section."""
-        self.curves_model = ArchiverCurveModel(self, self.ui.archiver_plot, self.axis_table_model)
+        self.curves_model = ArchiverCurveModel(self, self.ui.main_plot, self.axis_table_model)
         self.ui.traces_tbl.setModel(self.curves_model)
 
         self.menu = PVContextMenu(self)

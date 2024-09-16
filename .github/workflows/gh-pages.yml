@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy:
-    if: ${{ github.repository == 'slaclab/Archive-Viewer' }}
+    if: ${{ github.repository == 'slaclab/trace' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -22,7 +22,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           miniforge-variant: Mambaforge
           channels: conda-forge
-          activate-environment: archive-viewer-dev
+          activate-environment: trace-dev
           environment-file: environment.yml
 
       - name: Build Docs
