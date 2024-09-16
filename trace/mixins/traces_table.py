@@ -1,24 +1,23 @@
 import re
-from qtpy.QtGui import QKeyEvent
-from qtpy.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
-from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
-from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
-                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView)
+
+from qtpy.QtGui import QKeyEvent, QDropEvent, QDragMoveEvent, QDragEnterEvent
+from qtpy.QtCore import Qt, Slot, QPoint, QObject, QModelIndex
+from qtpy.QtWidgets import (QMenu, QAction, QDialog, QLineEdit, QTableView,
+                            QGridLayout, QHeaderView, QPushButton, QVBoxLayout,
+                            QAbstractItemView)
+
 from pydm.widgets.baseplot import BasePlotCurveItem
-from config import logger
 from pydm.widgets.archiver_time_plot import FormulaCurveItem
-from widgets import (
-    ArchiveSearchWidget,
-    ColorButtonDelegate,
-    ComboBoxDelegate,
-    DeleteRowDelegate,
-    InsertPVDelegate
-)
+
+from config import logger
+from widgets import (ComboBoxDelegate, InsertPVDelegate, DeleteRowDelegate,
+                     ArchiveSearchWidget, ColorButtonDelegate)
 from table_models import ArchiverCurveModel
 
 
 class TracesTableMixin:
     """Mixins class for the Traces tab of the settings section."""
+
     def traces_table_init(self) -> None:
         """Initialize the Traces table model and section."""
         self.curves_model = ArchiverCurveModel(self, self.ui.main_plot, self.axis_table_model)
@@ -98,7 +97,7 @@ class TracesTableMixin:
         data: str
             The list of pvs in string format with any white space or comma separation"""
         logger.info("Accepting PVs " + data)
-        channels = re.split('[\s,]+', data)
+        channels = re.split("[\s,]+", data)
         for channel in channels:
             index = -1
             curve = self.curves_model.curve_at_index(index)
@@ -137,6 +136,7 @@ class PVContextMenu(QMenu):
     """Right clicking on the curves table opens 3 options - to open a PV search tool,
     Open a formula dialogue, or import a csv. Importing a csv seems to have not yet been
     implemented, but Formulae and PV search are."""
+
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent)
 
@@ -174,31 +174,39 @@ class PVContextMenu(QMenu):
 
 
 class FormulaDialog(QDialog):
-    """Formula Dialog - when a user right clicks on a row in the list of curves, they have the option to input a formula
-    They could opt to type it instead, but this opens a box that is a nicer UI for inputting a formula."""
+    """Formula Dialog - when a user right clicks on a row in the list of
+    curves, they have the option to input a formula. They could opt to type it
+    instead, but this opens a box that is a nicer UI for inputting a formula.
+    """
+
     def __init__(self, parent: QObject) -> None:
         super().__init__(parent)
         self.setWindowTitle("Formula Input")
 
         # Create the layout for the dialog
         layout = QVBoxLayout(self)
+
         # Create the QLineEdit for formula input
         self.field = QLineEdit(self)
+
+        # Display list of channels from curve model as table
         self.curveModel = self.parent().parent().curves_model
         self.pv_list = QTableView(self)
-        # We're going to copy the list of PVs from the curve model. We're also not going to allow the user to make edits to the list of PVs
         self.pv_list.setModel(self.curveModel)
         self.pv_list.setEditTriggers(QAbstractItemView.EditTriggers(0))
         self.pv_list.setMaximumWidth(1000)
         self.pv_list.setMaximumHeight(1000)
+
+        # Hide all columns unused. Leave one to add a button to
         header = self.pv_list.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         for i in range(1, self.curveModel.columnCount() - 1):
-            # Hide all columns that arent useful, but keep one left over to add a button to
             self.pv_list.setColumnHidden(i, True)
+
         insertButton = InsertPVDelegate(self.pv_list)
         insertButton.button_clicked.connect(self.field.insert)
         self.pv_list.setItemDelegateForColumn(self.curveModel.columnCount() - 1, insertButton)
+
         layout.addWidget(self.pv_list)
         layout.addWidget(self.field)
 
@@ -206,12 +214,44 @@ class FormulaDialog(QDialog):
 
         # Define the list of calculator buttons.
         # It's a bunch of preset buttons, but users can type other functions under math.
-        buttons = ["7",       "8",     "9",      "+",     "(",      ")",
-                   "4",       "5",     "6",      "-",    "^2", "sqrt()",
-                   "1",       "2",     "3",      "*",   "^-1",  "ln()",
-                   "0",       "e",    "pi",      "/", "sin()", "asin()",
-                   ".",   "abs()", "min()",      "^", "cos()", "acos()",
-                   "PV",  "Clear", "max()", "mean()", "tan()", "atan()"]
+        buttons = [
+            "7",
+            "8",
+            "9",
+            "+",
+            "(",
+            ")",
+            "4",
+            "5",
+            "6",
+            "-",
+            "^2",
+            "sqrt()",
+            "1",
+            "2",
+            "3",
+            "*",
+            "^-1",
+            "ln()",
+            "0",
+            "e",
+            "pi",
+            "/",
+            "sin()",
+            "asin()",
+            ".",
+            "abs()",
+            "min()",
+            "^",
+            "cos()",
+            "acos()",
+            "PV",
+            "Clear",
+            "max()",
+            "mean()",
+            "tan()",
+            "atan()",
+        ]
 
         # Create the calculator buttons and connect them to the input field
         grid_layout = QGridLayout()
@@ -241,13 +281,16 @@ class FormulaDialog(QDialog):
         self.showPVList()
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        """Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula"""
+        """Special key press tracker. If enter or return is pressed the formula
+        dialog submits the formula.
+        """
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.accept_formula()
         return super().keyPressEvent(e)
 
     @Slot()
     def showPVList(self):
+        """Hide or show the PV list on PVButton click."""
         show = self.PVButton.isChecked()
         if show:
             self.pv_list.show()
@@ -255,9 +298,10 @@ class FormulaDialog(QDialog):
             self.pv_list.hide()
 
     def exec_(self):
-        """ When the formula dialog is opened (every time) we need to
-            update it with the latest information on the curve model and
-            also populate the text box with the pre-existing formula (if it already was there)"""
+        """When the formula dialog is opened, get the latest information from
+        the curve model. If a formula already exists for the selected index,
+        then populate the text box with the existing formula.
+        """
         self.index = self.parent().selected_index
         self.pv_list.setRowHidden(len(self.curveModel._row_names) - 1, True)
         for i in range(self.curveModel.rowCount() - 1):
@@ -272,10 +316,15 @@ class FormulaDialog(QDialog):
 
     @Slot()
     def accept_formula(self) -> None:
-        """ Retrieve the formula and PV name and perform desired actions
-         We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window"""
+        """Set the curve in the curve model to use the entered formula. If the
+        formula is invalid, then the dialog box is closed.
+        """
         formula = "f://" + self.field.text()
-        passed = self.curveModel.set_data(column_name="Channel",  curve=self.curveModel._plot._curves[self.parent().selected_index.row()], value=formula)
+        passed = self.curveModel.set_data(
+            column_name="Channel",
+            curve=self.curveModel._plot._curves[self.parent().selected_index.row()],
+            value=formula
+        )
         if passed:
             self.field.setText("")
             self.accept()

@@ -1,15 +1,19 @@
 import os
 import argparse
-from typing import Tuple, List, Dict
-from logging import (Handler, LogRecord)
+from typing import Dict, List, Tuple
+from logging import Handler, LogRecord
 from subprocess import run
-from qtpy.QtCore import (Slot, Qt)
-from qtpy.QtWidgets import (QAbstractButton, QApplication, QLabel)
-from pydm import Display
-from config import (logger, datetime_pv)
-from mixins import TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin
-from styles import CenterCheckStyle
+
+from qtpy.QtCore import Qt, Slot
+from qtpy.QtWidgets import QLabel, QApplication, QAbstractButton
 from trace_file_convert import PathAction
+
+from pydm import Display
+
+from config import logger, datetime_pv
+from mixins import (FileIOMixin, AxisTableMixin, PlotConfigMixin,
+                    TracesTableMixin)
+from styles import CenterCheckStyle
 
 
 class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
@@ -36,7 +40,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             self.ui.hour_scale_btn: 3600,
             self.ui.week_scale_btn: 604800,
             self.ui.month_scale_btn: 2628300,
-            self.ui.cursor_scale_btn: -1
+            self.ui.cursor_scale_btn: -1,
         }
         self.ui.timespan_btns.buttonClicked.connect(self.set_plot_timerange)
 
@@ -57,8 +61,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
 
     def menu_items(self) -> dict:
         """Add export & import functionality to File menu"""
-        return {"Export": (self.export_save_file, "Ctrl+S"),
-                "Import": (self.import_save_file, "Ctrl+L")}
+        return {"Export": (self.export_save_file, "Ctrl+S"), "Import": (self.import_save_file, "Ctrl+L")}
 
     def configure_app(self):
         """UI changes to be made to the PyDMApplication"""
@@ -92,33 +95,9 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.ui.ftr_user_lbl.setText(os.getlogin())
         self.ui.ftr_pid_lbl.setText(str(os.getpid()))
         self.ui.ftr_ver_lbl.setText(self.git_version())
-        self.ui.ftr_url_lbl.setText(os.getenv('PYDM_ARCHIVER_URL'))
+        self.ui.ftr_url_lbl.setText(os.getenv("PYDM_ARCHIVER_URL"))
         self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
 
-    @Slot(QAbstractButton)
-    def set_plot_timerange(self, button: QAbstractButton) -> None:
-        """Slot to be called when a timespan setting button is pressed.
-        This will enable autoscrolling along the x-axis and disable mouse
-        controls. If the "Cursor" button is pressed, then autoscrolling is
-        disabled and mouse controls are enabled.
-
-        Parameters
-        ----------
-        button : QAbstractButton
-            The timespan setting button pressed. Determines which timespan
-            to set.
-        """
-        logger.debug(f"Setting plot timerange")
-        if button not in self.button_spans:
-            logger.error(f"{button} is not a valid timespan button")
-            return
-        enable_scroll = button != self.ui.cursor_scale_btn
-        self.timespan = self.button_spans[button]
-        if enable_scroll:
-            logger.debug(f"Enabling plot autoscroll for {self.timespan}s")
-        else:
-            logger.debug("Disabling plot autoscroll, using mouse controls")
-        self.autoScroll(enable=enable_scroll)
     def parse_macros_and_args(self, macros: Dict[str, str | list], args: List[str]) -> Tuple[str, list]:
         """Parse user provided macros and args into lists of PVs to use on
         startup or which file to import on startup
@@ -140,21 +119,26 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             macros = {}
 
         # Construct an argument parser for args
-        trace_parser = argparse.ArgumentParser(description="Trace\nThis is a PyDM application "
-                                               + "used to display archived and live pv data.",
-                                               formatter_class=argparse.RawTextHelpFormatter)
-        trace_parser.add_argument("-i", "--input_file",
-                                  action=PathAction,
-                                  type=str,
-                                  default="",
-                                  help="Absolute file path to import from;\n"
-                                  + "Alternatively can be provided as INPUT_FILE macro")
-        trace_parser.add_argument("-p", "--pvs",
-                                  type=str,
-                                  nargs='*',
-                                  default=[],
-                                  help="List of PVs to show on startup;\n"
-                                       + "Alternatively can be provided as PV or PVS macros")
+        trace_parser = argparse.ArgumentParser(
+            description="Trace\nThis is a PyDM application " + "used to display archived and live pv data.",
+            formatter_class=argparse.RawTextHelpFormatter,
+        )
+        trace_parser.add_argument(
+            "-i",
+            "--input_file",
+            action=PathAction,
+            type=str,
+            default="",
+            help="Absolute file path to import from;\n" + "Alternatively can be provided as INPUT_FILE macro",
+        )
+        trace_parser.add_argument(
+            "-p",
+            "--pvs",
+            type=str,
+            nargs="*",
+            default=[],
+            help="List of PVs to show on startup;\n" + "Alternatively can be provided as PV or PVS macros",
+        )
 
         # Parse arguments and ignore unknowns
         trace_args, unknown = trace_parser.parse_known_args(args)
@@ -165,8 +149,8 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
 
         # Get the file to import from if one is provided. Prioritize args over macro
         input_file = trace_args.input_file
-        if not input_file and 'INPUT_FILE' in macros:
-            input_file = macros['INPUT_FILE']
+        if not input_file and "INPUT_FILE" in macros:
+            input_file = macros["INPUT_FILE"]
 
         # Get the list of PVs to show on startup
         startup_pvs = []
@@ -187,11 +171,8 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
     @staticmethod
     def git_version():
         """Get the current git tag for the project"""
-        project_directory = __file__.rsplit('/', 1)[0]
-        git_cmd = run(f"cd {project_directory} && git describe --tags",
-                      text=True,
-                      shell=True,
-                      capture_output=True)
+        project_directory = __file__.rsplit("/", 1)[0]
+        git_cmd = run(f"cd {project_directory} && git describe --tags", text=True, shell=True, capture_output=True)
         return git_cmd.stdout.strip()
 
     @Slot()
@@ -213,7 +194,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             The timespan setting button pressed. Determines which timespan
             to set.
         """
-        logger.debug(f"Setting plot timerange")
+        logger.debug("Setting plot timerange")
         if button not in self.button_spans:
             logger.error(f"{button} is not a valid timespan button")
             return
@@ -227,7 +208,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
 
 
 class LoggingHandler(Handler):
-    def __init__(self, logging_lbl: QLabel, level: int=0) -> None:
+    def __init__(self, logging_lbl: QLabel, level: int = 0) -> None:
         super().__init__(level)
         self.logging_lbl = logging_lbl
 

@@ -1,11 +1,13 @@
 from abc import abstractmethod
-from typing import (Union, Tuple)
-from qtpy.QtGui import (QColor, QPainter, QRegExpValidator)
-from qtpy.QtCore import (Qt, QEvent, QPoint, Slot, Signal, QRegExp,
-                         QAbstractTableModel, QModelIndex, QAbstractItemModel)
-from qtpy.QtWidgets import (QStyledItemDelegate, QComboBox, QStyle, QPushButton,
-                            QTableView, QStyleOptionViewItem, QWidget,
-                            QDoubleSpinBox, QLineEdit)
+from typing import Tuple, Union
+
+from qtpy.QtGui import QColor, QPainter, QRegExpValidator
+from qtpy.QtCore import (Qt, Slot, QEvent, QPoint, Signal, QRegExp, QModelIndex,
+                         QAbstractItemModel, QAbstractTableModel)
+from qtpy.QtWidgets import (QStyle, QWidget, QComboBox, QLineEdit, QTableView,
+                            QPushButton, QDoubleSpinBox, QStyledItemDelegate,
+                            QStyleOptionViewItem)
+
 from widgets import ColorButton
 
 
@@ -20,6 +22,7 @@ class EditorDelegate(QStyledItemDelegate):
         The QTableView associated with the delegate. Used for opening
         persistent editors.
     """
+
     def __init__(self, parent: QTableView) -> None:
         super().__init__(parent)
         self.editor_list = []
@@ -151,6 +154,7 @@ class ColorButtonDelegate(EditorDelegate):
         The parent object for the ColorButtonDelegate. Should be the
         associated QTableView
     """
+
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> ColorButton:
         """Initialize a ColorButton for use in the Table View.
 
@@ -220,7 +224,10 @@ class FloatDelegate(EditorDelegate):
     prec : int, optional
         The float's precision, by default 2
     """
-    def __init__(self, parent: QTableView, init_range: Tuple[float, float] = (float("-inf"), float("inf")), prec: int = 2) -> None:
+
+    def __init__(
+        self, parent: QTableView, init_range: Tuple[float, float] = (float("-inf"), float("inf")), prec: int = 2
+    ) -> None:
         super().__init__(parent)
         self.range = init_range
         self.prec = prec
@@ -237,7 +244,7 @@ class FloatDelegate(EditorDelegate):
         index : QModelIndex
             The index to display the editor on
         """
-        deselect_lineEdit =  index.row() == len(self.editor_list)
+        deselect_lineEdit = index.row() == len(self.editor_list)
         super().paint(painter, option, index)
 
         if deselect_lineEdit:
@@ -321,6 +328,7 @@ class ScientificNotationDelegate(EditorDelegate):
     parent : QTableView
         The delegate's associated QTableView.
     """
+
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
         """Create a new persistent editor on the Table View at the given index.
 
@@ -445,6 +453,7 @@ class DeleteRowDelegate(EditorDelegate):
         The parent object for the DeleteRowDelegate. Should be the
         associated QTableView
     """
+
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QPushButton:
         """Initialize a QPushButton editor to delete the table's row.
 
@@ -501,6 +510,7 @@ class ComboBoxDelegate(EditorDelegate):
     data_source : ArchiverAxisModel, list, dict
         The initial dataset to use when populating the QComboBox.
     """
+
     def __init__(self, parent: QTableView, data_source: Union[QAbstractItemModel, list, dict]) -> None:
         super().__init__(parent)
         if isinstance(data_source, list):
@@ -628,7 +638,9 @@ class InsertPVDelegate(EditorDelegate):
         The parent object for the InsertPVDelegate. Should be the
         associated QTableView
     """
+
     button_clicked = Signal(str)
+
     def __init__(self, parent: QTableView):
         super().__init__(parent)
         self.model = self.parent().model()
@@ -642,7 +654,7 @@ class InsertPVDelegate(EditorDelegate):
             editor.setToolTip("Insert PV")
             # We don't want to allow people to select the button, only click it
             editor.setFocusPolicy(Qt.NoFocus)
-            editor.pressed.connect(lambda: self.button_clicked.emit("{"+ self.model._row_names[index.row()]+"}"))
+            editor.pressed.connect(lambda: self.button_clicked.emit("{" + self.model._row_names[index.row()] + "}"))
 
             self.editor_list.append(editor)
             return editor
