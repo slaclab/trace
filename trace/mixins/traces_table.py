@@ -228,44 +228,16 @@ class FormulaDialog(QDialog):
 
         # Define the list of calculator buttons.
         # It's a bunch of preset buttons, but users can type other functions under math.
+        # fmt: off
         buttons = [
-            "7",
-            "8",
-            "9",
-            "+",
-            "(",
-            ")",
-            "4",
-            "5",
-            "6",
-            "-",
-            "^2",
-            "sqrt()",
-            "1",
-            "2",
-            "3",
-            "*",
-            "^-1",
-            "ln()",
-            "0",
-            "e",
-            "pi",
-            "/",
-            "sin()",
-            "asin()",
-            ".",
-            "abs()",
-            "min()",
-            "^",
-            "cos()",
-            "acos()",
-            "PV",
-            "Clear",
-            "max()",
-            "mean()",
-            "tan()",
-            "atan()",
+            "7",   "8",      "9",      "+",       "(",      ")",
+            "4",   "5",      "6",      "-",       "^2",     "sqrt()",
+            "1",   "2",      "3",      "*",       "^-1",    "ln()",
+            "0",   "e",      "pi",     "/",       "sin()",  "asin()",
+            ".",   "abs()",  "min()",  "^",       "cos()",  "acos()",
+            "PV",  "Clear",  "max()",  "mean()",  "tan()",  "atan()",
         ]
+        # fmt: on
 
         # Create the calculator buttons and connect them to the input field
         grid_layout = QGridLayout()
