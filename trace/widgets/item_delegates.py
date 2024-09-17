@@ -2,11 +2,28 @@ from abc import abstractmethod
 from typing import Tuple, Union
 
 from qtpy.QtGui import QColor, QPainter, QRegExpValidator
-from qtpy.QtCore import (Qt, Slot, QEvent, QPoint, Signal, QRegExp, QModelIndex,
-                         QAbstractItemModel, QAbstractTableModel)
-from qtpy.QtWidgets import (QStyle, QWidget, QComboBox, QLineEdit, QTableView,
-                            QPushButton, QDoubleSpinBox, QStyledItemDelegate,
-                            QStyleOptionViewItem)
+from qtpy.QtCore import (
+    Qt,
+    Slot,
+    QEvent,
+    QPoint,
+    Signal,
+    QRegExp,
+    QModelIndex,
+    QAbstractItemModel,
+    QAbstractTableModel,
+)
+from qtpy.QtWidgets import (
+    QStyle,
+    QWidget,
+    QComboBox,
+    QLineEdit,
+    QTableView,
+    QPushButton,
+    QDoubleSpinBox,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
+)
 
 from widgets import ColorButton
 
@@ -370,7 +387,7 @@ class ScientificNotationDelegate(EditorDelegate):
             if value is None:
                 value = self.range[0]
 
-            rx = QRegExp("^[+-]?\d*(?:\.\d*(?:[eE][+-]?\d+)?)?$")
+            rx = QRegExp(r"^[+-]?\d*(?:\.\d*(?:[eE][+-]?\d+)?)?$")
             validator = QRegExpValidator(rx, parent)
 
             editor = QLineEdit(parent)

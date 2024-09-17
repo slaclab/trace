@@ -11,8 +11,7 @@ from trace_file_convert import PathAction
 from pydm import Display
 
 from config import logger, datetime_pv
-from mixins import (FileIOMixin, AxisTableMixin, PlotConfigMixin,
-                    TracesTableMixin)
+from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
 from styles import CenterCheckStyle
 
 

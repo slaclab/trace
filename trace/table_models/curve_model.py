@@ -7,10 +7,8 @@ from qtpy.QtGui import QColor
 from qtpy.QtCore import Qt, Slot, Signal, QObject, QModelIndex
 
 from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
-from pydm.widgets.archiver_time_plot import (FormulaCurveItem,
-                                             ArchivePlotCurveItem)
-from pydm.widgets.archiver_time_plot_editor import \
-    PyDMArchiverTimePlotCurvesModel
+from pydm.widgets.archiver_time_plot import FormulaCurveItem, ArchivePlotCurveItem
+from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
 
 from config import logger
 from widgets import ColorButton
@@ -121,7 +119,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if sip.isdeleted(curve):
             return False
         if column_name == "Channel":
-            if re.search("[\s,]", value):
+            if re.search(r"[\s,]", value):
                 self.multiplePVInsert.emit(value)
                 return False
             curve.show()

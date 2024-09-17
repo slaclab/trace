@@ -2,12 +2,28 @@ import logging
 from typing import List
 
 from qtpy.QtGui import QDrag, QKeyEvent
-from qtpy.QtCore import (Qt, QUrl, Signal, QObject, QVariant, QMimeData,
-                         QModelIndex, QAbstractTableModel)
+from qtpy.QtCore import (
+    Qt,
+    QUrl,
+    Signal,
+    QObject,
+    QVariant,
+    QMimeData,
+    QModelIndex,
+    QAbstractTableModel,
+)
 from qtpy.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager
-from qtpy.QtWidgets import (QLabel, QWidget, QLineEdit, QTableView, QHBoxLayout,
-                            QHeaderView, QPushButton, QVBoxLayout,
-                            QAbstractItemView)
+from qtpy.QtWidgets import (
+    QLabel,
+    QWidget,
+    QLineEdit,
+    QTableView,
+    QHBoxLayout,
+    QHeaderView,
+    QPushButton,
+    QVBoxLayout,
+    QAbstractItemView,
+)
 
 logger = logging.getLogger(__name__)
 

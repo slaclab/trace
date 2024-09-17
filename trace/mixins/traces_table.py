@@ -2,16 +2,30 @@ import re
 
 from qtpy.QtGui import QKeyEvent, QDropEvent, QDragMoveEvent, QDragEnterEvent
 from qtpy.QtCore import Qt, Slot, QPoint, QObject, QModelIndex
-from qtpy.QtWidgets import (QMenu, QAction, QDialog, QLineEdit, QTableView,
-                            QGridLayout, QHeaderView, QPushButton, QVBoxLayout,
-                            QAbstractItemView)
+from qtpy.QtWidgets import (
+    QMenu,
+    QAction,
+    QDialog,
+    QLineEdit,
+    QTableView,
+    QGridLayout,
+    QHeaderView,
+    QPushButton,
+    QVBoxLayout,
+    QAbstractItemView,
+)
 
 from pydm.widgets.baseplot import BasePlotCurveItem
 from pydm.widgets.archiver_time_plot import FormulaCurveItem
 
 from config import logger
-from widgets import (ComboBoxDelegate, InsertPVDelegate, DeleteRowDelegate,
-                     ArchiveSearchWidget, ColorButtonDelegate)
+from widgets import (
+    ComboBoxDelegate,
+    InsertPVDelegate,
+    DeleteRowDelegate,
+    ArchiveSearchWidget,
+    ColorButtonDelegate,
+)
 from table_models import ArchiverCurveModel
 
 
@@ -97,7 +111,7 @@ class TracesTableMixin:
         data: str
             The list of pvs in string format with any white space or comma separation"""
         logger.info("Accepting PVs " + data)
-        channels = re.split("[\s,]+", data)
+        channels = re.split(r"[\s,]+", data)
         for channel in channels:
             index = -1
             curve = self.curves_model.curve_at_index(index)

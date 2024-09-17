@@ -6,8 +6,7 @@ from qtpy.QtCore import Slot, QDateTime
 from qtpy.QtWidgets import QHeaderView
 
 from config import logger
-from widgets import (ComboBoxDelegate, DeleteRowDelegate,
-                     ScientificNotationDelegate)
+from widgets import ComboBoxDelegate, DeleteRowDelegate, ScientificNotationDelegate
 from table_models import ArchiverAxisModel
 
 
