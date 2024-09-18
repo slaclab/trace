@@ -474,7 +474,11 @@
                </widget>
               </item>
               <item>
-               <widget class="QSpinBox" name="xafs_spnbx"/>
+               <widget class="QSpinBox" name="xafs_spnbx">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+               </widget>
               </item>
               <item>
                <spacer name="xafs_spcr">
