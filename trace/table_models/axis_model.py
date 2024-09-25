@@ -1,8 +1,12 @@
-from typing import (Any, List, Dict)
-from qtpy.QtCore import (Qt, QVariant, QPersistentModelIndex, QModelIndex, Signal)
-from pydm.widgets.baseplot import (BasePlot, BasePlotAxisItem)
+from typing import Any, Dict, List
+
+from qtpy.QtCore import Qt, Signal, QVariant, QModelIndex, QPersistentModelIndex
+
+from pydm.widgets.baseplot import BasePlot, BasePlotAxisItem
 from pydm.widgets.axis_table_model import BasePlotAxesModel
+
 from config import logger
+
 
 class ArchiverAxisModel(BasePlotAxesModel):
     """The data model for the axes tab in the properties section. Acts
@@ -15,15 +19,22 @@ class ArchiverAxisModel(BasePlotAxesModel):
     parent : QObject, optional
         The model's parent, by default None
     """
+
     remove_curve = Signal(object)
     reset_everything = Signal()
+
     def __init__(self, plot: BasePlot, parent=None) -> None:
         super().__init__(plot, parent)
-        self._column_names = self._column_names + ("Hidden","",)
+        self._column_names = self._column_names + (
+            "Hidden",
+            "",
+        )
         self.axis_count = 0
-        self.checkable_col = {self.getColumnIndex("Enable Auto Range"),
-                              self.getColumnIndex("Log Mode"),
-                              self.getColumnIndex("Hidden")}
+        self.checkable_col = {
+            self.getColumnIndex("Enable Auto Range"),
+            self.getColumnIndex("Log Mode"),
+            self.getColumnIndex("Hidden"),
+        }
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
         """Return flags that determine how users can interact with the items in the table"""
@@ -112,15 +123,19 @@ class ArchiverAxisModel(BasePlotAxesModel):
         axes : List[Dict]
             Axis properties to be set for all new axes on the plot
         """
-        key_translate = {'minRange': "min_range",
-                         'maxRange': "max_range",
-                         'autoRange': "enable_auto_range",
-                         'logMode': "log_mode"}
+        key_translate = {
+            "minRange": "min_range",
+            "maxRange": "max_range",
+            "autoRange": "enable_auto_range",
+            "logMode": "log_mode",
+        }
         cleaned_axes = []
         for a in axes:
-            clean_a = {'name': f"Axis {len(cleaned_axes) + 1}",
-                       'orientation': "left",
-                       'label': f"Axis {len(cleaned_axes) + 1}"}
+            clean_a = {
+                "name": f"Axis {len(cleaned_axes) + 1}",
+                "orientation": "left",
+                "label": f"Axis {len(cleaned_axes) + 1}",
+            }
             for k, v in a.items():
                 if v is None:
                     continue
@@ -130,9 +145,11 @@ class ArchiverAxisModel(BasePlotAxesModel):
                 else:
                     clean_a[k] = a[k]
             cleaned_axes.append(clean_a)
-        clean_a = {'name': f"Axis {len(cleaned_axes) + 1}",
-                       'orientation': "left",
-                       'label': f"Axis {len(cleaned_axes) + 1}"}
+        clean_a = {
+            "name": f"Axis {len(cleaned_axes) + 1}",
+            "orientation": "left",
+            "label": f"Axis {len(cleaned_axes) + 1}",
+        }
         cleaned_axes.append(clean_a)
         logger.debug("Clearing axes model")
         self.beginResetModel()
@@ -163,13 +180,23 @@ class ArchiverAxisModel(BasePlotAxesModel):
         while axis._curves:
             curve = axis._curves[0]
             if curve == self._plot._curves[-1] or len(self._plot._curves) == 1:
-                logger.warning("Deleting this axis would delete the last curve, which is not allowed. Please move desired curves to other axes")
+                logger.warning(
+                    "Deleting this axis would delete the last curve, which is"
+                    " not allowed. Please move desired curves to other axes"
+                )
                 return
             self.remove_curve.emit(curve)
         super().removeAtIndex(index)
 
-    def removeAxis(self, axisName: str):
-        """Wrapper to remove axis by name. Searches through axes, finds the one with a matching name, removes at index"""
+    def removeAxis(self, axisName: str) -> None:
+        """Wrapper to remove axis by name. Searches through axes, finds the
+        one with a matching name, then calls removeAtIndex.
+
+        Parameters
+        ----------
+        axisName : str
+            The name of the axis to be removed.
+        """
         for i, axis in enumerate(self.plot._axes):
             if axis.name == axisName:
                 self.removeAtIndex(self.index(i, 0))
@@ -180,7 +207,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
         Parameters
         ----------
         index : QModelIndex
-            An index in the row to be hidde.
+            An index in the row to be hidden.
         """
         # Hide the axis
         axis.setHidden(shouldHide=hidden)
@@ -215,8 +242,4 @@ class ArchiverAxisModel(BasePlotAxesModel):
         max_col = self.getColumnIndex("Max Y Range")
         max_index = QPersistentModelIndex(self.index(row, max_col))
 
-        axis.sigYRangeChanged.connect(
-            lambda *_: self.dataChanged.emit(
-                QModelIndex(min_index), QModelIndex(max_index)
-            )
-        )
+        axis.sigYRangeChanged.connect(lambda *_: self.dataChanged.emit(QModelIndex(min_index), QModelIndex(max_index)))

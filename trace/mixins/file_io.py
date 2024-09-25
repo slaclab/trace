@@ -2,15 +2,18 @@ from os import getenv
 from re import compile
 from typing import Tuple
 from pathlib import Path
-from datetime import (datetime, timedelta)
+from datetime import datetime, timedelta
 from urllib.parse import urlparse
-from qtpy.QtWidgets import (QMessageBox, QFileDialog)
-from config import (logger, save_file_dir)
+
+from qtpy.QtWidgets import QFileDialog, QMessageBox
 from trace_file_convert import TraceFileConverter
+
+from config import logger, save_file_dir
 
 
 class FileIOMixin:
     """Mixins class to manage the file imports and exports for Trace"""
+
     def file_io_init(self) -> None:
         """Initialize the File IO capabilities of Trace by saving a default
         path and creating an TraceFileConverter object
@@ -20,9 +23,7 @@ class FileIOMixin:
 
     def export_save_file(self) -> None:
         """Prompt the user for a file to export config data to"""
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save Trace",
-                                                   str(self.io_path),
-                                                   "Trace Save File (*.trc)")
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save Trace", str(self.io_path), "Trace Save File (*.trc)")
         file_name = Path(file_name)
         if file_name.is_dir():
             logger.warning("No file name provided to export save file to")
@@ -40,11 +41,12 @@ class FileIOMixin:
         """Prompt the user for which config file to import from"""
         # Get the save file from the user
         if not file_name:
-            file_name, _ = QFileDialog.getOpenFileName(self, "Open Trace",
-                                                       str(self.io_path),
-                                                       "Trace Save File (*.trc);;"
-                                                       + "Java Archive Viewer (*.xml);;"
-                                                       + "All Files (*)")
+            file_name, _ = QFileDialog.getOpenFileName(
+                self,
+                "Open Trace",
+                str(self.io_path),
+                "Trace Save File (*.trc);;Java Archive Viewer (*.xml);;All Files (*)",
+            )
         file_name = Path(file_name)
         if not file_name.is_file():
             logger.warning(f"Attempted import is not a file: {file_name}")
@@ -65,25 +67,27 @@ class FileIOMixin:
 
         # Confirm the PYDM_ARCHIVER_URL is the same as the imported Archiver URL
         # If they are not the same, prompt the user to confirm continuing
-        import_url = urlparse(file_data['archiver_url'])
+        import_url = urlparse(file_data["archiver_url"])
         archiver_url = urlparse(getenv("PYDM_ARCHIVER_URL"))
         if import_url.hostname != archiver_url.hostname:
             logger.warning(f"Attempting to import save file using different Archiver URL: {import_url.hostname}")
-            ret = QMessageBox.warning(self,
-                                      "Import Error",
-                                      "The config file you tried to open reads from a different archiver.\n"
-                                      f"\nCurrent archiver is:\n{archiver_url.hostname}\n"
-                                      f"\nAttempted import uses:\n{import_url.hostname}\n\n"
-                                      "\nContinue?",
-                                      QMessageBox.Yes | QMessageBox.No,
-                                      QMessageBox.No)
+            ret = QMessageBox.warning(
+                self,
+                "Import Error",
+                "The config file you tried to open reads from a different archiver.\n"
+                f"\nCurrent archiver is:\n{archiver_url.hostname}\n"
+                f"\nAttempted import uses:\n{import_url.hostname}\n\n"
+                "\nContinue?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
             if ret == QMessageBox.No:
                 return
 
         # Parse the time range for the X-Axis
         try:
-            start_str = file_data['time_axis']['start']
-            end_str = file_data['time_axis']['end']
+            start_str = file_data["time_axis"]["start"]
+            end_str = file_data["time_axis"]["end"]
             start_dt, end_dt = IOTimeParser.parse_times(start_str, end_str)
             logger.debug(f"Starting time: {start_dt}")
             logger.debug(f"Ending time: {end_dt}")
@@ -93,9 +97,9 @@ class FileIOMixin:
             return
 
         # Set the models to use the file data
-        self.axis_table_model.set_model_axes(file_data['y-axes'])
-        self.curves_model.set_model_curves(file_data['curves'] + file_data['formula'])
-        self.plot_setup(file_data['plot'])
+        self.axis_table_model.set_model_axes(file_data["y-axes"])
+        self.curves_model.set_model_curves(file_data["curves"] + file_data["formula"])
+        self.plot_setup(file_data["plot"])
 
         # Enable auto scroll if the end time is "now"
         self.ui.cursor_scale_btn.click()
@@ -114,6 +118,7 @@ class IOTimeParser:
     string can contain an absolute date and time, or a date and time that
     are relative to another time or even each other.
     """
+
     full_relative_re = compile(r"^([+-]?\d+[yMwdHms] ?)*\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
     full_absolute_re = compile(r"^\d{4}-[01]\d-[0-3]\d\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
 
@@ -161,25 +166,25 @@ class IOTimeParser:
         negative = True
         for token in cls.relative_re.findall(time):
             logger.debug(f"Processing relative time token: {token}")
-            if token[0] in '+-':
-                negative = token[0] == '-'
+            if token[0] in "+-":
+                negative = token[0] == "-"
             elif negative:
-                token = '-' + token
+                token = "-" + token
             number = int(token[:-1])
 
             unit = token[-1]
-            if unit == 's':
+            if unit == "s":
                 td += timedelta(seconds=number)
-            elif unit == 'm':
+            elif unit == "m":
                 td += timedelta(minutes=number)
-            elif unit == 'H':
+            elif unit == "H":
                 td += timedelta(hours=number)
-            elif unit == 'w':
+            elif unit == "w":
                 td += timedelta(weeks=number)
-            elif unit in 'yMd':
-                if unit == 'y':
+            elif unit in "yMd":
+                if unit == "y":
                     number *= 365
-                elif unit == 'M':
+                elif unit == "M":
                     number *= 30
                 td += timedelta(days=number)
         logger.debug(f"Relative time '{time}' as delta: {td}")
@@ -207,9 +212,9 @@ class IOTimeParser:
         except AttributeError:
             return dt
 
-        if time.count(':') == 1:
+        if time.count(":") == 1:
             time += ":00"
-        h, m, s = map(int, map(float, time.split(':')))
+        h, m, s = map(int, map(float, time.split(":")))
         dt = dt.replace(hour=h, minute=m, second=s)
 
         return dt

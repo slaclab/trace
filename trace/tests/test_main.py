@@ -1,6 +1,7 @@
+from trace.main import TraceDisplay
+
 import pytest
 from qtpy.QtWidgets import QApplication
-from trace.main import TraceDisplay
 
 
 @pytest.fixture

@@ -1,8 +1,10 @@
 from random import random
-from typing import (Any, Union)
-from qtpy.QtGui import (QColor, QMouseEvent)
-from qtpy.QtCore import (Qt, Signal)
-from qtpy.QtWidgets import (QPushButton, QColorDialog)
+from typing import Any, Union
+
+from qtpy.QtGui import QColor, QMouseEvent
+from qtpy.QtCore import Qt, Signal
+from qtpy.QtWidgets import QPushButton, QColorDialog
+
 from config import color_palette
 
 
@@ -39,7 +41,7 @@ class ColorButton(QPushButton):
         self.dialog_box.setCurrentColor(color)
 
         self.pressed.connect(self.dialog_box.show)
-        self.dialog_box.colorSelected.connect(lambda c: setattr(self, 'color', c))
+        self.dialog_box.colorSelected.connect(lambda c: setattr(self, "color", c))
 
         self.color = self._default
 
@@ -73,11 +75,11 @@ class ColorButton(QPushButton):
         """Pick a random color for the default color of each PV. This
         function ensures that the color is bright, since it will be on a
         black background."""
-        h = int(360 * random())
-        s = int(256 * (0.5 + random()/2.0))
-        l = int(256 * (0.4 + random()/5.0))
+        hue = int(360 * random())
+        saturation = int(256 * (0.5 + random() / 2.0))
+        lightness = int(256 * (0.4 + random() / 5.0))
         color = QColor()
-        color.setHsl(h, s, l)
+        color.setHsl(hue, saturation, lightness)
         return color
 
     @staticmethod

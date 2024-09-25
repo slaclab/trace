@@ -1,0 +1,16 @@
+[tool.black]
+line_length = 120
+
+[tool.ruff]
+extend-exclude = ["__init__.py"]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+color_output = true
+extend_skip = ["__init__.py"]
+length_sort = true
+known_third_party = ["qtpy", "pyqtgraph"]
+known_first_party = ["pydm"]
+known_local_folder = ["config", "mixins", "styles", "table_models", "widgets"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]

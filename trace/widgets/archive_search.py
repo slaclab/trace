@@ -1,11 +1,29 @@
 import logging
-from typing import (List)
+from typing import List
+
 from qtpy.QtGui import QDrag, QKeyEvent
-from qtpy.QtCore import (QAbstractTableModel, QMimeData, QModelIndex, QObject,
-                         Qt, QUrl, QVariant, Signal)
-from qtpy.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
-from qtpy.QtWidgets import (QAbstractItemView, QHBoxLayout, QHeaderView, QLabel,
-                            QLineEdit, QPushButton, QTableView, QVBoxLayout, QWidget)
+from qtpy.QtCore import (
+    Qt,
+    QUrl,
+    Signal,
+    QObject,
+    QVariant,
+    QMimeData,
+    QModelIndex,
+    QAbstractTableModel,
+)
+from qtpy.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager
+from qtpy.QtWidgets import (
+    QLabel,
+    QWidget,
+    QLineEdit,
+    QTableView,
+    QHBoxLayout,
+    QHeaderView,
+    QPushButton,
+    QVBoxLayout,
+    QAbstractItemView,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +115,9 @@ class ArchiveSearchWidget(QWidget):
     parent : QObject, optional
         The parent item of this widget
     """
+
     append_PVs_requested = Signal(str)
+
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent=parent)
 
@@ -148,8 +168,8 @@ class ArchiveSearchWidget(QWidget):
         self.layout.addWidget(self.loading_label)
         self.layout.addWidget(self.results_view)
         self.insert_button = QPushButton("Add PVs")
-        self.insert_button.clicked.connect(lambda:self.append_PVs_requested.emit(self.selectedPVs()))
-        self.results_view.doubleClicked.connect(lambda:self.append_PVs_requested.emit(self.selectedPVs()))
+        self.insert_button.clicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
+        self.results_view.doubleClicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
         self.layout.addWidget(self.insert_button)
         self.setLayout(self.layout)
 
@@ -177,7 +197,9 @@ class ArchiveSearchWidget(QWidget):
         drag.exec_()
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        """Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula"""
+        """Special key press tracker. If enter or return is pressed the request
+        archiver info.
+        """
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.request_archiver_info()
         return super().keyPressEvent(e)
@@ -189,8 +211,7 @@ class ArchiveSearchWidget(QWidget):
         search_text = search_text.replace("*", ".")
         search_text = search_text.replace("%", ".")
         url_string = (
-            f"http://{self.archive_url_textedit.text()}/"
-            f"retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
+            f"http://{self.archive_url_textedit.text()}/" f"retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
         )
         request = QNetworkRequest(QUrl(url_string))
         self.network_manager.get(request)

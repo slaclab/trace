@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 
+import re
 import json
 import logging
 import xml.etree.ElementTree as ET
+from os import path, getenv
 from re import compile
-from os import (path, getenv)
-from typing import (Dict, Union)
+from typing import Dict, Union
 from pathlib import Path
+from argparse import Action, Namespace, ArgumentParser
 from datetime import datetime
-from argparse import (ArgumentParser, Action, Namespace)
-from qtpy.QtGui import QColor
 from collections import OrderedDict
+
+from qtpy.QtGui import QColor
+
 from pydm.widgets.timeplot import PyDMTimePlot
-import re
 
 if __name__ in logging.Logger.manager.loggerDict:
     logger = logging.getLogger(__name__)
@@ -26,11 +28,12 @@ else:
     handler.setLevel("INFO")
 
 
-class TraceFileConverter():
+class TraceFileConverter:
     """Converter class that will convert save files for the Java-based Archive
     Viewer into a format readable by the Trace application. This class can also
     be used for importing data into Trace or exporting data from it.
     """
+
     # Java date time conversion regex
     full_java_absolute_re = compile(r"^[01]\d/[0-3]\d/\d{4}\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
     java_date_re = compile(r"^[01]\d/[0-3]\d/\d{4}")
@@ -74,11 +77,11 @@ class TraceFileConverter():
         if is_xml:
             etree = ET.ElementTree(ET.fromstring(text))
             self.stored_data = self.xml_to_dict(etree)
-            if not (self.stored_data['pv'] or self.stored_data['formula']):
+            if not (self.stored_data["pv"] or self.stored_data["formula"]):
                 raise FileNotFoundError(f"Incorrect input file format: {self.input_file}")
         else:
             self.stored_data = json.loads(text)
-            if not self.stored_data['curves']:
+            if not self.stored_data["curves"]:
                 raise FileNotFoundError(f"Incorrect input file format: {self.input_file}")
 
         return self.stored_data
@@ -113,18 +116,19 @@ class TraceFileConverter():
 
         if not output_data:
             if not self.stored_data:
-                raise ValueError("Output data is required but was not provided "
-                                 "and the 'stored_data' property is not populated.")
+                raise ValueError(
+                    "Output data is required but was not provided " "and the 'stored_data' property is not populated."
+                )
             output_data = self.stored_data
         elif isinstance(output_data, PyDMTimePlot):
             output_data = self.get_plot_data(output_data)
 
-        for obj in output_data['y-axes'] + output_data['curves'] + output_data['formula']:
+        for obj in output_data["y-axes"] + output_data["curves"] + output_data["formula"]:
             for k, v in obj.copy().items():
                 if v is None:
                     del obj[k]
 
-        with open(self.output_file, 'w') as f:
+        with open(self.output_file, "w") as f:
             json.dump(output_data, f, indent=4)
 
     def convert_data(self, data_in: Dict = {}) -> Dict:
@@ -147,63 +151,67 @@ class TraceFileConverter():
 
         converted_data = {}
 
-        converted_data['archiver_url'] = data_in.get("connection_parameter",
-                                                     getenv("PYDM_ARCHIVER_URL"))
-        converted_data['archiver_url'] = converted_data['archiver_url'].replace("pbraw://", "http://")
+        converted_data["archiver_url"] = data_in.get("connection_parameter", getenv("PYDM_ARCHIVER_URL"))
+        converted_data["archiver_url"] = converted_data["archiver_url"].replace("pbraw://", "http://")
 
-        legend_dict = data_in['legend_configuration']
-        legend_dict['show_curve_name'] = legend_dict['show_ave_name']
-        del legend_dict['show_ave_name']
+        legend_dict = data_in["legend_configuration"]
+        legend_dict["show_curve_name"] = legend_dict["show_ave_name"]
+        del legend_dict["show_ave_name"]
 
-        converted_data['plot'] = {'title': data_in['plot_title'],
-                                  'legend': legend_dict}
+        converted_data["plot"] = {"title": data_in["plot_title"], "legend": legend_dict}
 
         # Convert date formats from MM/DD/YYYY --> YYYY-MM-DD
-        converted_data['time_axis'] = {}
-        for key, val in data_in['time_axis'][0].items():
-            if key in ['start', 'end']:
+        converted_data["time_axis"] = {}
+        for key, val in data_in["time_axis"][0].items():
+            if key in ["start", "end"]:
                 val = self.reformat_date(val)
-            converted_data['time_axis'][key] = val
+            converted_data["time_axis"][key] = val
 
-        converted_data['y-axes'] = []
-        for axis_in in data_in['range_axis']:
-            ax_dict = {'name': axis_in['name'],
-                       'label': axis_in['name'],
-                       'minRange': axis_in['min'],
-                       'maxRange': axis_in['max'],
-                       'orientation': axis_in['location'],
-                       'logMode': axis_in['type'] != "normal"}
+        converted_data["y-axes"] = []
+        for axis_in in data_in["range_axis"]:
+            ax_dict = {
+                "name": axis_in["name"],
+                "label": axis_in["name"],
+                "minRange": axis_in["min"],
+                "maxRange": axis_in["max"],
+                "orientation": axis_in["location"],
+                "logMode": axis_in["type"] != "normal",
+            }
             filtered_dict = self.remove_null_values(ax_dict)
-            converted_data['y-axes'].append(filtered_dict)
+            converted_data["y-axes"].append(filtered_dict)
 
-        converted_data['curves'] = []
-        for pv_in in data_in['pv']:
-            color = self.srgb_to_qColor(pv_in['color'])
-            pv_dict = {'name': pv_in['name'],
-                       'channel': pv_in['name'],
-                       'yAxisName': pv_in['range_axis_name'],
-                       'lineWidth': int(float(pv_in['draw_width'])),
-                       'color': color.name(),
-                       'thresholdColor': color.name()}
+        converted_data["curves"] = []
+        for pv_in in data_in["pv"]:
+            color = self.srgb_to_qColor(pv_in["color"])
+            pv_dict = {
+                "name": pv_in["name"],
+                "channel": pv_in["name"],
+                "yAxisName": pv_in["range_axis_name"],
+                "lineWidth": int(float(pv_in["draw_width"])),
+                "color": color.name(),
+                "thresholdColor": color.name(),
+            }
             filtered_dict = self.remove_null_values(pv_dict)
-            converted_data['curves'].append(filtered_dict)
+            converted_data["curves"].append(filtered_dict)
 
-        converted_data['formula'] = []
-        for formula_in in data_in['formula']:
-            color = self.srgb_to_qColor(pv_in['color'])
+        converted_data["formula"] = []
+        for formula_in in data_in["formula"]:
+            color = self.srgb_to_qColor(pv_in["color"])
             formula = "f://" + formula_in["term"]
             for curve in formula_in["curveDict"].keys():
                 insert = "{" + curve + "}"
                 formula = re.sub(curve, insert, formula)
-            formula_dict = {'name': formula_in['name'],
-                            'formula': formula,
-                            'curveDict': formula_in['curveDict'],
-                            'yAxisName': formula_in['range_axis_name'],
-                            'lineWidth': float(formula_in['draw_width']),
-                            'color': color.name(),
-                            'thresholdColor': color.name()}
+            formula_dict = {
+                "name": formula_in["name"],
+                "formula": formula,
+                "curveDict": formula_in["curveDict"],
+                "yAxisName": formula_in["range_axis_name"],
+                "lineWidth": float(formula_in["draw_width"]),
+                "color": color.name(),
+                "thresholdColor": color.name(),
+            }
             filtered_dict = self.remove_null_values(formula_dict)
-            converted_data['formula'].append(filtered_dict)
+            converted_data["formula"].append(filtered_dict)
 
         self.stored_data = converted_data
         return self.stored_data
@@ -227,7 +235,7 @@ class TraceFileConverter():
             return input_str
 
         date = cls.java_date_re.search(input_str).group()
-        m, d, y = date.split('/')
+        m, d, y = date.split("/")
         formatted_date = f"{y}-{m}-{d}"
 
         time_match = cls.time_re.search(input_str)
@@ -250,17 +258,19 @@ class TraceFileConverter():
         dict
             The data in a dictionary format
         """
-        data_dict = {'connection_parameter': '',
-                    'plot_title': '',
-                    'legend_configuration': {},
-                    'time_axis': [],
-                    'range_axis': [],
-                    'pv': [],
-                    'formula': []}
+        data_dict = {
+            "connection_parameter": "",
+            "plot_title": "",
+            "legend_configuration": {},
+            "time_axis": [],
+            "range_axis": [],
+            "pv": [],
+            "formula": [],
+        }
 
-        data_dict['connection_parameter'] = xml.find("connection_parameter").text
-        data_dict['plot_title'] = xml.find("plot_title").text
-        data_dict['legend_configuration'] = xml.find("legend_configuration").attrib
+        data_dict["connection_parameter"] = xml.find("connection_parameter").text
+        data_dict["plot_title"] = xml.find("plot_title").text
+        data_dict["legend_configuration"] = xml.find("legend_configuration").attrib
 
         for key in ("time_axis", "range_axis", "pv"):
             for element in xml.findall(key):
@@ -277,7 +287,7 @@ class TraceFileConverter():
                     curveDict[tempDict["variable"]] = tempDict["name"]
                 else:
                     ele_dict |= {sub_ele.tag: sub_ele.text}
-            ele_dict['curveDict'] = curveDict
+            ele_dict["curveDict"] = curveDict
             data_dict[key].append(ele_dict)
         return data_dict
 
@@ -295,36 +305,40 @@ class TraceFileConverter():
         dict
             A dictionary representation of all of the relevant data for the given plot
         """
-        output_dict = {'archiver_url': getenv("PYDM_ARCHIVER_URL"),
-                       'plot': {},
-                       'time_axis': {},
-                       'y-axes': [],
-                       'curves': [],
-                       'formula': []}
+        output_dict = {
+            "archiver_url": getenv("PYDM_ARCHIVER_URL"),
+            "plot": {},
+            "time_axis": {},
+            "y-axes": [],
+            "curves": [],
+            "formula": [],
+        }
 
         [start_ts, end_ts] = plot.getXAxis().range
         start_dt = datetime.fromtimestamp(start_ts)
         end_dt = datetime.fromtimestamp(end_ts)
-        output_dict['plot'] = plot.to_dict()
-        output_dict['time_axis'] = {'name': "Main Time Axis",
-                                    'start': start_dt.isoformat(sep=' ', timespec='seconds'),
-                                    'end': end_dt.isoformat(sep=' ', timespec='seconds'),
-                                    'location': "bottom"}
+        output_dict["plot"] = plot.to_dict()
+        output_dict["time_axis"] = {
+            "name": "Main Time Axis",
+            "start": start_dt.isoformat(sep=" ", timespec="seconds"),
+            "end": end_dt.isoformat(sep=" ", timespec="seconds"),
+            "location": "bottom",
+        }
 
         for a in plot.getYAxes():
             axis_dict = json.loads(a, object_pairs_hook=OrderedDict)
-            output_dict['y-axes'].append(axis_dict)
+            output_dict["y-axes"].append(axis_dict)
 
         for c in plot.getCurves():
             curve_dict = json.loads(c, object_pairs_hook=OrderedDict)
-            if 'channel' in curve_dict:
-                if not curve_dict['channel']:
+            if "channel" in curve_dict:
+                if not curve_dict["channel"]:
                     continue
-                output_dict['curves'].append(curve_dict)
+                output_dict["curves"].append(curve_dict)
             else:
-                if not curve_dict['formula']:
+                if not curve_dict["formula"]:
                     continue
-                output_dict['formula'].append(curve_dict)
+                output_dict["formula"].append(curve_dict)
 
         return output_dict
 
@@ -345,7 +359,7 @@ class TraceFileConverter():
         """
         if not srgb:
             return QColor()
-        elif srgb[0] != '#':
+        elif srgb[0] != "#":
             rgb_int = int(srgb) & 0xFFFFFFFF
             srgb = f"#{rgb_int:08X}"
         return QColor(srgb)
@@ -367,7 +381,7 @@ class TraceFileConverter():
         dict_out = dict_in.copy()
         for k, v in dict_in.items():
             if v is None:
-               del dict_out[k]
+                del dict_out[k]
         return dict_out
 
 
@@ -417,23 +431,16 @@ class PathAction(Action):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(prog="Trace File Converter",
-                            description="Convert files used by the Java Archive"
-                            " Viewer to a file format that can be used with Trace.")
-    parser.add_argument("input_file",
-                        action=PathAction,
-                        type=str,
-                        help="Path to the file to be converted")
-    parser.add_argument("--output_file", "-o",
-                        action=PathAction,
-                        type=str,
-                        help="Path to the output file (defaults to input file name)")
-    parser.add_argument("--overwrite", "-w",
-                        action="store_true",
-                        help="Overwrite the target file if it exists")
-    parser.add_argument("--clean",
-                        action="store_true",
-                        help="Remove the input file after successful conversion")
+    parser = ArgumentParser(
+        prog="Trace File Converter",
+        description="Convert files used by the Java Archive" " Viewer to a file format that can be used with Trace.",
+    )
+    parser.add_argument("input_file", action=PathAction, type=str, help="Path to the file to be converted")
+    parser.add_argument(
+        "--output_file", "-o", action=PathAction, type=str, help="Path to the output file (defaults to input file name)"
+    )
+    parser.add_argument("--overwrite", "-w", action="store_true", help="Overwrite the target file if it exists")
+    parser.add_argument("--clean", action="store_true", help="Remove the input file after successful conversion")
     args = parser.parse_args()
 
     try:
