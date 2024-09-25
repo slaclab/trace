@@ -275,7 +275,7 @@ class FormulaDialog(QDialog):
         """ Retrieve the formula and PV name and perform desired actions
          We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window"""
         formula = "f://" + self.field.text()
-        passed = self.curveModel.replaceToFormula(index = self.curveModel.index(self.parent().selected_index.row(), 0), formula = formula)
+        passed = self.curveModel.set_data(column_name="Channel",  curve=self.curveModel._plot._curves[self.parent().selected_index.row()], value=formula)
         if passed:
             self.field.setText("")
             self.accept()
