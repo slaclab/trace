@@ -5,11 +5,19 @@ repo_name: slaclab/trace
 nav:
     - Home: index.md
     - Installation: installation.md
+    - How To:
+        - Overview: how_to/overview.md
+        - Traces: how_to/traces.md
+        - Traces Table Menu: how_to/traces_table_menu.md
+        - Axes: how_to/axes.md
+        - Plot Config: how_to/plot_config.md
+        - Import/Export: how_to/io.md
+        - Convert Save Files: how_to/file_conversion.md
     - API Reference:
-        - Trace: trace.md
-        - Traces Table: traces_table.md
-        - Axis Table: axis_table.md
-        - Plot Config: plot_config.md
+        - Trace: api_reference/trace.md
+        - Traces Table: api_reference/traces_table.md
+        - Axis Table: api_reference/axis_table.md
+        - Plot Config: api_reference/plot_config.md
 theme:
   icon:
     repo: fontawesome/brands/github
@@ -40,4 +48,6 @@ markdown_extensions:
 plugins:
     - search
     - mkdocstrings:
-        default_handler: python
+        handlers:
+          python:
+            paths: [trace]
