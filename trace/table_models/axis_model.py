@@ -189,17 +189,15 @@ class ArchiverAxisModel(BasePlotAxesModel):
         super().removeAtIndex(index)
 
     def removeAxis(self, axisName: str) -> None:
-        """Wrapper to remove axis by name. Searches through axes, finds the
-        one with a matching name, then calls removeAtIndex.
+        """Wrapper to remove axis by name.
 
         Parameters
         ----------
         axisName : str
             The name of the axis to be removed.
         """
-        for i, axis in enumerate(self.plot._axes):
-            if axis.name == axisName:
-                self.removeAtIndex(self.index(i, 0))
+        axis_index = [a.name for a in self.plot._axes].index(axisName)
+        self.removeAtIndex(self.index(axis_index, 0))
 
     def setHidden(self, axis: BasePlotAxisItem, hidden: bool) -> None:
         """Hides the axis at the given table index.

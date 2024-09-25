@@ -305,12 +305,14 @@ class FormulaDialog(QDialog):
         """Set the curve in the curve model to use the entered formula. If the
         formula is invalid, then the dialog box is closed.
         """
+        row = self.parent().selected_index.row()
+        index = self.curveModel.index(row, 0)
+
         formula = "f://" + self.field.text()
-        passed = self.curveModel.set_data(
-            column_name="Channel",
-            curve=self.curveModel._plot._curves[self.parent().selected_index.row()],
-            value=formula,
-        )
+        formula = re.sub(r"\s+", "", formula)
+
+        passed = self.curveModel.setData(index, formula, Qt.EditRole)
+
         if passed:
             self.field.setText("")
             self.accept()
