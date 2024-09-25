@@ -280,7 +280,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
     @Slot(str)
     def setAxis(self, units: str, curve: BasePlotCurveItem):
         """When we receive a unit of the curve, we will connect it to the correct axis"""
-        index = self.index(self._plot._curves.index(curve),0)
+        index = self.index(self._plot._curves.index(curve), 0)
 
         self.parent().update()
         oldYAxis = curve.y_axis_name

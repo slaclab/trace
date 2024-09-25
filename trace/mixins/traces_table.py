@@ -309,7 +309,7 @@ class FormulaDialog(QDialog):
         passed = self.curveModel.set_data(
             column_name="Channel",
             curve=self.curveModel._plot._curves[self.parent().selected_index.row()],
-            value=formula
+            value=formula,
         )
         if passed:
             self.field.setText("")
