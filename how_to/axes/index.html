@@ -9,23 +9,25 @@
       
       
       
+        <link rel="prev" href="../traces_table_menu/">
       
-        <link rel="next" href="installation/">
+      
+        <link rel="next" href="../plot_config/">
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.37">
     
     
       
-        <title>Trace</title>
+        <title>Axes - Trace</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -44,9 +46,9 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -72,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#trace" class="md-skip">
+        <a href="#axes" class="md-skip">
           Skip to content
         </a>
       
@@ -86,7 +88,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="Trace" class="md-header__button md-logo" aria-label="Trace" data-md-component="logo">
+    <a href="../.." title="Trace" class="md-header__button md-logo" aria-label="Trace" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -106,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Axes
             
           </span>
         </div>
@@ -211,11 +213,9 @@
         
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="." class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
         
   
     
@@ -232,7 +232,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="installation/" class="md-tabs__link">
+      <a href="../../installation/" class="md-tabs__link">
         
   
     
@@ -247,11 +247,13 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="how_to/overview/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../overview/" class="md-tabs__link">
           
   
     
@@ -271,7 +273,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="api_reference/trace/" class="md-tabs__link">
+        <a href="../../api_reference/trace/" class="md-tabs__link">
           
   
     
@@ -306,7 +308,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="Trace" class="md-nav__button md-logo" aria-label="Trace" data-md-component="logo">
+    <a href="../.." title="Trace" class="md-nav__button md-logo" aria-label="Trace" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -333,19 +335,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -354,7 +347,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -366,7 +358,7 @@
   
   
     <li class="md-nav__item">
-      <a href="installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -383,8 +375,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -405,17 +399,20 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -426,7 +423,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How To
@@ -440,7 +437,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how_to/overview/" class="md-nav__link">
+      <a href="../overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -461,7 +458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how_to/traces/" class="md-nav__link">
+      <a href="../traces/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -482,7 +479,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how_to/traces_table_menu/" class="md-nav__link">
+      <a href="../traces_table_menu/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -500,10 +497,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="how_to/axes/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Axes
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -512,6 +529,53 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#adding-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Axes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deleting-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deleting Axes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hiding-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hiding Axes
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -524,7 +588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how_to/plot_config/" class="md-nav__link">
+      <a href="../plot_config/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -545,7 +609,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how_to/io/" class="md-nav__link">
+      <a href="../io/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -566,7 +630,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how_to/file_conversion/" class="md-nav__link">
+      <a href="../file_conversion/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -642,7 +706,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api_reference/trace/" class="md-nav__link">
+      <a href="../../api_reference/trace/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -663,7 +727,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api_reference/traces_table/" class="md-nav__link">
+      <a href="../../api_reference/traces_table/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -684,7 +748,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api_reference/axis_table/" class="md-nav__link">
+      <a href="../../api_reference/axis_table/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -705,7 +769,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api_reference/plot_config/" class="md-nav__link">
+      <a href="../../api_reference/plot_config/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -746,6 +810,41 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#adding-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Axes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deleting-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deleting Axes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hiding-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hiding Axes
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -762,8 +861,21 @@
   
 
 
-<h1 id="trace">Trace</h1>
-<p><a href="https://github.com/slaclab/trace">Trace</a> is a python application</p>
+<h1 id="axes">Axes</h1>
+<p>The Axes tab of the properties section is where users will be able to manage the axes on their plot. From adding/removing axes, hiding axes, or changing an axis' properties, users have plenty of control over the Y-Axes of their plot.</p>
+<p>While most X-Axis (timerange) controls should be conducted through the mouse, users can set their time range in the Axes tab as well. This can be done with the 2 datetime widgets at the top of the tab. They can be used to set an absolute date and time for either side of the X-Axis.</p>
+<p>Users can control which Y-Axis each curve is attached to from the Traces tab. <a href="../traces/#trace-properties">More information here</a>.</p>
+<h2 id="adding-axes">Adding Axes</h2>
+<p>Y-Axes should be added automatically, but users can add more as needed using the "Add Axis" button at the bottom of the section. By default, new axes will have these properties:
+- Named "Axis #" (where <code>#</code> is an incrementing number)
+- Oriented to the left
+- Auto Range enabled
+- Log Mode disabled
+- Not Hidden</p>
+<h2 id="deleting-axes">Deleting Axes</h2>
+<p>Users can remove axes by clicking the "Delete Row" button for the given axis in the rightmost column. Deleting an axis will remove the axis from both the table and the plot, as well as all of the traces attached to that axis.</p>
+<h2 id="hiding-axes">Hiding Axes</h2>
+<p>Users have the option to hide/show Y-Axes on the plot using the checkbox in the second to last column. By hiding a Y-Axis, all curves attached to that axis will be hidden as well.</p>
 
 
 
@@ -816,10 +928,10 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.top", "navigation.tabs", "navigation.indexes"], "search": "assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.top", "navigation.tabs", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.d6f25eb3.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d6f25eb3.min.js"></script>
       
     
   </body>
