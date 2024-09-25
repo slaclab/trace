@@ -188,8 +188,15 @@ class ArchiverAxisModel(BasePlotAxesModel):
             self.remove_curve.emit(curve)
         super().removeAtIndex(index)
 
-    def removeAxis(self, axisName: str):
-        """Wrapper to remove axis by name. Searches through axes, finds the one with a matching name, removes at index"""
+    def removeAxis(self, axisName: str) -> None:
+        """Wrapper to remove axis by name. Searches through axes, finds the
+        one with a matching name, then calls removeAtIndex.
+
+        Parameters
+        ----------
+        axisName : str
+            The name of the axis to be removed.
+        """
         for i, axis in enumerate(self.plot._axes):
             if axis.name == axisName:
                 self.removeAtIndex(self.index(i, 0))
@@ -200,7 +207,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
         Parameters
         ----------
         index : QModelIndex
-            An index in the row to be hidde.
+            An index in the row to be hidden.
         """
         # Hide the axis
         axis.setHidden(shouldHide=hidden)
