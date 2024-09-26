@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+
 import pytest
 
 if __name__ == "__main__":
@@ -13,7 +14,7 @@ if __name__ == "__main__":
 
     # Show coverage
     if "--show-cov" in args:
-        args.extend(["--cov=archive_viewer", "--cov-report", "term-missing"])
+        args.extend(["--cov=trace", "--cov-report", "term-missing"])
         args.remove("--show-cov")
 
     print("pytest arguments: {}".format(args))

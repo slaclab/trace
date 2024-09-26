@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    if: ${{ github.repository == 'slaclab/Archive-Viewer' }}
+    if: ${{ github.repository == 'slaclab/trace' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
