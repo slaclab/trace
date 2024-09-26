@@ -117,7 +117,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if sip.isdeleted(curve):
             return False
         if column_name == "Channel":
-            if re.search(r"[\s,]", value):
+            if re.search(r"[\n\r,]", value):
                 self.multiplePVInsert.emit(value)
                 return False
             # Check if this thing already in curves model
