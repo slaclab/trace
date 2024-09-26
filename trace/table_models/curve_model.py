@@ -63,10 +63,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         bool
             If the channel already exists in the model
         """
-        addresses = [c.address for c in self._plot._curves if hasattr(c, "address")]
-        formulas = [c.formula for c in self._plot._curves if hasattr(c, "formula")]
-
-        return key in addresses + formulas
+        for curve in self._plot._curves:
+            if hasattr(curve, "address") and curve.address == key:
+                return True
+            elif hasattr(curve, "formula") and curve.formula == key:
+                return True
+        return False
 
     def get_data(self, column_name: str, curve: ArchivePlotCurveItem) -> Any:
         """Get data from the model based on column name.
