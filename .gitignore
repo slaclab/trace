@@ -1,6 +1,7 @@
 # Config & Save files
 *.txt
 *.xml
+*.stp
 *.trc
 
 # Byte-compiled / optimized / DLL files
