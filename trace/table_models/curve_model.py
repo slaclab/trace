@@ -224,9 +224,20 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         logger.debug("Finished setting curve data")
         return ret_code
 
-    def flags(self, index):
+    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
         """Return flags that determine how users can interact with the items
         in the table. Disables checkboxes for invalid channels.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The index in the model that flags are being returned for
+
+        Returns
+        -------
+        Qt.ItemFlags
+            Returns the model's default flags, and if the column is Live Data or
+            Archive Data, then may also disable the index depending on channel status.
         """
         flags = super().flags(index)
 
