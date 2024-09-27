@@ -1360,7 +1360,9 @@ instead, but this opens a box that is a nicer UI for inputting a formula.</p>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
-<span class="normal">316</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">FormulaDialog</span><span class="p">(</span><span class="n">QDialog</span><span class="p">):</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">FormulaDialog</span><span class="p">(</span><span class="n">QDialog</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Formula Dialog - when a user right clicks on a row in the list of</span>
 <span class="sd">    curves, they have the option to input a formula. They could opt to type it</span>
 <span class="sd">    instead, but this opens a box that is a nicer UI for inputting a formula.</span>
@@ -1478,12 +1480,14 @@ instead, but this opens a box that is a nicer UI for inputting a formula.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the curve in the curve model to use the entered formula. If the</span>
 <span class="sd">        formula is invalid, then the dialog box is closed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">selected_index</span><span class="o">.</span><span class="n">row</span><span class="p">()</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
         <span class="n">formula</span> <span class="o">=</span> <span class="s2">&quot;f://&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
-        <span class="n">passed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span>
-            <span class="n">column_name</span><span class="o">=</span><span class="s2">&quot;Channel&quot;</span><span class="p">,</span>
-            <span class="n">curve</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">_plot</span><span class="o">.</span><span class="n">_curves</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">selected_index</span><span class="o">.</span><span class="n">row</span><span class="p">()],</span>
-            <span class="n">value</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">formula</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">formula</span><span class="p">)</span>
+
+        <span class="n">passed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="n">Qt</span><span class="o">.</span><span class="n">EditRole</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">passed</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
@@ -1531,17 +1535,21 @@ formula is invalid, then the dialog box is closed.</p>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
-<span class="normal">316</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">accept_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the curve in the curve model to use the entered formula. If the</span>
 <span class="sd">    formula is invalid, then the dialog box is closed.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">selected_index</span><span class="o">.</span><span class="n">row</span><span class="p">()</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
     <span class="n">formula</span> <span class="o">=</span> <span class="s2">&quot;f://&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
-    <span class="n">passed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span>
-        <span class="n">column_name</span><span class="o">=</span><span class="s2">&quot;Channel&quot;</span><span class="p">,</span>
-        <span class="n">curve</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">_plot</span><span class="o">.</span><span class="n">_curves</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">selected_index</span><span class="o">.</span><span class="n">row</span><span class="p">()],</span>
-        <span class="n">value</span><span class="o">=</span><span class="n">formula</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">formula</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">formula</span><span class="p">)</span>
+
+    <span class="n">passed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curveModel</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="n">Qt</span><span class="o">.</span><span class="n">EditRole</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">passed</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
@@ -2042,7 +2050,7 @@ implemented, but Formulae and PV search are.</p>
 <span class="sd">        data: str</span>
 <span class="sd">            The list of pvs in string format with any white space or comma separation&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Accepting PVs &quot;</span> <span class="o">+</span> <span class="n">data</span><span class="p">)</span>
-        <span class="n">channels</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\s,]+&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">channels</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\n\r,]+&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
             <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
             <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">curve_at_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
@@ -2384,7 +2392,7 @@ Resize the table to match the longest PV name/label</p>
 <span class="sd">    data: str</span>
 <span class="sd">        The list of pvs in string format with any white space or comma separation&quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Accepting PVs &quot;</span> <span class="o">+</span> <span class="n">data</span><span class="p">)</span>
-    <span class="n">channels</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\s,]+&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\n\r,]+&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
         <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">curve_at_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
