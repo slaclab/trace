@@ -42,12 +42,11 @@ class TracesTableMixin:
         self.menu = PVContextMenu(self)
         self.ui.traces_tbl.customContextMenuRequested.connect(self.custom_context_menu)
 
-        self.hdr = self.ui.traces_tbl.horizontalHeader()
-        self.hdr.setSectionResizeMode(QHeaderView.Stretch)
-        channel_col = self.curves_model.getColumnIndex("Channel")
-        self.hdr.setSectionResizeMode(channel_col, QHeaderView.ResizeToContents)
-        del_col = self.curves_model.getColumnIndex("")
-        self.hdr.setSectionResizeMode(del_col, QHeaderView.ResizeToContents)
+        hdr = self.ui.traces_tbl.horizontalHeader()
+        hdr.setSectionResizeMode(QHeaderView.Stretch)
+        for col_name in ("Channel", "Label", ""):
+            channel_col = self.curves_model.getColumnIndex(col_name)
+            hdr.setSectionResizeMode(channel_col, QHeaderView.ResizeToContents)
         self.setAcceptDrops(True)
         self.menu.archive_search.append_PVs_requested.connect(self.insertPVs)
         self.curves_model.multiplePVInsert.connect(self.insertPVs)
@@ -119,8 +118,6 @@ class TracesTableMixin:
             curve = self.curves_model.curve_at_index(index)
             self.curves_model.set_data(column_name="Channel", curve=curve, value=channel)
         self.ui.traces_tbl.update()
-        self.hdr.setSectionResizeMode(self.curves_model.getColumnIndex("Channel"), QHeaderView.ResizeToContents)
-        self.hdr.setSectionResizeMode(self.curves_model.getColumnIndex("Label"), QHeaderView.ResizeToContents)
 
     @Slot(QModelIndex)
     def update_index(self, index: QModelIndex) -> None:
