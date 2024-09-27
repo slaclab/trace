@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from functools import partial
 
 from qtpy import sip
-from qtpy.QtGui import QColor, QBrush
+from qtpy.QtGui import QBrush, QColor
 from qtpy.QtCore import Qt, Slot, Signal, QObject, QModelIndex
 
 from pydm.widgets.baseplot import BasePlot, BasePlotCurveItem
@@ -74,7 +74,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return True
         return False
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole=Qt.DisplayRole) -> Any:
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = Qt.DisplayRole) -> Any:
         """Get data from the model for a given index and a given data role. If
         the curve at the given index is invalid, the Channel column is turned red.
 
