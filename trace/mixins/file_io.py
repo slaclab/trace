@@ -57,8 +57,6 @@ class FileIOMixin:
         try:
             logger.debug(f"Attempting to import file: {file_name}")
             file_data = self.converter.import_file(file_name)
-            if self.converter.import_is_xml():
-                file_data = self.converter.convert_data(file_data)
             self.io_path = file_name.parent
         except FileNotFoundError as e:
             logger.error(e)
