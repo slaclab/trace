@@ -449,7 +449,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         [ch.disconnect() for ch in curve.channels() if ch]
         del curve
 
-        FormulaCurve.formula_invalid_signal.connect(partial(self.invalidFormula, header = rowName))
+        FormulaCurve.formula_invalid_signal.connect(partial(self.invalidFormula, header=rowName))
         FormulaCurve.live_channel_connection.connect(self.live_connection_slot)
         FormulaCurve.archive_channel_connection.connect(self.archive_connection_slot)
         FormulaCurve.connection_status_check()
