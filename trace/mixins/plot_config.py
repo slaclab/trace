@@ -44,19 +44,19 @@ class PlotConfigMixin:
         if "title" in config:
             self.ui.plot_title_edit.setText(config["title"])
         if "xGrid" in config:
-            self.ui.x_grid_chckbx.setChecked(config["xGrid"])
+            self.ui.x_grid_chckbx.setChecked(bool(config["xGrid"]))
         if "yGrid" in config:
-            self.ui.y_grid_chckbx.setChecked(config["yGrid"])
+            self.ui.y_grid_chckbx.setChecked(bool(config["yGrid"]))
         if "opacity" in config:
             self.ui.opacity_sldr.setValue(config["opacity"])
         if "backgroundColor" in config:
             self.background_color_button.color = QColor(config["backgroundColor"])
         if "legend" in config:
-            self.ui.legend_chckbx.setChecked(config["legend"])
+            self.ui.legend_chckbx.setChecked(bool(config["legend"]))
         if "mouseMode" in config:
             self.ui.mouse_mode_cmbbx.setCurrentIndex(int(config["mouseMode"] / 3))
         if "crosshair" in config:
-            self.ui.crosshair_chckbx.setChecked(config["crosshair"])
+            self.ui.crosshair_chckbx.setChecked(bool(config["crosshair"]))
         if "refreshInterval" in config:
             self.ui.refresh_interval_spnbx.setValue(config["refreshInterval"])
 
