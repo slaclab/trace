@@ -21,11 +21,15 @@ theme:
   icon:
     repo: fontawesome/brands/github
   name: material
+  include_navigation: true
+
+
 
   features:
     - navigation.top
     - navigation.tabs
     - navigation.indexes
+    - navigation.footer
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
