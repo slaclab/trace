@@ -15,11 +15,20 @@ Trace's save files are in JSON format as to be human readable/writeable and they
 
 ### Java Save Files
 
-Save files for the Java-based Archive Viewer can also be imported into Trace. They are hidden in the file explorer by default. To show them, click the dropdown at the bottom of the file explorer dialog labeled `Files of type:` and select the option for `Java Archive Viewer (*.xml)`. Now you should be see only directories and `.xml` files.
+Save files for the Java-based Archive Viewer can also be imported into Trace. They can be found in the import tool's file selection tool along with Trace's save files. Users can show only Java Archive Viewer files by changing the file format filter at the bottom of the dialog window.
 
 Trace will not save new files in the Java-based Archive Viewer's format, only as `.trc` files.
 
 Files can be converted en masse from the Java-based file format to Trace's formate using the [CLI file converter tool](file_conversion.md).
+
+
+### StripTool Save Files
+
+Save files for the StripTool can be converted using the same tool or imported directly into Trace. They can be found in the import tool's file selection tool alongside Trace's save files and the Java Archive Viewer's save files. Users can show only StripTool files by changing the file format filter at the bottom of the dialog window.
+
+Trace will not save new files in the Java-based Archive Viewer's format, only as `.trc` files.
+
+Files can be converted en masse from the StripTool file format to Trace's formate using the [CLI file converter tool](file_conversion.md).
 
 
 ### Note About Colors
