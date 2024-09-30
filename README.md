@@ -1,6 +1,6 @@
 # Trace
 
-trace is an PyDM-based application developed. trace has been built to replace the antiquated StripTool and Java Archive Viewer applications used to plot EPICS data. trace is a flexible, modern application for plotting live data (Channel Access or PV Access), and historical data from the EPICS Archive Appliance. With built in conveniences like an archived PV search, and designed to be easily launched from PyDM widgets, files, or the command line, trace will provide an improved user experience for accelerator staff. Trace is an open-source project.   
+trace is an PyDM-based application developed at SLAC National Accelerator Laboratory. trace has been built to replace the antiquated StripTool and Java Archive Viewer applications used to plot EPICS data. trace is a flexible, modern application for plotting live data (Channel Access or PV Access), and historical data from the EPICS Archive Appliance. With built in conveniences like an archived PV search, and designed to be easily launched from PyDM widgets, files, or the command line, trace will provide an improved user experience for accelerator staff. Trace is an open-source project.   
 
 For more information and a how to guide on trace see [the project's website](https://slaclab.github.io/trace/)
 <p align="center">
