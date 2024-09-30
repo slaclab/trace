@@ -244,7 +244,7 @@ class TraceFileConverter:
 
         # Convert all colors to a usable format
         for k, v in data_in["Color"].items():
-            color = self.xColor_to_qColor(*v)
+            color = self.xColor_to_qColor(v)
             data_in["Color"][k] = color.name()
 
         # Convert plot config
@@ -258,12 +258,7 @@ class TraceFileConverter:
         converted["time_axis"]["start"] = "-" + data_in["Time"]["Timespan"] + "s"
         converted["time_axis"]["end"] = "now"
 
-        # Convert y-axes
-        converted["y-axes"] = []
-        all_units = {c["Units"] for c in data_in["Curve"].values()}
-        for unit in all_units:
-            axis = {"name": unit, "label": unit, "orientation": "left"}
-            converted["y-axes"].append(axis)
+        y_axis_names = {}
 
         # Convert curves
         converted["curves"] = []
@@ -277,15 +272,26 @@ class TraceFileConverter:
             curve["color"] = data_in["Color"][color_key]
             curve["thresholdColor"] = data_in["Color"][color_key]
 
-            # Set logMode for curve's associated axis
-            curve["yAxisName"] = data["Units"]
-            if data["Scale"] == "1":
-                for ax in converted["y-axes"]:
-                    if ax["name"] == data["Units"]:
-                        ax["logMode"] = True
-                        break
+            # Set curve's axis to the curve's units
+            if "Units" not in data:
+                continue
+            unit = data["Units"]
+            curve["yAxisName"] = unit
+
+            # Set the associated axis' log mode
+            log_mode = data["Scale"] == "1"
+            if unit not in y_axis_names:
+                y_axis_names[unit] = []
+            y_axis_names[unit].append(log_mode)
 
             converted["curves"].append(curve)
+
+        # Convert y-axes
+        converted["y-axes"] = []
+        for axis_name, log_mode in y_axis_names.items():
+            axis = {"name": axis_name, "label": axis_name, "orientation": "left"}
+            axis["logMode"] = all(log_mode)
+            converted["y-axes"].append(axis)
 
         return converted
 
@@ -382,8 +388,17 @@ class TraceFileConverter:
 
         for line in stp_text.splitlines():
             line_split = line.split()
+            if not line_split:
+                continue
+
             key = line_split[0].removeprefix("Strip.")
-            val = line_split[1:] if len(line_split) > 2 else line_split[1]
+            val = None
+            if len(line_split) == 1:
+                val = ""
+            elif len(line_split) == 2:
+                val = line_split[1]
+            else:
+                val = line_split[1:]
 
             # Find which child dictionary should contain the key-value pair
             data_loc = extracted_data

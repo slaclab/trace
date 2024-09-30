@@ -45,7 +45,8 @@ class FileIOMixin:
                 self,
                 "Open Trace",
                 str(self.io_path),
-                "Trace Save File (*.trc);;Java Archive Viewer (*.xml);;All Files (*)",
+                "Trace Save File (*.trc *.xml *.stp);;Java Archive Viewer (*.xml);;"
+                + "StripTool File (*.stp);;All Files (*)",
             )
         file_name = Path(file_name)
         if not file_name.is_file():
