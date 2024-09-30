@@ -4,7 +4,6 @@ repo_name: slaclab/trace
 
 nav:
     - Home: index.md
-    - Installation: installation.md
     - How To:
         - Overview: how_to/overview.md
         - Traces: how_to/traces.md
