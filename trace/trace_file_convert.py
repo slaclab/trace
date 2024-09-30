@@ -6,7 +6,7 @@ import logging
 import xml.etree.ElementTree as ET
 from os import path, getenv
 from re import compile
-from typing import Dict, Union
+from typing import Dict, List, Union
 from pathlib import Path
 from argparse import Action, Namespace, ArgumentParser
 from datetime import datetime
@@ -50,6 +50,11 @@ class TraceFileConverter:
         with self.input_file.open() as f:
             return f.readline().startswith("<?xml")
 
+    def import_is_stp(self):
+        """Helper function to determine if the import file is a StripTool file."""
+        with self.input_file.open() as f:
+            return f.readline().startswith("StripConfig")
+
     def import_file(self, file_name: Union[str, Path] = None) -> Dict:
         """Import Archive Viewer save data from the provided file. The file
         should be one of two types: '.trc' or '.xml'. The data is returned as
@@ -70,15 +75,16 @@ class TraceFileConverter:
         if not self.input_file.is_file():
             raise FileNotFoundError(f"Data file not found: {self.input_file}")
 
-        with self.input_file.open() as f:
-            is_xml = f.readline().startswith("<?xml")
-
         text = self.input_file.read_text()
-        if is_xml:
+        if self.import_is_xml():
             etree = ET.ElementTree(ET.fromstring(text))
             self.stored_data = self.xml_to_dict(etree)
             if not (self.stored_data["pv"] or self.stored_data["formula"]):
                 raise FileNotFoundError(f"Incorrect input file format: {self.input_file}")
+            self.stored_data = self.convert_xml_data(self.stored_data)
+        elif self.import_is_stp():
+            self.stored_data = self.stp_to_dict(text)
+            self.stored_data = self.convert_stp_data(self.stored_data)
         else:
             self.stored_data = json.loads(text)
             if not self.stored_data["curves"]:
@@ -131,10 +137,10 @@ class TraceFileConverter:
         with open(self.output_file, "w") as f:
             json.dump(output_data, f, indent=4)
 
-    def convert_data(self, data_in: Dict = {}) -> Dict:
+    def convert_xml_data(self, data_in: Dict = {}) -> Dict:
         """Convert the inputted data from being formatted for the Java Archive
-        Viewer to a format used by the PyDM Archive Viewer. This is accomplished
-        by converting one dictionary structure to another.
+        Viewer to a format used by trace. This is accomplished by converting one
+        dictionary structure to another.
 
         Parameters
         ----------
@@ -144,7 +150,7 @@ class TraceFileConverter:
         Returns
         -------
         dict
-            The converted data in a format that can be used by the PyDM Archive Viewer
+            The converted data in a format that can be used by trace
         """
         if not data_in:
             data_in = self.stored_data
@@ -215,6 +221,79 @@ class TraceFileConverter:
 
         self.stored_data = converted_data
         return self.stored_data
+
+    def convert_stp_data(self, data_in: Dict = {}) -> Dict:
+        """Convert the inputted data from a format used by StripTool to a format
+        used by Trace. This is accomplished by converting one dictionary structure
+        to another.
+
+        Parameters
+        ----------
+        data_in : dict, optional
+            The input data to be converted, by default uses previously imported data
+
+        Returns
+        -------
+        dict
+            The converted data in a format that can be used by trace
+        """
+        if not data_in:
+            data_in = self.stored_data
+
+        converted = {"archiver_url": getenv("PYDM_ARCHIVER_URL")}
+
+        # Convert all colors to a usable format
+        for k, v in data_in["Color"].items():
+            color = self.xColor_to_qColor(v)
+            data_in["Color"][k] = color.name()
+
+        # Convert plot config
+        converted["plot"] = {}
+        converted["plot"]["xGrid"] = bool(data_in["Option"]["GridXon"])
+        converted["plot"]["yGrid"] = bool(data_in["Option"]["GridYon"])
+        converted["plot"]["backgroundColor"] = data_in["Color"]["Background"]
+
+        # Convert time_axis
+        converted["time_axis"] = {"name": "Main Time Axis", "location": "bottom"}
+        converted["time_axis"]["start"] = "-" + data_in["Time"]["Timespan"] + "s"
+        converted["time_axis"]["end"] = "now"
+
+        y_axis_names = {}
+
+        # Convert curves
+        converted["curves"] = []
+        converted["formula"] = []
+        for ind, data in data_in["Curve"].items():
+            curve = {}
+            curve["name"] = data["Name"]
+            curve["channel"] = data["Name"]
+
+            color_key = f"Color{int(ind) + 1}"
+            curve["color"] = data_in["Color"][color_key]
+            curve["thresholdColor"] = data_in["Color"][color_key]
+
+            # Set curve's axis to the curve's units
+            if "Units" not in data:
+                continue
+            unit = data["Units"]
+            curve["yAxisName"] = unit
+
+            # Set the associated axis' log mode
+            log_mode = data["Scale"] == "1"
+            if unit not in y_axis_names:
+                y_axis_names[unit] = []
+            y_axis_names[unit].append(log_mode)
+
+            converted["curves"].append(curve)
+
+        # Convert y-axes
+        converted["y-axes"] = []
+        for axis_name, log_mode in y_axis_names.items():
+            axis = {"name": axis_name, "label": axis_name, "orientation": "left"}
+            axis["logMode"] = all(log_mode)
+            converted["y-axes"].append(axis)
+
+        return converted
 
     @classmethod
     def reformat_date(cls, input_str: str) -> str:
@@ -292,6 +371,47 @@ class TraceFileConverter:
         return data_dict
 
     @staticmethod
+    def stp_to_dict(stp_text: str) -> Dict:
+        """Convert the StripTool file's text into a dictionary.
+
+        Parameters
+        ----------
+        stp_text : str
+            The full file text from the StripTool file
+
+        Returns
+        -------
+        dict
+            The data in a dictionary format
+        """
+        extracted_data = {}
+
+        for line in stp_text.splitlines():
+            line_split = line.split()
+            if not line_split:
+                continue
+
+            key = line_split[0].removeprefix("Strip.")
+            val = None
+            if len(line_split) == 1:
+                val = ""
+            elif len(line_split) == 2:
+                val = line_split[1]
+            else:
+                val = line_split[1:]
+
+            # Find which child dictionary should contain the key-value pair
+            data_loc = extracted_data
+            key_split = key.split(".")
+            for k in key_split[:-1]:
+                if k not in data_loc:
+                    data_loc[k] = {}
+                data_loc = data_loc[k]
+            data_loc[key_split[-1]] = val
+
+        return extracted_data
+
+    @staticmethod
     def get_plot_data(plot: PyDMTimePlot) -> dict:
         """Extract plot, axis, and curve data from a PyDMTimePlot object
 
@@ -365,6 +485,26 @@ class TraceFileConverter:
         return QColor(srgb)
 
     @staticmethod
+    def xColor_to_qColor(rgb: List[str]) -> QColor:
+        """Convert XColor values into QColors. Colors in StripTool files (*.stp)
+        are saved as XColors.
+
+        Parameters
+        ----------
+        rgb : list(str)
+            A list of strings containing the rgb values (0 <= rgb < 0xFFFF)
+
+        Returns
+        -------
+        QColor
+            A QColor object storing the color described in the string
+        """
+        for i in range(3):
+            rgb[i] = int(rgb[i]) // 256
+
+        return QColor(*rgb)
+
+    @staticmethod
     def remove_null_values(dict_in: dict) -> dict:
         """Remove all key-value pairs from a given dictionary where the value is None
 
@@ -391,7 +531,7 @@ def main(input_file: Path = None, output_file: Path = None, overwrite: bool = Fa
         raise FileNotFoundError("Input file not provided")
     elif not input_file.is_file():
         raise FileNotFoundError(f"Data file not found: {input_file}")
-    elif not input_file.match("*.xml"):
+    elif not (input_file.match("*.xml") or input_file.match("*.stp")):
         raise FileNotFoundError(f"Incorrect input file format: {input_file}")
 
     # Check that the output file is usable
@@ -410,7 +550,6 @@ def main(input_file: Path = None, output_file: Path = None, overwrite: bool = Fa
     converter = TraceFileConverter()
 
     converter.import_file(input_file)
-    converter.convert_data()
     converter.export_file(output_file)
 
     # Remove the input file if requested

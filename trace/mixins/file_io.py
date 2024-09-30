@@ -45,7 +45,8 @@ class FileIOMixin:
                 self,
                 "Open Trace",
                 str(self.io_path),
-                "Trace Save File (*.trc);;Java Archive Viewer (*.xml);;All Files (*)",
+                "Trace Save File (*.trc *.xml *.stp);;Java Archive Viewer (*.xml);;"
+                + "StripTool File (*.stp);;All Files (*)",
             )
         file_name = Path(file_name)
         if not file_name.is_file():
@@ -57,8 +58,6 @@ class FileIOMixin:
         try:
             logger.debug(f"Attempting to import file: {file_name}")
             file_data = self.converter.import_file(file_name)
-            if self.converter.import_is_xml():
-                file_data = self.converter.convert_data(file_data)
             self.io_path = file_name.parent
         except FileNotFoundError as e:
             logger.error(e)
