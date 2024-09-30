@@ -21,9 +21,6 @@ theme:
   icon:
     repo: fontawesome/brands/github
   name: material
-  include_navigation: true
-
-
 
   features:
     - navigation.top
