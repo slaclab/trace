@@ -8,21 +8,8 @@ def test_default_curve(qtrace: TraceDisplay):
     curves_model = qtrace.curves_model
 
     row_actual = []
-    row_expected = [
-        QVariant(),
-        Qt.Checked,
-        Qt.Checked,
-        "",
-        "#008cf9",
-        "Axis 1",
-        "Direct",
-        "Solid",
-        "1px",
-        "None",
-        "10px",
-        Qt.Checked,
-        None,
-    ]
+    row_expected = [QVariant(), Qt.Checked, Qt.Checked, "", "#008cf9", "Axis 1",
+                    "Direct", "Solid", "1px", "None", "10px", Qt.Checked, None]  # fmt: skip
 
     for col in range(curves_model.columnCount()):
         index = curves_model.index(0, col)

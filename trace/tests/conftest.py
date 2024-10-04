@@ -1,8 +1,8 @@
 import pytest
-from main import TraceDisplay
 
 from pydm.application import PyDMApplication
 
+from main import TraceDisplay
 from trace_file_convert import TraceFileConverter
 
 

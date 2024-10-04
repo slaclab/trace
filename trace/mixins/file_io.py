@@ -6,9 +6,9 @@ from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
 from qtpy.QtWidgets import QFileDialog, QMessageBox
-from trace_file_convert import TraceFileConverter
 
 from config import logger, save_file_dir
+from trace_file_convert import TraceFileConverter
 
 
 class FileIOMixin:
