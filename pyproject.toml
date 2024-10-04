@@ -12,7 +12,7 @@ extend_skip = ["__init__.py"]
 length_sort = true
 known_third_party = ["qtpy", "pyqtgraph"]
 known_first_party = ["pydm"]
-known_local_folder = ["config", "mixins", "styles", "table_models", "widgets", "trace_file_convert"]
+known_local_folder = ["main", "config", "mixins", "styles", "table_models", "widgets", "trace_file_convert"]
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
 
 [tool.pytest.ini_options]

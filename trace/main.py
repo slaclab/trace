@@ -6,13 +6,13 @@ from subprocess import run
 
 from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import QLabel, QApplication, QAbstractButton
-from trace_file_convert import PathAction
 
 from pydm import Display
 
 from config import logger, datetime_pv
 from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
 from styles import CenterCheckStyle
+from trace_file_convert import PathAction
 
 
 class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
@@ -65,6 +65,8 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
     def configure_app(self):
         """UI changes to be made to the PyDMApplication"""
         app = QApplication.instance()
+        if not app.main_window:
+            return
 
         # Hide navigation bar by default (can be shown in menu bar)
         app.main_window.toggle_nav_bar(False)
