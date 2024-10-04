@@ -3,7 +3,6 @@ import pytest
 from pydm.application import PyDMApplication
 
 from main import TraceDisplay
-from trace_file_convert import TraceFileConverter
 
 
 @pytest.fixture(scope="session")
@@ -36,14 +35,3 @@ def qtrace(qapp):
     An instance of TraceDisplay.
     """
     yield TraceDisplay()
-
-
-@pytest.fixture(scope="class")
-def converter():
-    """Fixture for an instance of the TraceFileConverter.
-
-    Yields
-    ------
-    An instance of TraceFileConverter.
-    """
-    yield TraceFileConverter()

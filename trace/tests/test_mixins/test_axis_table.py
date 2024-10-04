@@ -20,3 +20,11 @@ def test_axis_table_delegates(qtrace: TraceDisplay):
     assert type(table_view.itemDelegateForColumn(min_range_col)) is ScientificNotationDelegate
     assert type(table_view.itemDelegateForColumn(max_range_col)) is ScientificNotationDelegate
     assert type(table_view.itemDelegateForColumn(delete_col)) is DeleteRowDelegate
+
+
+def test_set_time_axis_range(qtrace: TraceDisplay):
+    pass
+
+
+def test_set_axis_datetimes(qtrace: TraceDisplay):
+    pass

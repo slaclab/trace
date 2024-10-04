@@ -1,4 +1,17 @@
+import pytest
+
 from trace_file_convert import TraceFileConverter
+
+
+@pytest.fixture(scope="class")
+def converter():
+    """Fixture for an instance of the TraceFileConverter.
+
+    Yields
+    ------
+    An instance of TraceFileConverter.
+    """
+    yield TraceFileConverter()
 
 
 def test_import(converter: TraceFileConverter):
