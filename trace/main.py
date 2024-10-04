@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 from logging import Handler, LogRecord
 from subprocess import run
 
+from qtpy.sip import isdeleted
 from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import QLabel, QApplication, QAbstractButton
 
@@ -214,6 +215,17 @@ class LoggingHandler(Handler):
         self.logging_lbl = logging_lbl
 
     def emit(self, record: LogRecord):
+        """Any logs from the logger will be displayed on the logging label. If
+        the log level is greater than 20 (INFO), then the level will be shown as
+        well. Also checks if the logging label has been deleted.
+
+        Parameters
+        ----------
+        record : LogRecord
+            The logger's log record.
+        """
+        if isdeleted(self.logging_lbl):
+            return
         log = record.msg
         if record.levelno > 20:
             log = f"[{record.levelname}] - {log}"
