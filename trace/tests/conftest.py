@@ -22,7 +22,7 @@ def qapp(qapp_args):
     if "pytest-qt-qapp" == qapp_args[0]:
         qapp_args.remove("pytest-qt-qapp")
 
-    yield PyDMApplication(use_main_window=True, *qapp_args)
+    yield PyDMApplication(use_main_window=False, *qapp_args)
 
 
 @pytest.fixture(scope="class")

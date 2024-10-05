@@ -17,3 +17,19 @@ def test_default_axis(qtrace: TraceDisplay):
         row_actual.append(data)
 
     assert row_actual == row_expected
+
+
+def test_append_axis(qtrace: TraceDisplay):
+    pass
+
+
+def test_remove_axis(qtrace: TraceDisplay):
+    pass
+
+
+def test_set_model_axes(qtrace: TraceDisplay):
+    pass
+
+
+def test_alter_axis_data(qtrace: TraceDisplay):
+    pass

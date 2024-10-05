@@ -28,3 +28,15 @@ def test_traces_table_delegates(qtrace: TraceDisplay):
     assert type(table_view.itemDelegateForColumn(symbol_col)) is ComboBoxDelegate
     assert type(table_view.itemDelegateForColumn(symbol_size_col)) is ComboBoxDelegate
     assert type(table_view.itemDelegateForColumn(delete_col)) is DeleteRowDelegate
+
+
+def test_drag_drop(qtrace: TraceDisplay):
+    pass
+
+
+def test_context_menu(qtrace: TraceDisplay):
+    pass
+
+
+def test_formula_dialog(qtrace: TraceDisplay):
+    pass
