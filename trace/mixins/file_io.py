@@ -1,6 +1,6 @@
 from os import getenv
 from re import compile
-from typing import Tuple
+from typing import Tuple, Union
 from pathlib import Path
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
@@ -37,7 +37,7 @@ class FileIOMixin:
             logger.error(e)
             self.export_save_file()
 
-    def import_save_file(self, file_name: str | Path = None) -> None:
+    def import_save_file(self, file_name: Union[str, Path] = None) -> None:
         """Prompt the user for which config file to import from"""
         # Get the save file from the user
         if not file_name:
