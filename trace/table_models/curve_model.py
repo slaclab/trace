@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Union, Optional
 from functools import partial
 
 from qtpy import sip
@@ -541,7 +541,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
         return next_header
 
-    def curve_at_index(self, index: int | QModelIndex) -> ArchivePlotCurveItem:
+    def curve_at_index(self, index: Union[int, QModelIndex]) -> ArchivePlotCurveItem:
         """Return the curve item at the given index.
 
         Parameters

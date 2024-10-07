@@ -1,6 +1,6 @@
 import os
 import argparse
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 from logging import Handler, LogRecord
 from subprocess import run
 
@@ -100,7 +100,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.ui.ftr_url_lbl.setText(os.getenv("PYDM_ARCHIVER_URL"))
         self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
 
-    def parse_macros_and_args(self, macros: Dict[str, str | list], args: List[str]) -> Tuple[str, list]:
+    def parse_macros_and_args(self, macros: Dict[str, Union[str, list]], args: List[str]) -> Tuple[str, list]:
         """Parse user provided macros and args into lists of PVs to use on
         startup or which file to import on startup
 
