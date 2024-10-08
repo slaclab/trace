@@ -1,13 +1,13 @@
 # Trace
 
-trace is an PyDM-based application developed at SLAC National Accelerator Laboratory. trace has been built to replace the antiquated StripTool and Java Archive Viewer applications used to plot EPICS data. trace is a flexible, modern application for plotting live data (Channel Access or PV Access), and historical data from the EPICS Archive Appliance. With built in conveniences like an archived PV search, and designed to be easily launched from PyDM widgets, files, or the command line, trace will provide an improved user experience for accelerator staff. Trace is an open-source project.   
+trace is an PyDM-based application developed at SLAC National Accelerator Laboratory. trace has been built to replace the antiquated StripTool and Java Archive Viewer applications used to plot EPICS data. trace is a flexible, modern application for plotting live data (Channel Access or PV Access), and historical data from the EPICS Archive Appliance. With built in conveniences like an archived PV search, and designed to be easily launched from PyDM widgets, files, or the command line, trace will provide an improved user experience for accelerator staff. Trace is an open-source project.
 
 For more information and a how to guide on trace see [the project's website](https://slaclab.github.io/trace/)
 <p align="center">
-  <a href="https://github.com/slaclab/trace/issues/new?assignees=&labels=&template=bug-report.md&title=">Report bug</a>
+  <a href="https://github.com/slaclab/trace/issues/new?template=bug-report.yml">Report bug</a>
   ·
-  <a href="https://github.com/slaclab/trace/issues/new?template=feature-request.md&labels=request">Request feature</a>
-  
+  <a href="https://github.com/slaclab/trace/issues/new?template=feature-request.yml">Request feature</a>
+
 </p>
 
 ## Contributing to Trace
@@ -42,7 +42,7 @@ Thank you for your interest in contributing to **Trace**! Your contributions hel
      ```
 
 5. **Create a Pull Request (PR)**
-   - When you feel like your feature is ready to be merged into Trace make a PR and request feedback from the Maintainers. 
+   - When you feel like your feature is ready to be merged into Trace make a PR and request feedback from the Maintainers.
    - Provide a descriptive title and detailed description of your changes.
 
 ### Pull Request Requirements
