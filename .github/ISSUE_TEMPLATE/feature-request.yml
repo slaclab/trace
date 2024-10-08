@@ -1,15 +1,15 @@
 name: Feature request
 description: Suggest a new feature or enhancement for the project.
 title: "[FEATURE] - "
-labels: enhancement
-assignees: ''
+labels:
+  - enhancement
 
 body:
   - type: markdown
     attributes:
       value: |
         **Please provide a clear and concise description of the feature you'd like to propose.**
-        
+
   - type: textarea
     id: problem
     attributes:
