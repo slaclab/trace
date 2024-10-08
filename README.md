@@ -4,9 +4,9 @@ trace is an PyDM-based application developed at SLAC National Accelerator Labora
 
 For more information and a how to guide on trace see [the project's website](https://slaclab.github.io/trace/)
 <p align="center">
-  <a href="https://github.com/slaclab/trace/issues/new?template=bug-report.yml">Report bug</a>
+  <a href="https://github.com/slaclab/trace/issues/new?labels=bug&projects=&template=bug-report.yml&title=%5BBUG%5D+-+">Report bug</a>
   ·
-  <a href="https://github.com/slaclab/trace/issues/new?template=feature-request.yml">Request feature</a>
+  <a href="https://github.com/slaclab/trace/issues/new?labels=enhancement&projects=&template=feature-request.yml&title=%5BFEATURE%5D+-+">Request feature</a>
 
 </p>
 
