@@ -41,11 +41,12 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             self.ui.month_scale_btn: 2628300,
             self.ui.cursor_scale_btn: -1,
         }
-        self.ui.timespan_btns.buttonClicked.connect(self.set_plot_timerange)
+        self.ui.timespan_btns.buttonToggled.connect(self.set_plot_timerange)
 
-        # Click "Cursor" button on plot-mouse interaction
-        plot_viewbox = self.ui.main_plot.plotItem.vb
-        plot_viewbox.sigRangeChangedManually.connect(self.ui.cursor_scale_btn.click)
+        # Toggle "Cursor" button on plot-mouse interaction
+        multi_axis_plot = self.ui.main_plot.plotItem
+        multi_axis_plot.vb.menu = None
+        multi_axis_plot.sigXRangeChangedManually.connect(self.ui.cursor_scale_btn.toggle)
 
         # Parse macros & arguments, then include them in startup
         input_file, startup_pvs = self.parse_macros_and_args(macros, args)
@@ -180,8 +181,8 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.axis_table_model.set_model_axes()
         self.curves_model.set_model_curves()
 
-    @Slot(QAbstractButton)
-    def set_plot_timerange(self, button: QAbstractButton) -> None:
+    @Slot(QAbstractButton, bool)
+    def set_plot_timerange(self, button: QAbstractButton, toggled: bool) -> None:
         """Slot to be called when a timespan setting button is pressed.
         This will enable autoscrolling along the x-axis and disable mouse
         controls. If the "Cursor" button is pressed, then autoscrolling is
@@ -192,7 +193,12 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         button : QAbstractButton
             The timespan setting button pressed. Determines which timespan
             to set.
+        toggled : bool
+            Whether or not the associated button is toggled or not.
         """
+        if not toggled:
+            return
+
         logger.debug("Setting plot timerange")
         if button not in self.button_spans:
             logger.error(f"{button} is not a valid timespan button")
