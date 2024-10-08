@@ -1,8 +1,7 @@
 name: Bug report
 description: Report an issue or bug with the project.
 title: "[BUG] - "
-labels:
-  - bug
+labels: ["bug"]
 
 body:
   - type: markdown
@@ -16,6 +15,8 @@ body:
       label: Describe the bug
       description: A clear and concise description of what the bug is.
       placeholder: The bug occurs when...
+    validations:
+      required: true
 
   - type: textarea
     id: expected_behavior
@@ -23,6 +24,8 @@ body:
       label: Expected behavior
       description: A clear and concise description of what you expected to happen.
       placeholder: I expected...
+    validations:
+      required: true
 
   - type: textarea
     id: steps_to_reproduce
@@ -34,6 +37,8 @@ body:
         2. Click on...
         3. Scroll down to...
         4. See error
+    validations:
+      required: true
 
   - type: textarea
     id: possible_solution
@@ -41,6 +46,8 @@ body:
       label: Possible solution (optional)
       description: Suggest a fix or reason for the bug, if you have any.
       placeholder: A possible solution could be...
+    validations:
+      required: false
 
   - type: input
     id: platform
@@ -48,9 +55,11 @@ body:
       label: My platform
       description: Provide details about your system.
       placeholder: |
-        * OS Version: ...
-        * Python Version: ...
-        * Package Versions: ...
+        OS Version: ...
+        Python Version: ...
+        Package Versions: ...
+    validations:
+      required: false
 
   - type: textarea
     id: additional_context
@@ -58,3 +67,5 @@ body:
       label: Additional context
       description: Add any other context, links, or information about the bug.
       placeholder: Include logs, screenshots, or other details here.
+    validations:
+      required: false
