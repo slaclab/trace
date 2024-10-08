@@ -666,6 +666,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#main.LoggingHandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      LoggingHandler
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LoggingHandler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#main.LoggingHandler.emit" class="md-nav__link">
+    <span class="md-ellipsis">
+      emit
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="emit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#main.LoggingHandler.emit--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#main.TraceDisplay" class="md-nav__link">
     <span class="md-ellipsis">
       TraceDisplay
@@ -906,6 +945,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#main.LoggingHandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      LoggingHandler
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LoggingHandler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#main.LoggingHandler.emit" class="md-nav__link">
+    <span class="md-ellipsis">
+      emit
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="emit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#main.LoggingHandler.emit--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#main.TraceDisplay" class="md-nav__link">
     <span class="md-ellipsis">
       TraceDisplay
@@ -1080,6 +1158,145 @@
 
 
 
+<h2 id="main.LoggingHandler" class="doc doc-heading">
+            <code>LoggingHandler</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="logging.Handler">Handler</span></code></p>
+
+
+              <details class="quote">
+                <summary>Source code in <code>trace/main.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LoggingHandler</span><span class="p">(</span><span class="n">Handler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logging_lbl</span><span class="p">:</span> <span class="n">QLabel</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logging_lbl</span> <span class="o">=</span> <span class="n">logging_lbl</span>
+
+    <span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Any logs from the logger will be displayed on the logging label. If</span>
+<span class="sd">        the log level is greater than 20 (INFO), then the level will be shown as</span>
+<span class="sd">        well. Also checks if the logging label has been deleted.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        record : LogRecord</span>
+<span class="sd">            The logger&#39;s log record.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">isdeleted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logging_lbl</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">msg</span>
+        <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="si">}</span><span class="s2">] - </span><span class="si">{</span><span class="n">log</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logging_lbl</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="main.LoggingHandler.emit" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">emit</span><span class="p">(</span><span class="n">record</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Any logs from the logger will be displayed on the logging label. If
+the log level is greater than 20 (INFO), then the level will be shown as
+well. Also checks if the logging label has been deleted.</p>
+<h5 id="main.LoggingHandler.emit--parameters">Parameters</h5>
+<p>record : LogRecord
+    The logger's log record.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>trace/main.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Any logs from the logger will be displayed on the logging label. If</span>
+<span class="sd">    the log level is greater than 20 (INFO), then the level will be shown as</span>
+<span class="sd">    well. Also checks if the logging label has been deleted.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    record : LogRecord</span>
+<span class="sd">        The logger&#39;s log record.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">isdeleted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logging_lbl</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">msg</span>
+    <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="si">}</span><span class="s2">] - </span><span class="si">{</span><span class="n">log</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logging_lbl</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h2 id="main.TraceDisplay" class="doc doc-heading">
             <code>TraceDisplay</code>
 
@@ -1094,8 +1311,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>trace/main.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 18</span>
-<span class="normal"> 19</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 19</span>
 <span class="normal"> 20</span>
 <span class="normal"> 21</span>
 <span class="normal"> 22</span>
@@ -1288,7 +1504,10 @@
 <span class="normal">209</span>
 <span class="normal">210</span>
 <span class="normal">211</span>
-<span class="normal">212</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TraceDisplay</span><span class="p">(</span><span class="n">Display</span><span class="p">,</span> <span class="n">TracesTableMixin</span><span class="p">,</span> <span class="n">AxisTableMixin</span><span class="p">,</span> <span class="n">FileIOMixin</span><span class="p">,</span> <span class="n">PlotConfigMixin</span><span class="p">):</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TraceDisplay</span><span class="p">(</span><span class="n">Display</span><span class="p">,</span> <span class="n">TracesTableMixin</span><span class="p">,</span> <span class="n">AxisTableMixin</span><span class="p">,</span> <span class="n">FileIOMixin</span><span class="p">,</span> <span class="n">PlotConfigMixin</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ui_filename</span><span class="o">=</span><span class="vm">__file__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.py&quot;</span><span class="p">,</span> <span class="s2">&quot;.ui&quot;</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TraceDisplay</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span> <span class="n">ui_filename</span><span class="o">=</span><span class="n">ui_filename</span><span class="p">)</span>
         <span class="c1"># Set up PyDMApplication</span>
@@ -1339,6 +1558,8 @@
     <span class="k">def</span> <span class="nf">configure_app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;UI changes to be made to the PyDMApplication&quot;&quot;&quot;</span>
         <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">app</span><span class="o">.</span><span class="n">main_window</span><span class="p">:</span>
+            <span class="k">return</span>
 
         <span class="c1"># Hide navigation bar by default (can be shown in menu bar)</span>
         <span class="n">app</span><span class="o">.</span><span class="n">main_window</span><span class="o">.</span><span class="n">toggle_nav_bar</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
@@ -1371,7 +1592,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">ftr_url_lbl</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;PYDM_ARCHIVER_URL&quot;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">ftr_time_lbl</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="s2">&quot;ca://&quot;</span> <span class="o">+</span> <span class="n">datetime_pv</span>
 
-    <span class="k">def</span> <span class="nf">parse_macros_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macros</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">parse_macros_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macros</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse user provided macros and args into lists of PVs to use on</span>
 <span class="sd">        startup or which file to import on startup</span>
 
@@ -1513,8 +1734,7 @@
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">66</span>
-<span class="normal">67</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">67</span>
 <span class="normal">68</span>
 <span class="normal">69</span>
 <span class="normal">70</span>
@@ -1531,9 +1751,14 @@
 <span class="normal">81</span>
 <span class="normal">82</span>
 <span class="normal">83</span>
-<span class="normal">84</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">configure_app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">configure_app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;UI changes to be made to the PyDMApplication&quot;&quot;&quot;</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">app</span><span class="o">.</span><span class="n">main_window</span><span class="p">:</span>
+        <span class="k">return</span>
 
     <span class="c1"># Hide navigation bar by default (can be shown in menu bar)</span>
     <span class="n">app</span><span class="o">.</span><span class="n">main_window</span><span class="o">.</span><span class="n">toggle_nav_bar</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
@@ -1575,12 +1800,12 @@
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">174</span>
 <span class="normal">175</span>
-<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">git_version</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the current git tag for the project&quot;&quot;&quot;</span>
     <span class="n">project_directory</span> <span class="o">=</span> <span class="vm">__file__</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1607,9 +1832,9 @@
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">menu_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">menu_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add export &amp; import functionality to File menu&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;Export&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">export_save_file</span><span class="p">,</span> <span class="s2">&quot;Ctrl+S&quot;</span><span class="p">),</span> <span class="s2">&quot;Import&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">import_save_file</span><span class="p">,</span> <span class="s2">&quot;Ctrl+L&quot;</span><span class="p">)}</span>
 </code></pre></div></td></tr></table></div>
@@ -1642,10 +1867,7 @@ args : List[str]
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
@@ -1710,7 +1932,10 @@ args : List[str]
 <span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
-<span class="normal">169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">parse_macros_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macros</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">],</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">parse_macros_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macros</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse user provided macros and args into lists of PVs to use on</span>
 <span class="sd">    startup or which file to import on startup</span>
 
@@ -1800,11 +2025,11 @@ args : List[str]
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">resetPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reset the Axis model and the Curve model to empty states&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">axis_table_model</span><span class="o">.</span><span class="n">set_model_axes</span><span class="p">()</span>
@@ -1831,20 +2056,20 @@ username, PID, git version, Archiver URL, and current datetime</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">86</span>
-<span class="normal">87</span>
-<span class="normal">88</span>
-<span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span>
-<span class="normal">96</span>
-<span class="normal">97</span>
-<span class="normal">98</span>
-<span class="normal">99</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_footer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_footer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set footer information for application. Includes logging, nodename,</span>
 <span class="sd">    username, PID, git version, Archiver URL, and current datetime</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1888,10 +2113,7 @@ toggled : bool
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">187</span>
 <span class="normal">188</span>
 <span class="normal">189</span>
 <span class="normal">190</span>
@@ -1916,7 +2138,10 @@ toggled : bool
 <span class="normal">209</span>
 <span class="normal">210</span>
 <span class="normal">211</span>
-<span class="normal">212</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QAbstractButton</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QAbstractButton</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">set_plot_timerange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">button</span><span class="p">:</span> <span class="n">QAbstractButton</span><span class="p">,</span> <span class="n">toggled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Slot to be called when a timespan setting button is pressed.</span>
 <span class="sd">    This will enable autoscrolling along the x-axis and disable mouse</span>
