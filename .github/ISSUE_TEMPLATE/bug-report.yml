@@ -1,15 +1,15 @@
 name: Bug report
 description: Report an issue or bug with the project.
 title: "[BUG] - "
-labels: bug
-assignees: ''
+labels:
+  - bug
 
 body:
   - type: markdown
     attributes:
       value: |
         **Please provide a clear and concise description of the bug.**
-        
+
   - type: textarea
     id: description
     attributes:
