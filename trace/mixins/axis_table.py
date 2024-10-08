@@ -51,8 +51,7 @@ class AxisTableMixin:
         delete_row_del = DeleteRowDelegate(self.ui.time_axis_tbl)
         self.ui.time_axis_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
 
-    Slot(object)
-
+    @Slot(object)
     def set_time_axis_range(self, raw_range: Tuple[QDateTime, QDateTime] = (None, None)) -> None:
         """PyQT Slot to set the plot's X-Axis range. This slot should be
         triggered on QDateTimeEdit value change.

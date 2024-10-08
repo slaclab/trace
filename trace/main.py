@@ -1,18 +1,19 @@
 import os
 import argparse
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 from logging import Handler, LogRecord
 from subprocess import run
 
+from qtpy.sip import isdeleted
 from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import QLabel, QApplication, QAbstractButton
-from trace_file_convert import PathAction
 
 from pydm import Display
 
 from config import logger, datetime_pv
 from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
 from styles import CenterCheckStyle
+from trace_file_convert import PathAction
 
 
 class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
@@ -66,6 +67,8 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
     def configure_app(self):
         """UI changes to be made to the PyDMApplication"""
         app = QApplication.instance()
+        if not app.main_window:
+            return
 
         # Hide navigation bar by default (can be shown in menu bar)
         app.main_window.toggle_nav_bar(False)
@@ -98,7 +101,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.ui.ftr_url_lbl.setText(os.getenv("PYDM_ARCHIVER_URL"))
         self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
 
-    def parse_macros_and_args(self, macros: Dict[str, str | list], args: List[str]) -> Tuple[str, list]:
+    def parse_macros_and_args(self, macros: Dict[str, Union[str, list]], args: List[str]) -> Tuple[str, list]:
         """Parse user provided macros and args into lists of PVs to use on
         startup or which file to import on startup
 
@@ -218,6 +221,17 @@ class LoggingHandler(Handler):
         self.logging_lbl = logging_lbl
 
     def emit(self, record: LogRecord):
+        """Any logs from the logger will be displayed on the logging label. If
+        the log level is greater than 20 (INFO), then the level will be shown as
+        well. Also checks if the logging label has been deleted.
+
+        Parameters
+        ----------
+        record : LogRecord
+            The logger's log record.
+        """
+        if isdeleted(self.logging_lbl):
+            return
         log = record.msg
         if record.levelno > 20:
             log = f"[{record.levelname}] - {log}"

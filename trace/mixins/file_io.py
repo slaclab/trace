@@ -1,14 +1,14 @@
+import datetime
 from os import getenv
 from re import compile
-from typing import Tuple
+from typing import Tuple, Union
 from pathlib import Path
-from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
 from qtpy.QtWidgets import QFileDialog, QMessageBox
-from trace_file_convert import TraceFileConverter
 
 from config import logger, save_file_dir
+from trace_file_convert import TraceFileConverter
 
 
 class FileIOMixin:
@@ -37,7 +37,7 @@ class FileIOMixin:
             logger.error(e)
             self.export_save_file()
 
-    def import_save_file(self, file_name: str | Path = None) -> None:
+    def import_save_file(self, file_name: Union[str, Path] = None) -> None:
         """Prompt the user for which config file to import from"""
         # Get the save file from the user
         if not file_name:
@@ -147,7 +147,7 @@ class IOTimeParser:
         return bool(found)
 
     @classmethod
-    def relative_to_delta(cls, time: str) -> timedelta:
+    def relative_to_delta(cls, time: str) -> datetime.timedelta:
         """Convert the given string containing a relative time into a
         datetime.timedelta
 
@@ -161,7 +161,7 @@ class IOTimeParser:
         datetime.timedelta
             A duration expressing the difference between two datetimes
         """
-        td = timedelta()
+        td = datetime.timedelta()
         negative = True
         for token in cls.relative_re.findall(time):
             logger.debug(f"Processing relative time token: {token}")
@@ -173,24 +173,24 @@ class IOTimeParser:
 
             unit = token[-1]
             if unit == "s":
-                td += timedelta(seconds=number)
+                td += datetime.timedelta(seconds=number)
             elif unit == "m":
-                td += timedelta(minutes=number)
+                td += datetime.timedelta(minutes=number)
             elif unit == "H":
-                td += timedelta(hours=number)
+                td += datetime.timedelta(hours=number)
             elif unit == "w":
-                td += timedelta(weeks=number)
+                td += datetime.timedelta(weeks=number)
             elif unit in "yMd":
                 if unit == "y":
                     number *= 365
                 elif unit == "M":
                     number *= 30
-                td += timedelta(days=number)
+                td += datetime.timedelta(days=number)
         logger.debug(f"Relative time '{time}' as delta: {td}")
         return td
 
     @classmethod
-    def set_time_on_datetime(cls, dt: datetime, time_str: str) -> datetime:
+    def set_time_on_datetime(cls, dt: datetime.datetime, time_str: str) -> datetime.datetime:
         """Set an absolute time on a datetime object
 
         Parameters
@@ -219,7 +219,7 @@ class IOTimeParser:
         return dt
 
     @classmethod
-    def parse_times(cls, start_str: str, end_str: str) -> Tuple[datetime, datetime]:
+    def parse_times(cls, start_str: str, end_str: str) -> Tuple[datetime.datetime, datetime.datetime]:
         """Convert 2 strings containing a start and end date & time, return the
         values' datetime objects. The strings can be formatted as either absolute
         times or relative times. Both are needed as relative times may be relative
@@ -244,7 +244,7 @@ class IOTimeParser:
         """
         start_dt = start_delta = None
         end_dt = end_delta = None
-        basetime = datetime.now()
+        basetime = datetime.datetime.now()
 
         # Process the end time string first to determine
         # if the basetime is the start time, end time, or 'now'
@@ -255,11 +255,11 @@ class IOTimeParser:
 
             # end_delta >= 0 --> the basetime is start time, so are processed after the start time
             # end_delta <  0 --> the basetime is 'now'
-            if end_delta < timedelta():
+            if end_delta < datetime.timedelta():
                 end_dt = basetime + end_delta
                 end_dt = cls.set_time_on_datetime(end_dt, end_str)
         elif cls.is_absolute(end_str):
-            end_dt = datetime.fromisoformat(end_str)
+            end_dt = datetime.datetime.fromisoformat(end_str)
             basetime = end_dt
         else:
             raise ValueError("Time Axis end value is in an unexpected format.")
@@ -269,18 +269,18 @@ class IOTimeParser:
             start_delta = cls.relative_to_delta(start_str)
 
             # start_delta >= 0 --> raise ValueError; this isn't allowed
-            if start_delta < timedelta():
+            if start_delta < datetime.timedelta():
                 start_dt = basetime + start_delta
                 start_dt = cls.set_time_on_datetime(start_dt, start_str)
             else:
                 raise ValueError("Time Axis start value cannot be a relative time and be positive.")
         elif cls.is_absolute(start_str):
-            start_dt = datetime.fromisoformat(start_str)
+            start_dt = datetime.datetime.fromisoformat(start_str)
         else:
             raise ValueError("Time Axis start value is in an unexpected format.")
 
         # If the end time is relative and end_delta >= 0 --> start time is the base
-        if end_delta and end_delta >= timedelta():
+        if end_delta and end_delta >= datetime.timedelta():
             basetime = start_dt
             end_dt = end_delta + basetime
             end_dt = cls.set_time_on_datetime(end_dt, end_str)
