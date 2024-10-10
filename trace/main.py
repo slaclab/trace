@@ -9,6 +9,7 @@ from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import QLabel, QApplication, QAbstractButton
 
 from pydm import Display
+from pydm.utilities.macro import parse_macro_string
 
 from config import logger, datetime_pv
 from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
@@ -123,16 +124,18 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
 
         # Construct an argument parser for args
         trace_parser = argparse.ArgumentParser(
-            description="Trace\nThis is a PyDM application " + "used to display archived and live pv data.",
+            prog="trace",
+            description="Trace\nThis is a PyDM application used to display archived and live pv data.",
             formatter_class=argparse.RawTextHelpFormatter,
         )
+        trace_parser.add_argument("-V", "--version", action="version", version="%(prog)s " + self.git_version())
         trace_parser.add_argument(
             "-i",
             "--input_file",
             action=PathAction,
             type=str,
             default="",
-            help="Absolute file path to import from;\n" + "Alternatively can be provided as INPUT_FILE macro",
+            help="Absolute file path to import from\nAlternatively can be provided as INPUT_FILE macro",
         )
         trace_parser.add_argument(
             "-p",
@@ -140,7 +143,19 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             type=str,
             nargs="*",
             default=[],
-            help="List of PVs to show on startup;\n" + "Alternatively can be provided as PV or PVS macros",
+            help="Space-separated list of PVs to show on startup\nFormulas should be passed without spaces: "
+            + "f://{A}+{B}\nAlternatively can be provided as PV or PVS macros",
+        )
+        trace_parser.add_argument(
+            "-m",
+            "--macro",
+            type=str,
+            default="",
+            help="Mimic PyDM macro replacements to use, in JSON object format. Reminder: JSON\nrequires double quotes "
+            + 'for strings, so you should wrap this whole argument in\nsingle quotes. Example: -m \'{"sector": "LI25", '
+            + '"facility": "LCLS"}\'--or--\nspecify macro replacements as KEY=value pairs using a comma as delimiter If'
+            + "\nyou want to uses spaces after the delimiters or around the = signs, wrap the\nentire set with quotes "
+            + 'Example: -m "sector = LI25, facility=LCLS"',
         )
 
         # Parse arguments and ignore unknowns
@@ -149,6 +164,11 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             if not u:
                 continue
             logger.warning(f"Not using unknown arguments: {u}")
+
+        # Parse any macros passed into trace
+        if trace_args.macro:
+            parsed_macros = parse_macro_string(trace_args.macro)
+            macros.update(**parsed_macros)
 
         # Get the file to import from if one is provided. Prioritize args over macro
         input_file = trace_args.input_file

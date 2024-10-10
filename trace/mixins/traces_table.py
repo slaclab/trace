@@ -112,7 +112,7 @@ class TracesTableMixin:
         data: str
             The list of pvs in string format with any white space or comma separation"""
         logger.info("Accepting PVs " + data)
-        channels = re.split(r"[\n\r,]+", data)
+        channels = re.split(r"[\s,]+", data)
         for channel in channels:
             index = -1
             curve = self.curves_model.curve_at_index(index)

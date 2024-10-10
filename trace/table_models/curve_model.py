@@ -152,7 +152,12 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         if sip.isdeleted(curve):
             return False
         if column_name == "Channel":
-            if re.search(r"[\n\r,]", value):
+            # If we are changing the channel, then we need to check the current type, and the type we're going to
+            value_is_formula = value.startswith("f://")
+            curve_is_formula = isinstance(curve, FormulaCurveItem)
+            index = self.index(self._plot._curves.index(curve), 0)
+
+            if not value_is_formula and re.search(r"[\s,]", value):
                 self.multiplePVInsert.emit(value)
                 return False
             # Check if this thing already in curves model
@@ -161,10 +166,6 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 return False
 
             curve.show()
-            # If we are changing the channel, then we need to check the current type, and the type we're going to
-            value_is_formula = value.startswith("f://")
-            curve_is_formula = isinstance(curve, FormulaCurveItem)
-            index = self.index(self._plot._curves.index(curve), 0)
 
             if value_is_formula and not curve_is_formula:
                 # Regardless of starting point, going to a formula is handled in this one function
