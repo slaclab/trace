@@ -583,22 +583,26 @@ def main(input_file: List[Path] = None, output_file: List[Path] = None, overwrit
     """
     converter = TraceFileConverter()
 
+    # Get a zip object where every input_file has an associated output_file
+    file_match = zip_longest(input_file, output_file)
+    if len(input_file) < len(output_file):
+        file_match = zip(input_file, output_file)
+
     # Iterate through all provided input and output file names
-    for file_in, file_out in zip_longest(input_file, output_file):
+    for file_in, file_out in file_match:
         try:
             convert(converter, file_in, file_out, overwrite)
+
+            # Remove the input file if requested; skipped if conversion fails
+            if clean:
+                file_in.unlink()
+                logger.debug(f"Removing input file: {file_in.name}")
         except BaseException as e:
             error_message = "Failed: " + file_in.name
             if file_out:
                 error_message += " --> " + file_out.name
             error_message += f": {e}"
             logger.error(error_message)
-
-    # Remove the input file if requested
-    if clean:
-        for file in input_file:
-            file.unlink()
-            logger.debug(f"Removing input file: {file}")
 
 
 class PathAction(Action):
