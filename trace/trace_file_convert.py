@@ -10,6 +10,7 @@ from typing import Dict, List, Union
 from pathlib import Path
 from argparse import Action, Namespace, ArgumentParser
 from datetime import datetime
+from itertools import zip_longest
 from collections import OrderedDict
 
 from qtpy.QtGui import QColor
@@ -269,13 +270,14 @@ class TraceFileConverter:
             curve["channel"] = data["Name"]
 
             color_key = f"Color{int(ind) + 1}"
-            curve["color"] = data_in["Color"][color_key]
-            curve["thresholdColor"] = data_in["Color"][color_key]
+            if color_key in data_in["Color"]:
+                curve["color"] = data_in["Color"][color_key]
+                curve["thresholdColor"] = data_in["Color"][color_key]
 
             # Set curve's axis to the curve's units
             if "Units" not in data:
                 continue
-            unit = data["Units"]
+            unit = "".join(data["Units"])
             curve["yAxisName"] = unit
 
             # Set the associated axis' log mode
@@ -525,7 +527,21 @@ class TraceFileConverter:
         return dict_out
 
 
-def main(input_file: Path = None, output_file: Path = None, overwrite: bool = False, clean: bool = False):
+def convert(converter: TraceFileConverter, input_file: Path = None, output_file: Path = None, overwrite: bool = False):
+    """Individually convert the provided input file into the expected output file. If requested,
+    overwrite the existing output file if it exists already.
+
+    Parameters
+    ----------
+    converter : TraceFileConverter
+        The TraceFileConverter object to use for the conversion.
+    input_file : List[Path]
+        The user provided input file to be converted
+    output_file : List[Path], optional
+        The user provided output file name to use during conversion, by default None
+    overwrite : bool, optional
+        Whether or not to overwrite the existing output file, by default False
+    """
     # Check that the input file is usable
     if not input_file:
         raise FileNotFoundError("Input file not provided")
@@ -544,29 +560,57 @@ def main(input_file: Path = None, output_file: Path = None, overwrite: bool = Fa
 
     # Check if file exists, and if it does if the overwrite flag is used
     if output_file.is_file() and not overwrite:
-        raise FileNotFoundError(f"Output file exists but overwrite not enabled: {output_file}")
-
-    # Complete the requested conversion
-    converter = TraceFileConverter()
+        raise FileExistsError(f"Output file exists but overwrite not enabled: {output_file}")
 
     converter.import_file(input_file)
     converter.export_file(output_file)
 
+
+def main(input_file: List[Path] = None, output_file: List[Path] = None, overwrite: bool = False, clean: bool = False):
+    """Convert all provided input files into the expected output files. If requested,
+    overwrite the existing output files and remove any leftover input files.
+
+    Parameters
+    ----------
+    input_file : List[Path]
+        The user provided input files to be converted
+    output_file : List[Path], optional
+        The user provided output file names to use during conversion, by default None
+    overwrite : bool, optional
+        Whether or not to overwrite the existing output files, by default False
+    clean : bool, optional
+        Whether or not to remove the input files after conversion, by default False
+    """
+    converter = TraceFileConverter()
+
+    # Iterate through all provided input and output file names
+    for file_in, file_out in zip_longest(input_file, output_file):
+        try:
+            convert(converter, file_in, file_out, overwrite)
+        except BaseException as e:
+            error_message = "Failed: " + file_in.name
+            if file_out:
+                error_message += " --> " + file_out.name
+            error_message += f": {e}"
+            logger.error(error_message)
+
     # Remove the input file if requested
     if clean:
-        input_file.unlink()
-        logger.debug(f"Removing input file: {input_file}")
-
-    return 0
+        for file in input_file:
+            file.unlink()
+            logger.debug(f"Removing input file: {file}")
 
 
 class PathAction(Action):
     def __call__(self, parser: ArgumentParser, namespace: Namespace, values: str, option_string: str = None) -> None:
         """Convert filepath string from argument into  a pathlib.Path object"""
-        new_path = path.expandvars(values)
-        new_path = Path(new_path).expanduser()
-        new_path = new_path.resolve()
-        setattr(namespace, self.dest, new_path)
+        new_paths = []
+        for file_path in values:
+            new_path = path.expandvars(file_path)
+            new_path = Path(new_path).expanduser()
+            new_path = new_path.resolve()
+            new_paths.append(new_path)
+        setattr(namespace, self.dest, new_paths)
 
 
 if __name__ == "__main__":
@@ -574,9 +618,18 @@ if __name__ == "__main__":
         prog="Trace File Converter",
         description="Convert files used by the Java Archive" " Viewer to a file format that can be used with Trace.",
     )
-    parser.add_argument("input_file", action=PathAction, type=str, help="Path to the file to be converted")
     parser.add_argument(
-        "--output_file", "-o", action=PathAction, type=str, help="Path to the output file (defaults to input file name)"
+        "input_file", action=PathAction, type=str, nargs="*", help="Path to the file(s) to be converted"
+    )
+    parser.add_argument(
+        "--output_file",
+        "-o",
+        action=PathAction,
+        type=str,
+        nargs="*",
+        default=[],
+        help="Path to the output file(s) (defaults to input file name); "
+        + "The number of output_files must match the number of input_files if any are provided",
     )
     parser.add_argument("--overwrite", "-w", action="store_true", help="Overwrite the target file if it exists")
     parser.add_argument("--clean", action="store_true", help="Remove the input file after successful conversion")
