@@ -1,6 +1,6 @@
 # CLI File Converter Tool
 
-Included in this application is a tool for converting files from the Archive Viewer's format into Trace's format. The tool can be found at `trace/trace_file_converter.py` and can be called directly from the command-line. This allows users to convert their files without having to open Trace.
+Included in this application is a tool for converting files from the Archive Viewer's format or StripTool's format into Trace's format. The tool can be found at `trace/trace_file_converter.py` and can be called directly from the command-line. This allows users to convert their files without having to open Trace.
 
 
 
@@ -15,16 +15,19 @@ The file converter tool takes in a few optional arguments to give the user more 
 
 #### Input File
 
-The only positional argument is the file to be converted, labeled `input_file`. This should be provided as a path to the file, either relative or absolute. The conversion will fail if the file does not exist or does not use the `.xml` file extension or if it's incorrectly formatted.
+The only positional argument is the file to be converted, labeled `input_file`. This should be provided as a path to the file, either relative or absolute. The conversion will fail if the file does not exist or does not use the `.xml` or `.stp` file extension or if it's incorrectly formatted.
 
-Example: `python trace_file_convert.py examples/FormulaExample.trc`
+Users can also provide multiple files to be converted at once. If any file(s) fail the conversion, individual error messages are provided so that users know which to look at.
+
+Examples: `trace_file_convert.py examples/xml_conversion.xml`
+`trace_file_convert.py stp_files/*.stp`
 
 
 ### Optional Arguments
 
 #### Output File: -o, --output_file
 
-Users can use this argument to pass the name and path the converted file should be saved as. If not provided, the new file will be the same as the input file. A file extension does not need to be provided in the new name. The conversion fails if the provided output file name has a file extension and it is not `.trc`.
+Users can use this argument to pass the name and path the converted file should be saved as. If not provided, the new file will be the same as the input file. A file extension does not need to be provided in the new name. The conversion fails if the provided output file name has a file extension and it is not `.trc`. If converting a batch of files, the user can provide multiple output file names to use.
 
 Example: `python trace_file_convert.py examples/FormulaExample.trc -o some_file.trc`
 
