@@ -158,11 +158,13 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             "--macro",
             type=str,
             default="",
-            help="Mimic PyDM macro replacements to use, in JSON object format. Reminder: JSON\n"
-            + "requires double quotes for strings, so you should wrap this whole argument in\n"
-            + "single quotes. --or-- Specify macro replacements as KEY=value pairs using a\n"
-            + "comma as delimiter If you want to uses spaces after the delimiters or around\n"
-            + "the = signs, wrap the entire set with quotes .",
+            help="Mimic PyDM macro replacements to use. Should be in JSON object format."
+            + "\nJSON Formatting Reminder:"
+            + "\n\tJSON requires double quotes for strings, so you should wrap this"
+            + "\n\twhole argument in single quotes.\n\t--or--"
+            + "\n\tSpecify macro replacements as KEY=value pairs using a comma as a"
+            + "\n\tdelimiter. If you want to uses spaces after the delimiters or around"
+            + "\n\tthe '=' signs, wrap the entire set with quotes.",
         )
 
         # Parse arguments and ignore unknowns
