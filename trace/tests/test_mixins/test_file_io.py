@@ -1,17 +1,28 @@
 import datetime
-from json import dumps
+from json import dumps, loads
 from unittest import mock
 
 import pytest
+from qtpy.QtWidgets import QMessageBox
 
-from config import logger
 from mixins.file_io import IOTimeParser
 from trace_file_convert import TraceFileConverter
 
 FAKE_TIME = datetime.datetime(2024, 6, 30)
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture
+def mock_qtrace(qtrace):
+    """Fixture to set up common mocks for qtrace."""
+    qtrace.axis_table_model.set_model_axes = mock.Mock()
+    qtrace.curves_model.set_model_curves = mock.Mock()
+    qtrace.plot_setup = mock.Mock()
+    QMessageBox.warning = mock.Mock(return_value=QMessageBox.Yes)
+
+    yield qtrace
+
+
+@pytest.fixture
 def time_parser():
     """Fixture for an instance of the IOTimeParser.
 
@@ -76,7 +87,7 @@ def test_export_save_file_success(mock_get_save_name, qtrace, tmpdir):
 
 
 @mock.patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
-def test_export_save_file_dir(mock_get_save_name, qtrace, tmpdir):
+def test_export_save_file_dir(mock_get_save_name, qtrace, mock_logger, tmpdir):
     """Test TraceDisplay.export_save_file() is interrupted when the provided filename
     is a directory.
 
@@ -86,8 +97,10 @@ def test_export_save_file_dir(mock_get_save_name, qtrace, tmpdir):
         Mock qtpy.QtWidgets.QFileDialog.getSaveFileName to return an expected file name
     qtrace : fixture
         Instance of TraceDisplay for application testing
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
     tmpdir : fixture
-         A fixture which will provide a temporary directory unique to each test function
+        A fixture which will provide a temporary directory unique to each test function
 
     Expectations
     ------------
@@ -95,15 +108,14 @@ def test_export_save_file_dir(mock_get_save_name, qtrace, tmpdir):
     """
     # Construct testcase & mocks
     mock_get_save_name.return_value = (tmpdir.strpath, None)
-    logger.warning = mock.Mock()
 
     qtrace.export_save_file()
-    logger.warning.assert_called_once_with("No file name provided to export save file to")
+    mock_logger.warning.assert_called_once_with("No file name provided to export save file to")
     assert not tmpdir.isfile()
 
 
 @mock.patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
-def test_export_save_file_invalid_extension(mock_get_save_name, qtrace, tmpdir):
+def test_export_save_file_invalid_extension(mock_get_save_name, qtrace, mock_logger, tmpdir):
     """Test TraceDisplay.export_save_file() is interrupted when the provided filename
     has an extension other than *.trc . Needed to make a *.trc file after to prevent
     a recursive loop.
@@ -114,8 +126,10 @@ def test_export_save_file_invalid_extension(mock_get_save_name, qtrace, tmpdir):
         Mock qtpy.QtWidgets.QFileDialog.getSaveFileName to return an expected file name
     qtrace : fixture
         Instance of TraceDisplay for application testing
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
     tmpdir : fixture
-         A fixture which will provide a temporary directory unique to each test function
+        A fixture which will provide a temporary directory unique to each test function
 
     Expectations
     ------------
@@ -125,26 +139,24 @@ def test_export_save_file_invalid_extension(mock_get_save_name, qtrace, tmpdir):
     file_csv = tmpdir / "test_export_save_file_invalid_extension.csv"
     file_trc = tmpdir / "test_export_save_file_invalid_extension.trc"
     mock_get_save_name.side_effect = [(file_csv.strpath, None), (file_trc.strpath, None)]
-    logger.error = mock.Mock()
 
     qtrace.export_save_file()
-    logger.error.assert_called_once_with("Incorrect output file format: .csv")
+    mock_logger.error.assert_called_once_with("Incorrect output file format: .csv")
     assert not file_csv.isfile()
     assert file_trc.isfile()
 
 
-@mock.patch("qtpy.QtWidgets.QFileDialog.getOpenFileName")
 @pytest.mark.parametrize(("test_file_ext"), [".trc", ".xml", ".stp"])
-def test_import_save_file_success(mock_get_open_name, qtrace, test_file_ext):
+def test_import_save_file_success(mock_qtrace, get_test_file, test_file_ext):
     """Test TraceDisplay.import_save_file() successfully opens a save file and
     attempts to setup the application correctly.
 
     Parameters
     ----------
-    mock_get_open_name : mock.patch
-        Mock qtpy.QtWidgets.QFileDialog.getOpenFileName to return an expected file name
-    qtrace : fixture
-        Instance of TraceDisplay for application testing
+    mock_qtrace : fixture
+        Instance of TraceDisplay for application testing; some methods are mocked
+    get_test_file : fixture
+        A fixture used to get test files from the test_data directory
     test_file_ext : str
         The file extension to import, all test save files are named the same aside from the extension
 
@@ -152,33 +164,31 @@ def test_import_save_file_success(mock_get_open_name, qtrace, test_file_ext):
     ------------
     TraceDisplay and TraceFileConverter will import the given file and update the application models.
     """
-    # Set up test and mocks
-    test_filename = __file__.rsplit("/", 2)[0] + "/test_data/test_file" + test_file_ext
-    mock_get_open_name.return_value = (test_filename, None)
-    qtrace.axis_table_model.set_model_axes = mock.Mock()
-    qtrace.curves_model.set_model_curves = mock.Mock()
-    qtrace.plot_setup = mock.Mock()
+    test_filename = get_test_file("test_file" + test_file_ext)
 
-    qtrace.import_save_file()
+    with mock.patch("qtpy.QtWidgets.QFileDialog.getOpenFileName") as mock_get_open_file_name:
+        mock_get_open_file_name.return_value = (test_filename, None)
+        mock_qtrace.import_save_file()
 
     # Check that mocks were called the correct amount
-    qtrace.axis_table_model.set_model_axes.assert_called_once()
-    qtrace.curves_model.set_model_curves.assert_called_once()
-    qtrace.plot_setup.assert_called_once()
+    mock_qtrace.axis_table_model.set_model_axes.assert_called_once()
+    mock_qtrace.curves_model.set_model_curves.assert_called_once()
+    mock_qtrace.plot_setup.assert_called_once()
 
 
-@mock.patch("qtpy.QtWidgets.QFileDialog.getOpenFileName")
 @pytest.mark.parametrize(("test_file_name"), ["/test_data", "/test_data/not_a_file.trc"])
-def test_import_save_file_directory(mock_get_open_name, qtrace, test_file_name):
+def test_import_save_file_directory(mock_qtrace, mock_logger, get_test_file, test_file_name):
     """Test TraceDisplay.import_save_file() is interrupted when the provided filename
     is either a directory or a nonexistent file.
 
     Parameters
     ----------
-    mock_get_open_name : mock.patch
-        Mock qtpy.QtWidgets.QFileDialog.getOpenFileName to return an expected file name
-    qtrace : fixture
-        Instance of TraceDisplay for application testing
+    mock_qtrace : fixture
+        Instance of TraceDisplay for application testing; some methods are mocked
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
+    get_test_file : fixture
+        A fixture used to get test files from the test_data directory
     test_file_name : str
         The file name to test, should be directory or nonexistent file
 
@@ -186,35 +196,32 @@ def test_import_save_file_directory(mock_get_open_name, qtrace, test_file_name):
     ------------
     The logger gives an warning and quits early.
     """
-    # Set up test and mocks
-    test_filename = __file__.rsplit("/", 2)[0] + test_file_name
-    mock_get_open_name.return_value = (test_filename, None)
-    qtrace.axis_table_model.set_model_axes = mock.Mock()
-    qtrace.curves_model.set_model_curves = mock.Mock()
-    qtrace.plot_setup = mock.Mock()
-    logger.warning = mock.Mock()
+    test_filename = get_test_file(test_file_name)
 
-    qtrace.import_save_file()
+    with mock.patch("qtpy.QtWidgets.QFileDialog.getOpenFileName") as mock_get_open_file_name:
+        mock_get_open_file_name.return_value = (test_filename, None)
+        mock_qtrace.import_save_file()
 
     # Check that mocks were called the correct amount
-    qtrace.axis_table_model.set_model_axes.assert_not_called()
-    qtrace.curves_model.set_model_curves.assert_not_called()
-    qtrace.plot_setup.assert_not_called()
-    logger.warning.assert_called_once_with(f"Attempted import is not a file: {test_filename}")
+    mock_qtrace.axis_table_model.set_model_axes.assert_not_called()
+    mock_qtrace.curves_model.set_model_curves.assert_not_called()
+    mock_qtrace.plot_setup.assert_not_called()
+    mock_logger.warning.assert_called_once_with(f"Attempted import is not a file: {test_filename}")
 
 
-@mock.patch("qtpy.QtWidgets.QFileDialog.getOpenFileName")
-@pytest.mark.parametrize(("test_file_name"), ["/test_data/test_file_no_curves.trc", "/test_data/test_file_no_pvs.xml"])
-def test_import_save_file_invalid(mock_get_open_name, qtrace, test_file_name):
+@pytest.mark.parametrize(("test_file_name"), ["test_file_no_curves.trc", "test_file_no_pvs.xml"])
+def test_import_save_file_invalid(mock_qtrace, mock_logger, get_test_file, test_file_name):
     """Test TraceDisplay.import_save_file() is interrupted when the provided file
     contains no curves if it's a *.trc file or pvs if it's a *.xml file.
 
     Parameters
     ----------
-    mock_get_open_name : mock.patch
-        Mock qtpy.QtWidgets.QFileDialog.getOpenFileName to return an expected file name
-    qtrace : fixture
-        Instance of TraceDisplay for application testing
+    mock_qtrace : fixture
+        Instance of TraceDisplay for application testing; some methods are mocked
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
+    get_test_file : fixture
+        A fixture used to get test files from the test_data directory
     test_file_name : str
         The file name to test, should be directory or nonexistent file
 
@@ -223,53 +230,96 @@ def test_import_save_file_invalid(mock_get_open_name, qtrace, test_file_name):
     The logger gives an error and prompts the user to select another file.
     """
     # Set up test and mocks
-    test_filename = __file__.rsplit("/", 2)[0] + test_file_name
-    known_good_file = __file__.rsplit("/", 2)[0] + "/test_data/test_file.trc"
-    mock_get_open_name.side_effect = [(test_filename, None), (known_good_file, None)]
-    qtrace.axis_table_model.set_model_axes = mock.Mock()
-    qtrace.curves_model.set_model_curves = mock.Mock()
-    qtrace.plot_setup = mock.Mock()
-    logger.error = mock.Mock()
+    test_filename = get_test_file(test_file_name)
+    known_good_file = get_test_file("test_file.trc")
 
-    qtrace.import_save_file()
+    with mock.patch("qtpy.QtWidgets.QFileDialog.getOpenFileName") as mock_get_open_file_name:
+        mock_get_open_file_name.side_effect = [(test_filename, None), (known_good_file, None)]
+        mock_qtrace.import_save_file()
 
     # Check that mocks were called the correct amount
-    qtrace.axis_table_model.set_model_axes.assert_called_once()
-    qtrace.curves_model.set_model_curves.assert_called_once()
-    qtrace.plot_setup.assert_called_once()
-    logger.error.assert_called_once_with(f"Incorrect input file format: {test_filename}")
+    mock_qtrace.axis_table_model.set_model_axes.assert_called_once()
+    mock_qtrace.curves_model.set_model_curves.assert_called_once()
+    mock_qtrace.plot_setup.assert_called_once()
+    mock_logger.error.assert_called_once_with(f"Incorrect input file format: {test_filename}")
 
 
-def test_import_save_file_bad_time(qtrace):
+def test_import_save_file_bad_time(mock_qtrace, mock_logger, get_test_file):
     """Test TraceDisplay.import_save_file() is interrupted when the provided filename
     has x-axis times that are not parsable.
 
     Parameters
     ----------
-    qtrace : fixture
-        Instance of TraceDisplay for application testing
+    mock_qtrace : fixture
+        Instance of TraceDisplay for application testing; some methods are mocked
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
+    get_test_file : fixture
+        A fixture used to get test files from the test_data directory
 
     Expectations
     ------------
     A QMessageBox should be shown for the user to decide whether or not to continue.
     """
-    pass
+    # Create good data and bad data; TraceFileConverter.import_file returns bad_data then good_data
+    test_filename = get_test_file("test_file.trc")
+    good_data = loads(test_filename.read_text())
+    bad_data = loads(test_filename.read_text())
+    bad_data["time_axis"]["start"] = "6/15/2024"
+    bad_data["time_axis"]["end"] = "now + 15h"
+
+    with mock.patch("qtpy.QtWidgets.QFileDialog.getOpenFileName") as mock_get_open_file_name:
+        with mock.patch("trace_file_convert.TraceFileConverter.import_file") as mock_import_file:
+            mock_get_open_file_name.return_value = (test_filename, None)
+            mock_import_file.side_effect = (bad_data, good_data)
+            mock_qtrace.import_save_file()
+
+    # Check that mocks were called the correct amount
+    mock_qtrace.axis_table_model.set_model_axes.assert_called_once()
+    mock_qtrace.curves_model.set_model_curves.assert_called_once()
+    mock_qtrace.plot_setup.assert_called_once()
+    mock_logger.error.assert_called_once_with("Time Axis end value is in an unexpected format.")
 
 
-def test_import_save_file_bad_hostname(qtrace):
+@mock.patch("qtpy.QtWidgets.QMessageBox.warning", return_value=QMessageBox.No)
+def test_import_save_file_bad_hostname(mock_messagebox_warning, mock_qtrace, mock_logger, get_test_file):
     """Test TraceDisplay.import_save_file() is interrupted when the provided filename
     has a different Archiver URL than expected.
 
     Parameters
     ----------
-    qtrace : fixture
-        Instance of TraceDisplay for application testing
+    mock_messagebox_warning : mock.patch
+        Mock qtpy.QtWidgets.QMessageBox.warning to return an expected button press
+    mock_qtrace : fixture
+        Instance of TraceDisplay for application testing; some methods are mocked
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
+    get_test_file : fixture
+        A fixture used to get test files from the test_data directory
 
     Expectations
     ------------
     A QMessageBox should be shown for the user to decide whether or not to continue.
     """
-    pass
+    # Create bad data; TraceFileConverter.import_file will return bad_data
+    test_filename = get_test_file("test_file.trc")
+    bad_data = loads(test_filename.read_text())
+    bad_data["archiver_url"] = "http://not.a.real.url"
+
+    with mock.patch("qtpy.QtWidgets.QFileDialog.getOpenFileName") as mock_get_open_file_name:
+        with mock.patch("trace_file_convert.TraceFileConverter.import_file") as mock_import_file:
+            mock_get_open_file_name.return_value = (test_filename, None)
+            mock_import_file.return_value = bad_data
+            mock_qtrace.import_save_file()
+
+    # Check that mocks were called the correct amount
+    mock_qtrace.axis_table_model.set_model_axes.assert_not_called()
+    mock_qtrace.curves_model.set_model_curves.assert_not_called()
+    mock_qtrace.plot_setup.assert_not_called()
+    mock_logger.warning.assert_called_once_with(
+        "Attempting to import save file using different Archiver URL: not.a.real.url"
+    )
+    mock_messagebox_warning.assert_called_once()
 
 
 @pytest.mark.parametrize(

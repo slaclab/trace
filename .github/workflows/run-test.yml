@@ -28,12 +28,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Setup conda
+    - name: Setup Miniforge
       uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: ${{ matrix.python-version }}
-        miniforge-variant: Mambaforge
         miniforge-version: latest
+        use-mamba: true
+        python-version: ${{ matrix.python-version }}
+        channels: conda-forge
         activate-environment: pydm-env
     - name: Install python packages
       shell: bash -el {0}
@@ -42,7 +43,7 @@ jobs:
           mamba install flake8 zipp pyqt=${{ matrix.pyqt-version }}
           mamba install --file requirements.txt --file windows-dev-requirements.txt
         else
-          mamba install flake8 zipp pyqt=${{ matrix.pyqt-version }} $(cat requirements.txt dev-requirements.txt)
+          mamba install flake8 zipp pyqt=${{ matrix.pyqt-version }} $(cat requirements.txt)
         fi
     - name: Install packages for testing a pyqt app on linux
       shell: bash -el {0}
@@ -58,3 +59,5 @@ jobs:
       shell: bash -el {0}
       run: |
         python run_tests.py
+
+
