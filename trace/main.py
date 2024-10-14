@@ -126,6 +126,13 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         trace_parser = argparse.ArgumentParser(
             prog="trace",
             description="Trace\nThis is a PyDM application used to display archived and live pv data.",
+            epilog="Examples:\n\tpydm $PHYSICS_TOP/trace/main.py"
+            + "\n\tbash $PHYSICS_TOP/trace/launch_trace.bash"
+            + "\n\t%(prog)s"
+            + "\n\t%(prog)s -i some_input_file.trc"
+            + "\n\t%(prog)s -p SOME:PV:TO:PLOT OTHER:PV:TO:PLOT"
+            + '\n\t%(prog)s -m \'{"PVS": ["FOO:CHANNEL", "BAR:CHANNEL", "f://{A}+{B}"]}\''
+            + '\n\t%(prog)s -m "INPUT_FILE = trace/examples/FormulaExample.trc"',
             formatter_class=argparse.RawTextHelpFormatter,
         )
         trace_parser.add_argument("-V", "--version", action="version", version="%(prog)s " + self.git_version())
@@ -151,11 +158,11 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             "--macro",
             type=str,
             default="",
-            help="Mimic PyDM macro replacements to use, in JSON object format. Reminder: JSON\nrequires double quotes "
-            + 'for strings, so you should wrap this whole argument in\nsingle quotes. Example: -m \'{"sector": "LI25", '
-            + '"facility": "LCLS"}\'--or--\nspecify macro replacements as KEY=value pairs using a comma as delimiter If'
-            + "\nyou want to uses spaces after the delimiters or around the = signs, wrap the\nentire set with quotes "
-            + 'Example: -m "sector = LI25, facility=LCLS"',
+            help="Mimic PyDM macro replacements to use, in JSON object format. Reminder: JSON\n"
+            + "requires double quotes for strings, so you should wrap this whole argument in\n"
+            + "single quotes. --or-- Specify macro replacements as KEY=value pairs using a\n"
+            + "comma as delimiter If you want to uses spaces after the delimiters or around\n"
+            + "the = signs, wrap the entire set with quotes .",
         )
 
         # Parse arguments and ignore unknowns
