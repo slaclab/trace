@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
     
     
       
@@ -1214,6 +1214,11 @@
 
 
 
+
+
+
+
+
   <div class="doc doc-children">
 
 
@@ -1236,12 +1241,17 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="qtpy.QtWidgets.QDialog">QDialog</span></code></p>
+              Bases: <code>QDialog</code></p>
 
 
         <p>Formula Dialog - when a user right clicks on a row in the list of
 curves, they have the option to input a formula. They could opt to type it
 instead, but this opens a box that is a nicer UI for inputting a formula.</p>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>trace/mixins/traces_table.py</code></summary>
@@ -1716,12 +1726,17 @@ dialog submits the formula.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="qtpy.QtWidgets.QMenu">QMenu</span></code></p>
+              Bases: <code>QMenu</code></p>
 
 
         <p>Right clicking on the curves table opens 3 options - to open a PV search tool,
 Open a formula dialogue, or import a csv. Importing a csv seems to have not yet been
 implemented, but Formulae and PV search are.</p>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>trace/mixins/traces_table.py</code></summary>
@@ -1862,6 +1877,11 @@ implemented, but Formulae and PV search are.</p>
 
 
         <p>Mixins class for the Traces tab of the settings section.</p>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>trace/mixins/traces_table.py</code></summary>
@@ -2073,7 +2093,7 @@ implemented, but Formulae and PV search are.</p>
 <span class="sd">        data: str</span>
 <span class="sd">            The list of pvs in string format with any white space or comma separation&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Accepting PVs &quot;</span> <span class="o">+</span> <span class="n">data</span><span class="p">)</span>
-        <span class="n">channels</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\n\r,]+&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">channels</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\s,]+&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
             <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
             <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">curve_at_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
@@ -2423,7 +2443,7 @@ Resize the table to match the longest PV name/label</p>
 <span class="sd">    data: str</span>
 <span class="sd">        The list of pvs in string format with any white space or comma separation&quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Accepting PVs &quot;</span> <span class="o">+</span> <span class="n">data</span><span class="p">)</span>
-    <span class="n">channels</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\n\r,]+&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\s,]+&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
         <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curves_model</span><span class="o">.</span><span class="n">curve_at_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>

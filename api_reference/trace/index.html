@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
     
     
       
@@ -1125,6 +1125,8 @@
 <p>Arguments and macros are parsed in this file. Valid arguments include:
 - -h, --help:
     - Show the help message
+- -V, --version:
+    - Show the current version of trace
 - -i INPUT_FILE, --input_file INPUT_FILE:
     - File path to import from
     - Alternatively can be passed as INPUT_FILE macro
@@ -1133,7 +1135,12 @@
     - List of PVs to show on startup
     - Alternatively can be passed as PV or PVS macros
     - Takes string(s) representing the channels to connect to
-    - e.g. <code>pydm trace/main.py -p FOO:BAR:CHANNEL SOME:OTHER:CHANNEL</code></p>
+    - e.g. <code>pydm trace/main.py -p FOO:BAR:CHANNEL SOME:OTHER:CHANNEL</code>
+- -m MACRO, --macro MACRO:
+    -  Mimic PyDM macro replacements to use
+    - Examples:
+        - <code>pydm trace/main.py -m '{"PVS": ["FOO:BAR:CHANNEL", "SOME:OTHER:CHANNEL"]}'</code>
+        - <code>pydm trace/main.py -m "INPUT_FILE = trace/examples/FormulaExample.trc"</code></p>
 
 
 <div class="doc doc-object doc-module">
@@ -1142,6 +1149,11 @@
 
 <a id="main"></a>
     <div class="doc doc-contents first">
+
+
+
+
+
 
 
 
@@ -1167,32 +1179,37 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="logging.Handler">Handler</span></code></p>
+              Bases: <code>Handler</code></p>
+
+
+
+
+
 
 
               <details class="quote">
                 <summary>Source code in <code>trace/main.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LoggingHandler</span><span class="p">(</span><span class="n">Handler</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LoggingHandler</span><span class="p">(</span><span class="n">Handler</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logging_lbl</span><span class="p">:</span> <span class="n">QLabel</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logging_lbl</span> <span class="o">=</span> <span class="n">logging_lbl</span>
@@ -1248,22 +1265,22 @@ well. Also checks if the logging label has been deleted.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Any logs from the logger will be displayed on the logging label. If</span>
 <span class="sd">    the log level is greater than 20 (INFO), then the level will be shown as</span>
 <span class="sd">    well. Also checks if the logging label has been deleted.</span>
@@ -1306,13 +1323,17 @@ well. Also checks if the logging label has been deleted.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="pydm.Display">Display</span></code>, <code><a class="autorefs autorefs-internal" title="mixins.TracesTableMixin" href="../traces_table/#mixins.traces_table.TracesTableMixin">TracesTableMixin</a></code>, <code><a class="autorefs autorefs-internal" title="mixins.AxisTableMixin" href="../axis_table/#mixins.axis_table.AxisTableMixin">AxisTableMixin</a></code>, <code><span title="mixins.FileIOMixin">FileIOMixin</span></code>, <code><a class="autorefs autorefs-internal" title="mixins.PlotConfigMixin" href="../plot_config/#mixins.plot_config.PlotConfigMixin">PlotConfigMixin</a></code></p>
+              Bases: <code>Display</code>, <code>TracesTableMixin</code>, <code>AxisTableMixin</code>, <code>FileIOMixin</code>, <code>PlotConfigMixin</code></p>
+
+
+
+
+
 
 
               <details class="quote">
                 <summary>Source code in <code>trace/main.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 19</span>
-<span class="normal"> 20</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 20</span>
 <span class="normal"> 21</span>
 <span class="normal"> 22</span>
 <span class="normal"> 23</span>
@@ -1507,7 +1528,36 @@ well. Also checks if the logging label has been deleted.</p>
 <span class="normal">212</span>
 <span class="normal">213</span>
 <span class="normal">214</span>
-<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TraceDisplay</span><span class="p">(</span><span class="n">Display</span><span class="p">,</span> <span class="n">TracesTableMixin</span><span class="p">,</span> <span class="n">AxisTableMixin</span><span class="p">,</span> <span class="n">FileIOMixin</span><span class="p">,</span> <span class="n">PlotConfigMixin</span><span class="p">):</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TraceDisplay</span><span class="p">(</span><span class="n">Display</span><span class="p">,</span> <span class="n">TracesTableMixin</span><span class="p">,</span> <span class="n">AxisTableMixin</span><span class="p">,</span> <span class="n">FileIOMixin</span><span class="p">,</span> <span class="n">PlotConfigMixin</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ui_filename</span><span class="o">=</span><span class="vm">__file__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.py&quot;</span><span class="p">,</span> <span class="s2">&quot;.ui&quot;</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TraceDisplay</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span> <span class="n">ui_filename</span><span class="o">=</span><span class="n">ui_filename</span><span class="p">)</span>
         <span class="c1"># Set up PyDMApplication</span>
@@ -1614,16 +1664,25 @@ well. Also checks if the logging label has been deleted.</p>
 
         <span class="c1"># Construct an argument parser for args</span>
         <span class="n">trace_parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Trace</span><span class="se">\n</span><span class="s2">This is a PyDM application &quot;</span> <span class="o">+</span> <span class="s2">&quot;used to display archived and live pv data.&quot;</span><span class="p">,</span>
+            <span class="n">prog</span><span class="o">=</span><span class="s2">&quot;trace&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Trace</span><span class="se">\n</span><span class="s2">This is a PyDM application used to display archived and live pv data.&quot;</span><span class="p">,</span>
+            <span class="n">epilog</span><span class="o">=</span><span class="s2">&quot;Examples:</span><span class="se">\n\t</span><span class="s2">pydm $PHYSICS_TOP/trace/main.py&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">bash $PHYSICS_TOP/trace/launch_trace.bash&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s2">&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s2"> -i some_input_file.trc&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s2"> -p SOME:PV:TO:PLOT OTHER:PV:TO:PLOT&quot;</span>
+            <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s1"> -m </span><span class="se">\&#39;</span><span class="s1">{&quot;PVS&quot;: [&quot;FOO:CHANNEL&quot;, &quot;BAR:CHANNEL&quot;, &quot;f://</span><span class="si">{A}</span><span class="s1">+</span><span class="si">{B}</span><span class="s1">&quot;]}</span><span class="se">\&#39;</span><span class="s1">&#39;</span>
+            <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s1"> -m &quot;INPUT_FILE = trace/examples/FormulaExample.trc&quot;&#39;</span><span class="p">,</span>
             <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawTextHelpFormatter</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-V&quot;</span><span class="p">,</span> <span class="s2">&quot;--version&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(prog)s</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">git_version</span><span class="p">())</span>
         <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
             <span class="s2">&quot;--input_file&quot;</span><span class="p">,</span>
             <span class="n">action</span><span class="o">=</span><span class="n">PathAction</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
             <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Absolute file path to import from;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;Alternatively can be provided as INPUT_FILE macro&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Absolute file path to import from</span><span class="se">\n</span><span class="s2">Alternatively can be provided as INPUT_FILE macro&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
@@ -1631,7 +1690,21 @@ well. Also checks if the logging label has been deleted.</p>
             <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
             <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
             <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
-            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;List of PVs to show on startup;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;Alternatively can be provided as PV or PVS macros&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Space-separated list of PVs to show on startup</span><span class="se">\n</span><span class="s2">Formulas should be passed without spaces: &quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;f://</span><span class="si">{A}</span><span class="s2">+</span><span class="si">{B}</span><span class="se">\n</span><span class="s2">Alternatively can be provided as PV or PVS macros&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--macro&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Mimic PyDM macro replacements to use. Should be in JSON object format.&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">JSON Formatting Reminder:&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">JSON requires double quotes for strings, so you should wrap this&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">whole argument in single quotes.</span><span class="se">\n\t</span><span class="s2">--or--&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">Specify macro replacements as KEY=value pairs using a comma as a&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">delimiter. If you want to uses spaces after the delimiters or around&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">the &#39;=&#39; signs, wrap the entire set with quotes.&quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># Parse arguments and ignore unknowns</span>
@@ -1640,6 +1713,11 @@ well. Also checks if the logging label has been deleted.</p>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">u</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not using unknown arguments: </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Parse any macros passed into trace</span>
+        <span class="k">if</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">macro</span><span class="p">:</span>
+            <span class="n">parsed_macros</span> <span class="o">=</span> <span class="n">parse_macro_string</span><span class="p">(</span><span class="n">trace_args</span><span class="o">.</span><span class="n">macro</span><span class="p">)</span>
+            <span class="n">macros</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">parsed_macros</span><span class="p">)</span>
 
         <span class="c1"># Get the file to import from if one is provided. Prioritize args over macro</span>
         <span class="n">input_file</span> <span class="o">=</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">input_file</span>
@@ -1734,8 +1812,7 @@ well. Also checks if the logging label has been deleted.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">67</span>
-<span class="normal">68</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
 <span class="normal">69</span>
 <span class="normal">70</span>
 <span class="normal">71</span>
@@ -1754,7 +1831,8 @@ well. Also checks if the logging label has been deleted.</p>
 <span class="normal">84</span>
 <span class="normal">85</span>
 <span class="normal">86</span>
-<span class="normal">87</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">configure_app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">87</span>
+<span class="normal">88</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">configure_app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;UI changes to be made to the PyDMApplication&quot;&quot;&quot;</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">app</span><span class="o">.</span><span class="n">main_window</span><span class="p">:</span>
@@ -1800,12 +1878,12 @@ well. Also checks if the logging label has been deleted.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">git_version</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the current git tag for the project&quot;&quot;&quot;</span>
     <span class="n">project_directory</span> <span class="o">=</span> <span class="vm">__file__</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1832,9 +1910,9 @@ well. Also checks if the logging label has been deleted.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">menu_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">menu_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add export &amp; import functionality to File menu&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;Export&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">export_save_file</span><span class="p">,</span> <span class="s2">&quot;Ctrl+S&quot;</span><span class="p">),</span> <span class="s2">&quot;Import&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">import_save_file</span><span class="p">,</span> <span class="s2">&quot;Ctrl+L&quot;</span><span class="p">)}</span>
 </code></pre></div></td></tr></table></div>
@@ -1867,8 +1945,7 @@ args : List[str]
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">104</span>
-<span class="normal">105</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
 <span class="normal">108</span>
@@ -1935,7 +2012,36 @@ args : List[str]
 <span class="normal">169</span>
 <span class="normal">170</span>
 <span class="normal">171</span>
-<span class="normal">172</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">parse_macros_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macros</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">parse_macros_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macros</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse user provided macros and args into lists of PVs to use on</span>
 <span class="sd">    startup or which file to import on startup</span>
 
@@ -1957,16 +2063,25 @@ args : List[str]
 
     <span class="c1"># Construct an argument parser for args</span>
     <span class="n">trace_parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Trace</span><span class="se">\n</span><span class="s2">This is a PyDM application &quot;</span> <span class="o">+</span> <span class="s2">&quot;used to display archived and live pv data.&quot;</span><span class="p">,</span>
+        <span class="n">prog</span><span class="o">=</span><span class="s2">&quot;trace&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Trace</span><span class="se">\n</span><span class="s2">This is a PyDM application used to display archived and live pv data.&quot;</span><span class="p">,</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="s2">&quot;Examples:</span><span class="se">\n\t</span><span class="s2">pydm $PHYSICS_TOP/trace/main.py&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">bash $PHYSICS_TOP/trace/launch_trace.bash&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s2">&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s2"> -i some_input_file.trc&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s2"> -p SOME:PV:TO:PLOT OTHER:PV:TO:PLOT&quot;</span>
+        <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s1"> -m </span><span class="se">\&#39;</span><span class="s1">{&quot;PVS&quot;: [&quot;FOO:CHANNEL&quot;, &quot;BAR:CHANNEL&quot;, &quot;f://</span><span class="si">{A}</span><span class="s1">+</span><span class="si">{B}</span><span class="s1">&quot;]}</span><span class="se">\&#39;</span><span class="s1">&#39;</span>
+        <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="si">%(prog)s</span><span class="s1"> -m &quot;INPUT_FILE = trace/examples/FormulaExample.trc&quot;&#39;</span><span class="p">,</span>
         <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawTextHelpFormatter</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-V&quot;</span><span class="p">,</span> <span class="s2">&quot;--version&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(prog)s</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">git_version</span><span class="p">())</span>
     <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--input_file&quot;</span><span class="p">,</span>
         <span class="n">action</span><span class="o">=</span><span class="n">PathAction</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Absolute file path to import from;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;Alternatively can be provided as INPUT_FILE macro&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Absolute file path to import from</span><span class="se">\n</span><span class="s2">Alternatively can be provided as INPUT_FILE macro&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
@@ -1974,7 +2089,21 @@ args : List[str]
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;List of PVs to show on startup;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;Alternatively can be provided as PV or PVS macros&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Space-separated list of PVs to show on startup</span><span class="se">\n</span><span class="s2">Formulas should be passed without spaces: &quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;f://</span><span class="si">{A}</span><span class="s2">+</span><span class="si">{B}</span><span class="se">\n</span><span class="s2">Alternatively can be provided as PV or PVS macros&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--macro&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Mimic PyDM macro replacements to use. Should be in JSON object format.&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">JSON Formatting Reminder:&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">JSON requires double quotes for strings, so you should wrap this&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">whole argument in single quotes.</span><span class="se">\n\t</span><span class="s2">--or--&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">Specify macro replacements as KEY=value pairs using a comma as a&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">delimiter. If you want to uses spaces after the delimiters or around&quot;</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">the &#39;=&#39; signs, wrap the entire set with quotes.&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># Parse arguments and ignore unknowns</span>
@@ -1983,6 +2112,11 @@ args : List[str]
         <span class="k">if</span> <span class="ow">not</span> <span class="n">u</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not using unknown arguments: </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Parse any macros passed into trace</span>
+    <span class="k">if</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">macro</span><span class="p">:</span>
+        <span class="n">parsed_macros</span> <span class="o">=</span> <span class="n">parse_macro_string</span><span class="p">(</span><span class="n">trace_args</span><span class="o">.</span><span class="n">macro</span><span class="p">)</span>
+        <span class="n">macros</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">parsed_macros</span><span class="p">)</span>
 
     <span class="c1"># Get the file to import from if one is provided. Prioritize args over macro</span>
     <span class="n">input_file</span> <span class="o">=</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">input_file</span>
@@ -2025,11 +2159,11 @@ args : List[str]
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">resetPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reset the Axis model and the Curve model to empty states&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">axis_table_model</span><span class="o">.</span><span class="n">set_model_axes</span><span class="p">()</span>
@@ -2056,8 +2190,7 @@ username, PID, git version, Archiver URL, and current datetime</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 89</span>
-<span class="normal"> 90</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 90</span>
 <span class="normal"> 91</span>
 <span class="normal"> 92</span>
 <span class="normal"> 93</span>
@@ -2069,7 +2202,8 @@ username, PID, git version, Archiver URL, and current datetime</p>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
 <span class="normal">101</span>
-<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_footer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">102</span>
+<span class="normal">103</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set_footer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set footer information for application. Includes logging, nodename,</span>
 <span class="sd">    username, PID, git version, Archiver URL, and current datetime</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2113,35 +2247,35 @@ toggled : bool
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QAbstractButton</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QAbstractButton</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">set_plot_timerange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">button</span><span class="p">:</span> <span class="n">QAbstractButton</span><span class="p">,</span> <span class="n">toggled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Slot to be called when a timespan setting button is pressed.</span>
 <span class="sd">    This will enable autoscrolling along the x-axis and disable mouse</span>
