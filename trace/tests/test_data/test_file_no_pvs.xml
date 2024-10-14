@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<AVConfiguration>
+    <connection_parameter>pbraw://lcls-archapp.slac.stanford.edu/retrieval</connection_parameter>
+    <time_axis name="Main Time Axis">
+        <start>06/29/2024</start>
+        <end>06/30/2024</end>
+        <location>bottom</location>
+    </time_axis>
+    <range_axis name="Main Range Axis">
+        <min/>
+        <max/>
+        <type>log</type>
+        <location>left</location>
+    </range_axis>
+    <legend_configuration show_ave_name="true" show_directory_name="false" show_range="true" show_units="true"/>
+    <plot_title/>
+</AVConfiguration>

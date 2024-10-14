@@ -1,0 +1,29 @@
+StripConfig                   1.2
+Strip.Time.Timespan           86400
+Strip.Time.NumSamples         7200
+Strip.Time.SampleInterval     1.000000
+Strip.Time.RefreshInterval    1.000000
+Strip.Color.Background        65535     65535     65535
+Strip.Color.Foreground        0         0         0
+Strip.Color.Grid              49087     49087     49087
+Strip.Color.Color1            0         0         65535
+Strip.Color.Color2            0         0         0
+Strip.Color.Color3            60395     0         54484
+Strip.Color.Color4            42405     0         0
+Strip.Color.Color5            22873     65535     12850
+Strip.Color.Color6            65535     0         0
+Strip.Color.Color7            65535     0         0
+Strip.Color.Color8            65535     55255     0
+Strip.Color.Color9            48316     36751     36751
+Strip.Color.Color10           39578     52685     12850
+Strip.Option.GridXon          1
+Strip.Option.GridYon          1
+Strip.Option.AxisYcolorStat   1
+Strip.Option.GraphLineWidth   2
+Strip.Curve.0.Name            KLYS:LI22:31:KVAC
+Strip.Curve.0.Units           tar
+Strip.Curve.0.Precision       2
+Strip.Curve.0.Min             30.00
+Strip.Curve.0.Max             60.00
+Strip.Curve.0.Scale           0
+Strip.Curve.0.PlotStatus      1
