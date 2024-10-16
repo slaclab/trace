@@ -1,13 +1,24 @@
-from main import TraceDisplay
+from datetime import datetime, timedelta
 
 
-def test_defaults(qtrace: TraceDisplay):
-    """Check if Trace launches in an expected state"""
+def test_defaults(qtrace):
+    """Ensure that TraceDisplay's default values are set correctly.
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    All of the application's values are in an expected state.
+    """
     # Timespan buttons: '1h' button should be checked
     assert qtrace.ui.timespan_btns.checkedButton() is qtrace.ui.hour_scale_btn
 
     # Check plot's timespan will be set to 1 hour immediately after init
-    assert qtrace.ui.main_plot._time_span == 3600
+    axis_range = [datetime.fromtimestamp(int(r)) for r in qtrace.ui.main_plot.getXAxis().range]
+    assert axis_range[1] - axis_range[0] == timedelta(hours=1)
 
     # Curve model should have one hidden curve
     assert qtrace.curves_model.rowCount() == 1
@@ -26,21 +37,21 @@ def test_defaults(qtrace: TraceDisplay):
     assert qtrace.ui.refresh_interval_spnbx.value() == 5
     assert qtrace.background_color_button.color.name() == "#ffffff"
     assert qtrace.mouse_mode_cmbbx.currentIndex() == 0
-    assert qtrace.opacity_sldr.value() == 50
+    assert qtrace.opacity_sldr.value() == 127
     assert qtrace.crosshair_chckbx.isChecked() is False
 
 
-def test_parse_macros_and_args(qtrace: TraceDisplay):
+def test_parse_macros_and_args(qtrace):
     pass
 
 
-def test_git_version(qtrace: TraceDisplay):
+def test_git_version(qtrace):
     pass
 
 
-def test_reset_plot(qtrace: TraceDisplay):
+def test_reset_plot(qtrace):
     pass
 
 
-def test_set_plot_timerange(qtrace: TraceDisplay):
+def test_set_plot_timerange(qtrace):
     pass

@@ -1,0 +1,45 @@
+{
+    "archiver_url": "http://lcls-archapp.slac.stanford.edu",
+    "plot": {
+        "refreshInterval": 0.5,
+        "title": "Test Plot Title",
+        "xGrid": true,
+        "yGrid": false,
+        "opacity": 200,
+        "backgroundColor": "#ffffff",
+        "legend": false,
+        "crosshair": null,
+        "mouseMode": 1
+    },
+    "time_axis": {
+        "name": "Main Time Axis",
+        "start": "2024-06-29",
+        "end": "2024-06-30",
+        "location": "bottom"
+    },
+    "y-axes": [
+        {
+            "name": "Axis 1",
+            "orientation": "left",
+            "minRange": -1.04,
+            "maxRange": 1.04,
+            "autoRange": true,
+            "logMode": false
+        }
+    ],
+    "curves": [
+        {
+            "useArchiveData": true,
+            "liveData": true,
+            "channel": "KLYS:LI22:31:KVAC",
+            "name": "KLYS:LI22:31:KVAC",
+            "color": "#008cf9",
+            "lineStyle": 1,
+            "lineWidth": 1,
+            "symbolSize": 10,
+            "yAxisName": "Axis 1",
+            "thresholdColor": "white"
+        }
+    ],
+    "formula": []
+}

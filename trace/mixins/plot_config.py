@@ -48,7 +48,7 @@ class PlotConfigMixin:
         if "yGrid" in config:
             self.ui.y_grid_chckbx.setChecked(bool(config["yGrid"]))
         if "opacity" in config:
-            self.ui.opacity_sldr.setValue(config["opacity"])
+            self.ui.opacity_sldr.setValue(int(config["opacity"]))
         if "backgroundColor" in config:
             self.background_color_button.color = QColor(config["backgroundColor"])
         if "legend" in config:
@@ -86,18 +86,18 @@ class PlotConfigMixin:
         x_visible = self.ui.x_grid_chckbx.isChecked()
         y_visible = self.ui.y_grid_chckbx.isChecked()
 
-        opacity /= 100.0
+        opacity /= self.ui.opacity_sldr.maximum()
         self.plot.setShowXGrid(x_visible, opacity)
         self.plot.setShowYGrid(y_visible, opacity)
 
     @Slot(int)
     def show_x_grid(self, visible: bool):
         """Set the x grid visible or not based on user checking the corresponding box"""
-        opacity = self.ui.opacity_sldr.value() / 100.0
+        opacity = self.ui.opacity_sldr.value() / self.ui.opacity_sldr.maximum()
         self.plot.setShowXGrid(visible, opacity)
 
     @Slot(int)
     def show_y_grid(self, visible: bool):
         """Set the y grid visible or not based on user checking the corresponding box"""
-        opacity = self.ui.opacity_sldr.value() / 100.0
+        opacity = self.ui.opacity_sldr.value() / self.ui.opacity_sldr.maximum()
         self.plot.setShowYGrid(visible, opacity)
