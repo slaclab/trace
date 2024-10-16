@@ -37,7 +37,7 @@ def test_defaults(qtrace):
     assert qtrace.ui.refresh_interval_spnbx.value() == 5
     assert qtrace.background_color_button.color.name() == "#ffffff"
     assert qtrace.mouse_mode_cmbbx.currentIndex() == 0
-    assert qtrace.opacity_sldr.value() == 50
+    assert qtrace.opacity_sldr.value() == 127
     assert qtrace.crosshair_chckbx.isChecked() is False
 
 
