@@ -14,7 +14,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.41">
     
     
       
@@ -22,7 +22,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
@@ -1123,7 +1123,7 @@
         <span class="k">if</span> <span class="s2">&quot;yGrid&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">y_grid_chckbx</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;yGrid&quot;</span><span class="p">]))</span>
         <span class="k">if</span> <span class="s2">&quot;opacity&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;opacity&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;opacity&quot;</span><span class="p">]))</span>
         <span class="k">if</span> <span class="s2">&quot;backgroundColor&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">background_color_button</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">QColor</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;backgroundColor&quot;</span><span class="p">])</span>
         <span class="k">if</span> <span class="s2">&quot;legend&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
@@ -1161,20 +1161,20 @@
         <span class="n">x_visible</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">x_grid_chckbx</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
         <span class="n">y_visible</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">y_grid_chckbx</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
 
-        <span class="n">opacity</span> <span class="o">/=</span> <span class="mf">100.0</span>
+        <span class="n">opacity</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">maximum</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">setShowXGrid</span><span class="p">(</span><span class="n">x_visible</span><span class="p">,</span> <span class="n">opacity</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">setShowYGrid</span><span class="p">(</span><span class="n">y_visible</span><span class="p">,</span> <span class="n">opacity</span><span class="p">)</span>
 
     <span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">show_x_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the x grid visible or not based on user checking the corresponding box&quot;&quot;&quot;</span>
-        <span class="n">opacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">/</span> <span class="mf">100.0</span>
+        <span class="n">opacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">maximum</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">setShowXGrid</span><span class="p">(</span><span class="n">visible</span><span class="p">,</span> <span class="n">opacity</span><span class="p">)</span>
 
     <span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">show_y_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the y grid visible or not based on user checking the corresponding box&quot;&quot;&quot;</span>
-        <span class="n">opacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">/</span> <span class="mf">100.0</span>
+        <span class="n">opacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">maximum</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">setShowYGrid</span><span class="p">(</span><span class="n">visible</span><span class="p">,</span> <span class="n">opacity</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -1284,7 +1284,7 @@
     <span class="n">x_visible</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">x_grid_chckbx</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
     <span class="n">y_visible</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">y_grid_chckbx</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
 
-    <span class="n">opacity</span> <span class="o">/=</span> <span class="mf">100.0</span>
+    <span class="n">opacity</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">maximum</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">setShowXGrid</span><span class="p">(</span><span class="n">x_visible</span><span class="p">,</span> <span class="n">opacity</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">setShowYGrid</span><span class="p">(</span><span class="n">y_visible</span><span class="p">,</span> <span class="n">opacity</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -1420,7 +1420,7 @@ send signals out that will actually cause the plot to change</p>
     <span class="k">if</span> <span class="s2">&quot;yGrid&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">y_grid_chckbx</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;yGrid&quot;</span><span class="p">]))</span>
     <span class="k">if</span> <span class="s2">&quot;opacity&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;opacity&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;opacity&quot;</span><span class="p">]))</span>
     <span class="k">if</span> <span class="s2">&quot;backgroundColor&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">background_color_button</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">QColor</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;backgroundColor&quot;</span><span class="p">])</span>
     <span class="k">if</span> <span class="s2">&quot;legend&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
@@ -1459,7 +1459,7 @@ send signals out that will actually cause the plot to change</p>
 <span class="normal">97</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">show_x_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the x grid visible or not based on user checking the corresponding box&quot;&quot;&quot;</span>
-    <span class="n">opacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">/</span> <span class="mf">100.0</span>
+    <span class="n">opacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">maximum</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">setShowXGrid</span><span class="p">(</span><span class="n">visible</span><span class="p">,</span> <span class="n">opacity</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -1489,7 +1489,7 @@ send signals out that will actually cause the plot to change</p>
 <span class="normal">103</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">show_y_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the y grid visible or not based on user checking the corresponding box&quot;&quot;&quot;</span>
-    <span class="n">opacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">/</span> <span class="mf">100.0</span>
+    <span class="n">opacity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">opacity_sldr</span><span class="o">.</span><span class="n">maximum</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">setShowYGrid</span><span class="p">(</span><span class="n">visible</span><span class="p">,</span> <span class="n">opacity</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -1587,7 +1587,7 @@ send signals out that will actually cause the plot to change</p>
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.top", "navigation.tabs", "navigation.indexes", "navigation.footer"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      <script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>
       
     
   </body>
