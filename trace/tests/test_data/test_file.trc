@@ -1,11 +1,11 @@
 {
     "archiver_url": "http://lcls-archapp.slac.stanford.edu",
     "plot": {
-        "refreshInterval": 0.0,
-        "title": "",
-        "xGrid": false,
+        "refreshInterval": 0.5,
+        "title": "Test Plot Title",
+        "xGrid": true,
         "yGrid": false,
-        "opacity": 128,
+        "opacity": 200,
         "backgroundColor": "#ffffff",
         "legend": false,
         "crosshair": null,
