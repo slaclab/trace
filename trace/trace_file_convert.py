@@ -17,10 +17,8 @@ from qtpy.QtGui import QColor
 
 from pydm.widgets.timeplot import PyDMTimePlot
 
-if __name__ in logging.Logger.manager.loggerDict:
-    logger = logging.getLogger(__name__)
-else:
-    logger = logging.getLogger("")
+logger = logging.getLogger("")
+if not logger.hasHandlers():
     handler = logging.StreamHandler()
     formatter = logging.Formatter("[%(asctime)s] [%(levelname)-8s] - %(message)s")
     handler.setFormatter(formatter)
