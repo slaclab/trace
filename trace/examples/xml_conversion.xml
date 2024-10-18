@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<AVConfiguration>
+    <connection_parameter>pbraw://lcls-archapp.slac.stanford.edu/retrieval</connection_parameter>
+    <time_axis name="Main Time Axis">
+        <start>-1d</start>
+        <end>07/11/2024 08:15:45</end>
+        <location>bottom</location>
+    </time_axis>
+    <range_axis name="Main Range Axis">
+        <min/>
+        <max/>
+        <type>log</type>
+        <location>left</location>
+    </range_axis>
+    <legend_configuration show_ave_name="true" show_directory_name="false" show_range="true" show_units="true"/>
+    <plot_title/>
+    <pv directory_name="Default" name="SBST:LI22:1:SDLY">
+        <time_axis_name>Main Time Axis</time_axis_name>
+        <range_axis_name>Main Range Axis</range_axis_name>
+        <color>-65536</color>
+        <draw_type>steps</draw_type>
+        <draw_width>1</draw_width>
+        <visibility>true</visibility>
+    </pv>
+    <pv directory_name="Default" name="KLYS:LI22:11:BCUR">
+        <time_axis_name>Main Time Axis</time_axis_name>
+        <range_axis_name>Main Range Axis</range_axis_name>
+        <color>-16776961</color>
+        <draw_type>steps</draw_type>
+        <draw_width>1</draw_width>
+        <visibility>true</visibility>
+    </pv>
+    <pv directory_name="Default" name="KLYS:LI22:31:KVAC">
+        <time_axis_name>Main Time Axis</time_axis_name>
+        <range_axis_name>Main Range Axis</range_axis_name>
+        <color>-16711936</color>
+        <draw_type>steps</draw_type>
+        <draw_width>1</draw_width>
+        <visibility>true</visibility>
+    </pv>
+    <pv directory_name="Default" name="KLYS:LI22:51:GOLD">
+        <time_axis_name>Main Time Axis</time_axis_name>
+        <range_axis_name>Main Range Axis</range_axis_name>
+        <color>-65281</color>
+        <draw_type>steps</draw_type>
+        <draw_width>1</draw_width>
+        <visibility>true</visibility>
+    </pv>
+</AVConfiguration>

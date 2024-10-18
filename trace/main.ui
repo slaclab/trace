@@ -532,7 +532,11 @@
                </widget>
               </item>
               <item>
-               <widget class="QSpinBox" name="xafs_spnbx"/>
+               <widget class="QSpinBox" name="xafs_spnbx">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+               </widget>
               </item>
               <item>
                <spacer name="xafs_spcr">
@@ -672,13 +676,13 @@
                  </sizepolicy>
                 </property>
                 <property name="maximum">
-                 <number>100</number>
+                 <number>255</number>
                 </property>
                 <property name="singleStep">
                  <number>1</number>
                 </property>
                 <property name="value">
-                 <number>50</number>
+                 <number>127</number>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>

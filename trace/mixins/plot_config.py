@@ -1,9 +1,13 @@
 from typing import Dict
 import config
 from qtpy.QtGui import QColor, QFont
+
 from pyqtgraph import ViewBox
-from widgets import ColorButton
+from qtpy.QtGui import QFont, QColor
 from qtpy.QtCore import Slot
+
+from widgets import ColorButton
+
 
 class PlotConfigMixin:
     def plot_config_init(self):
@@ -40,15 +44,24 @@ class PlotConfigMixin:
         """Read in the full config dictionary, making sure not to fail if a user manually typed
         the import file out. For each config preset, set the widgets to match the value, which will
         send signals out that will actually cause the plot to change"""
-        if 'title' in config: self.ui.plot_title_edit.setText(config['title'])
-        if 'xGrid' in config: self.ui.x_grid_chckbx.setChecked(config['xGrid'])
-        if 'yGrid' in config: self.ui.y_grid_chckbx.setChecked(config['yGrid'])
-        if 'opacity' in config: self.ui.opacity_sldr.setValue(config['opacity'])
-        if 'backgroundColor' in config: self.background_color_button.color = QColor(config['backgroundColor'])
-        if 'legend' in config: self.ui.legend_chckbx.setChecked(config['legend'])
-        if 'mouseMode' in config: self.ui.mouse_mode_cmbbx.setCurrentIndex(int(config['mouseMode']/3))
-        if 'crosshair' in config: self.ui.crosshair_chckbx.setChecked(config['crosshair'])
-        if 'refreshInterval' in config: self.ui.refresh_interval_spnbx.setValue(config['refreshInterval'])
+        if "title" in config:
+            self.ui.plot_title_edit.setText(config["title"])
+        if "xGrid" in config:
+            self.ui.x_grid_chckbx.setChecked(bool(config["xGrid"]))
+        if "yGrid" in config:
+            self.ui.y_grid_chckbx.setChecked(bool(config["yGrid"]))
+        if "opacity" in config:
+            self.ui.opacity_sldr.setValue(int(config["opacity"]))
+        if "backgroundColor" in config:
+            self.background_color_button.color = QColor(config["backgroundColor"])
+        if "legend" in config:
+            self.ui.legend_chckbx.setChecked(bool(config["legend"]))
+        if "mouseMode" in config:
+            self.ui.mouse_mode_cmbbx.setCurrentIndex(int(config["mouseMode"] / 3))
+        if "crosshair" in config:
+            self.ui.crosshair_chckbx.setChecked(bool(config["crosshair"]))
+        if "refreshInterval" in config:
+            self.ui.refresh_interval_spnbx.setValue(config["refreshInterval"])
 
     @Slot(str)
     def set_palette(self, choice: str):
@@ -59,10 +72,10 @@ class PlotConfigMixin:
     def set_font_size(self, size: int):
         font = QFont()
         font.setPixelSize(size)
-        self.plot.getAxis("bottom").setStyle(tickFont = font)
+        self.plot.getAxis("bottom").setStyle(tickFont=font)
 
     @Slot(int)
-    def changeMouseMode(self, mode:int):
+    def changeMouseMode(self, mode: int):
         """If the user wants to have their mouse in PAN or RECT mode"""
         mouse_mode = ViewBox.RectMode
         if mode == 1:
@@ -81,18 +94,18 @@ class PlotConfigMixin:
         x_visible = self.ui.x_grid_chckbx.isChecked()
         y_visible = self.ui.y_grid_chckbx.isChecked()
 
-        opacity /= 100.0
+        opacity /= self.ui.opacity_sldr.maximum()
         self.plot.setShowXGrid(x_visible, opacity)
         self.plot.setShowYGrid(y_visible, opacity)
 
     @Slot(int)
     def show_x_grid(self, visible: bool):
         """Set the x grid visible or not based on user checking the corresponding box"""
-        opacity = self.ui.opacity_sldr.value() / 100.0
+        opacity = self.ui.opacity_sldr.value() / self.ui.opacity_sldr.maximum()
         self.plot.setShowXGrid(visible, opacity)
 
     @Slot(int)
     def show_y_grid(self, visible: bool):
         """Set the y grid visible or not based on user checking the corresponding box"""
-        opacity = self.ui.opacity_sldr.value() / 100.0
+        opacity = self.ui.opacity_sldr.value() / self.ui.opacity_sldr.maximum()
         self.plot.setShowYGrid(visible, opacity)

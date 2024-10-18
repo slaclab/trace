@@ -1,11 +1,13 @@
 from typing import Tuple
 from datetime import datetime
+
+from pyqtgraph import ViewBox
 from qtpy.QtCore import Slot, QDateTime
 from qtpy.QtWidgets import QHeaderView
-from pyqtgraph import ViewBox
+
 from config import logger
+from widgets import ComboBoxDelegate, DeleteRowDelegate, ScientificNotationDelegate
 from table_models import ArchiverAxisModel
-from widgets import ComboBoxDelegate, ScientificNotationDelegate, DeleteRowDelegate
 
 
 class AxisTableMixin:
@@ -49,7 +51,7 @@ class AxisTableMixin:
         delete_row_del = DeleteRowDelegate(self.ui.time_axis_tbl)
         self.ui.time_axis_tbl.setItemDelegateForColumn(delete_col, delete_row_del)
 
-    Slot(object)
+    @Slot(object)
     def set_time_axis_range(self, raw_range: Tuple[QDateTime, QDateTime] = (None, None)) -> None:
         """PyQT Slot to set the plot's X-Axis range. This slot should be
         triggered on QDateTimeEdit value change.
@@ -76,7 +78,7 @@ class AxisTableMixin:
 
         logger.debug(f"Setting plot's X-Axis range to {proc_range}")
         self.ui.main_plot.plotItem.vb.blockSignals(True)
-        self.ui.main_plot.plotItem.setXRange(*proc_range)
+        self.ui.main_plot.plotItem.setXRange(*proc_range, padding=0)
         self.ui.main_plot.plotItem.vb.blockSignals(False)
 
     @Slot(object, object)

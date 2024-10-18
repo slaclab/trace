@@ -6,3 +6,4 @@ mkdocs
 mkdocs-material
 mkdocstrings
 mkdocstrings-python
+pre-commit

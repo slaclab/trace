@@ -1,0 +1,70 @@
+StripConfig                   1.2
+Strip.Time.Timespan           9600
+Strip.Time.NumSamples         7200
+Strip.Time.SampleInterval     1.000000
+Strip.Time.RefreshInterval    1.000000
+Strip.Color.Background        65535     65535     65535     
+Strip.Color.Foreground        0         0         0         
+Strip.Color.Grid              49087     49087     49087     
+Strip.Color.Color1            0         0         65535     
+Strip.Color.Color2            0         0         0         
+Strip.Color.Color3            60395     0         54484     
+Strip.Color.Color4            42405     0         0         
+Strip.Color.Color5            22873     65535     12850     
+Strip.Color.Color6            65535     0         0         
+Strip.Color.Color7            65535     0         0         
+Strip.Color.Color8            65535     55255     0         
+Strip.Color.Color9            48316     36751     36751     
+Strip.Color.Color10           39578     52685     12850     
+Strip.Option.GridXon          1
+Strip.Option.GridYon          1
+Strip.Option.AxisYcolorStat   1
+Strip.Option.GraphLineWidth   2
+Strip.Curve.0.Name            CLT:CP13:1005:LEVEL
+Strip.Curve.1.Name            CPT:CP11:1012:PRESS
+Strip.Curve.2.Name            CPT:CP12:1012:PRESS
+Strip.Curve.3.Name            CPT:CP12:1040:PRESS
+Strip.Curve.4.Name            CPT:CP14:1100:PRESS
+Strip.Curve.7.Name            GMGT:CP12:He:INVENTORY
+Strip.Curve.0.Units           %
+Strip.Curve.1.Units           bara
+Strip.Curve.2.Units           bara
+Strip.Curve.3.Units           bara
+Strip.Curve.4.Units           bara
+Strip.Curve.7.Units           kg
+Strip.Curve.0.Comment         Dewer Liquid Level
+Strip.Curve.1.Comment         CP1 MCS Clean Line
+Strip.Curve.2.Comment         Low Pressure In
+Strip.Curve.3.Comment         HP Out b4 final oil rmvl
+Strip.Curve.4.Comment         CC1 Inlet Pressure
+Strip.Curve.7.Comment         TOTAL_He_INVENTORY
+Strip.Curve.0.Precision       2
+Strip.Curve.1.Precision       2
+Strip.Curve.2.Precision       2
+Strip.Curve.3.Precision       2
+Strip.Curve.4.Precision       3
+Strip.Curve.7.Precision       2
+Strip.Curve.0.Min              30.00
+Strip.Curve.1.Min              3.00
+Strip.Curve.2.Min              1.00
+Strip.Curve.3.Min              12.00
+Strip.Curve.4.Min              0.021
+Strip.Curve.7.Min              2600.00
+Strip.Curve.0.Max              60.00
+Strip.Curve.1.Max              6.00
+Strip.Curve.2.Max              1.20
+Strip.Curve.3.Max              19.50
+Strip.Curve.4.Max              0.035
+Strip.Curve.7.Max              3200.00
+Strip.Curve.0.Scale           0
+Strip.Curve.1.Scale           0
+Strip.Curve.2.Scale           0
+Strip.Curve.3.Scale           0
+Strip.Curve.4.Scale           0
+Strip.Curve.7.Scale           0
+Strip.Curve.0.PlotStatus      1
+Strip.Curve.1.PlotStatus      1
+Strip.Curve.2.PlotStatus      1
+Strip.Curve.3.PlotStatus      1
+Strip.Curve.4.PlotStatus      1
+Strip.Curve.7.PlotStatus      1

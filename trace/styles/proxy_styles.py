@@ -1,6 +1,5 @@
-from PyQt5.QtCore import QRect
-from PyQt5.QtWidgets import QStyle, QStyleOption, QWidget
-from qtpy.QtWidgets import QProxyStyle
+from qtpy.QtCore import QRect
+from qtpy.QtWidgets import QStyle, QWidget, QProxyStyle, QStyleOption
 
 
 class CenterCheckStyle(QProxyStyle):
