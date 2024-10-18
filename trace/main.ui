@@ -333,7 +333,7 @@
              <x>0</x>
              <y>0</y>
              <width>1146</width>
-             <height>413</height>
+             <height>418</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -451,6 +451,64 @@
               </item>
               <item>
                <spacer name="legend_spcr">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="clrscheme_lyt">
+              <item>
+               <widget class="QLabel" name="clrscheme_lbl">
+                <property name="text">
+                 <string>Color Scheme</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="clrscheme_cmbbx">
+                <item>
+                 <property name="text">
+                  <string>Classic</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Apple</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Java</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Excel</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Diverging</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Dark</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item>
+               <spacer name="clrscheme_spacer">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -672,19 +730,6 @@
                </spacer>
               </item>
              </layout>
-            </item>
-            <item>
-             <spacer name="plot_properties_spcr">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </widget>

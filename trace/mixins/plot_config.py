@@ -1,4 +1,5 @@
 from typing import Dict
+import config
 from qtpy.QtGui import QColor, QFont
 from pyqtgraph import ViewBox
 from widgets import ColorButton
@@ -33,6 +34,7 @@ class PlotConfigMixin:
         self.ui.crosshair_chckbx.stateChanged.connect(lambda show: self.plot.enableCrosshair(show, 100, 100))
 
         self.ui.mouse_mode_cmbbx.currentIndexChanged.connect(self.changeMouseMode)
+        self.ui.clrscheme_cmbbx.currentTextChanged.connect(self.set_palette)
 
     def plot_setup(self, config: Dict):
         """Read in the full config dictionary, making sure not to fail if a user manually typed
@@ -47,6 +49,11 @@ class PlotConfigMixin:
         if 'mouseMode' in config: self.ui.mouse_mode_cmbbx.setCurrentIndex(int(config['mouseMode']/3))
         if 'crosshair' in config: self.ui.crosshair_chckbx.setChecked(config['crosshair'])
         if 'refreshInterval' in config: self.ui.refresh_interval_spnbx.setValue(config['refreshInterval'])
+
+    @Slot(str)
+    def set_palette(self, choice: str):
+        if choice in config.color_palettes:
+            config.change_palette(choice)
 
     @Slot(int)
     def set_font_size(self, size: int):

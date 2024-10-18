@@ -85,6 +85,6 @@ class ColorButton(QPushButton):
         """Returns the color in the color palette at index."""
         modded_index = index % len(color_palette)
         color = color_palette[modded_index]
-
+        print(color_palette)
         dark_factor = (index // len(color_palette)) * 35
         return color.darker(100 + dark_factor)

@@ -23,4 +23,17 @@ archiver_urls = loaded_json["archivers"]
 if not archiver_urls:
     archiver_urls = [os.getenv("PYDM_ARCHIVER_URL")]
 
-color_palette = [QColor(hex_code) for hex_code in loaded_json["colors"]]
+color_palettes = {
+        "Classic": [QColor(hex_code) for hex_code in loaded_json["colors"]],
+        "Apple": [QColor(hex_code) for hex_code in loaded_json["colors-apple"]],
+        "Java": [QColor(hex_code) for hex_code in loaded_json["colors-java"]],
+        "Excel": [QColor(hex_code) for hex_code in loaded_json["colors-excel"]],
+        "Diverging": [QColor(hex_code) for hex_code in loaded_json["colors-diverging"]],
+        "Dark": [QColor(hex_code) for hex_code in loaded_json["colors-dark"]],
+    }
+palette_choice = "Classic"
+color_palette = color_palettes[palette_choice]
+def change_palette(palette: str):
+    palette_choice = palette
+    color_palette = color_palettes[palette_choice]
+    print("foo")
