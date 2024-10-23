@@ -623,7 +623,8 @@ class PathAction(Action):
 if __name__ == "__main__":
     parser = ArgumentParser(
         prog="Trace File Converter",
-        description="Convert files used by the Java Archive" " Viewer to a file format that can be used with Trace.",
+        description="Convert files used by the Java Archive Viewer or StripTool"
+        + " to a file format that can be used with Trace.",
     )
     parser.add_argument(
         "input_file", action=PathAction, type=str, nargs="*", help="Path to the file(s) to be converted"
