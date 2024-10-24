@@ -240,8 +240,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             Returns the model's default flags, and if the column is Live Data or
             Archive Data, then may also disable the index depending on channel status.
         """
-        flags = super().flags(index)
+        if not index.isValid():
+            return Qt.NoItemFlags
 
+        flags = super().flags(index)
         col_name = self._column_names[index.column()]
         if col_name in ("Live Data", "Archive Data"):
             curve = self.curve_at_index(index)
