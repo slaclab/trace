@@ -25,6 +25,14 @@
             "maxRange": 1.04,
             "autoRange": true,
             "logMode": false
+        },
+        {
+            "name": "FOO Axis",
+            "orientation": "right",
+            "minRange": -15,
+            "maxRange": 15,
+            "autoRange": false,
+            "logMode": true
         }
     ],
     "curves": [
