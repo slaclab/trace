@@ -15,7 +15,7 @@ TEST_PALETTE = [
 ]
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture
 def color_btn(qapp):
     """Fixture for an instance of the ColorButton. Sets the button's default color.
 

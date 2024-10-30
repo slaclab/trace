@@ -172,7 +172,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 try:
                     ret_code = self.replaceToFormula(index=index, formula=value)
                 except (SyntaxError, ValueError) as e:
-                    logger.error(e)
+                    logger.error(str(e))
                     return False
             elif value_is_formula and curve_is_formula:
                 try:
@@ -180,7 +180,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                     curve.formula = value
                     curve.pvs = pv_dict
                 except (SyntaxError, ValueError) as e:
-                    logger.error(e)
+                    logger.error(str(e))
                     return False
             elif not value_is_formula:
                 if not curve_is_formula:
@@ -604,6 +604,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The curve's live connection status.
         """
         curve = self.sender()
+        if not isinstance(curve, (ArchivePlotCurveItem, FormulaCurveItem)):
+            return
 
         if connection:
             self._invalid_live_channels.discard(curve)
