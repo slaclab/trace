@@ -33,15 +33,15 @@ def test_default_axis(qtrace):
     ------------
     The data in the initial row match expected data
     """
-    axis_model = qtrace.axis_table_model
+    model = qtrace.axis_table_model
 
     row_actual = []
     row_expected = ["Axis 1", "Left", None, -1.04, 1.04, Qt.Checked, Qt.Unchecked, Qt.Unchecked, None]
 
-    for col in range(axis_model.columnCount()):
-        index = axis_model.index(0, col)
-        role = Qt.CheckStateRole if col in axis_model.checkable_col else Qt.DisplayRole
-        data = axis_model.data(index, role)
+    for col in range(model.columnCount()):
+        index = model.index(0, col)
+        role = Qt.CheckStateRole if col in model.checkable_col else Qt.DisplayRole
+        data = model.data(index, role)
         row_actual.append(data)
 
     assert row_actual == row_expected
@@ -60,14 +60,14 @@ def test_append_axis(qtrace):
     Appending to the model adds an axis, either with the given name or an
     incremented name
     """
-    axis_model = qtrace.axis_table_model
-    axis_model.append()
-    axis_model.append("FOOBAR")
+    model = qtrace.axis_table_model
+    model.append()
+    model.append("FOOBAR")
 
-    assert axis_model.rowCount() == 3
-    assert axis_model.data(axis_model.index(0, 0)) == "Axis 1"
-    assert axis_model.data(axis_model.index(1, 0)) == "Axis 2"
-    assert axis_model.data(axis_model.index(2, 0)) == "FOOBAR"
+    assert model.rowCount() == 3
+    assert model.data(model.index(0, 0)) == "Axis 1"
+    assert model.data(model.index(1, 0)) == "Axis 2"
+    assert model.data(model.index(2, 0)) == "FOOBAR"
 
 
 def test_remove_axis(qtrace):
@@ -83,22 +83,22 @@ def test_remove_axis(qtrace):
     Appending to the model adds an axis, either with the given name or an
     incremented name
     """
-    axis_model = qtrace.axis_table_model
-    axis_model.removeAtIndex(axis_model.index(0, 0))
+    model = qtrace.axis_table_model
+    model.removeAtIndex(model.index(0, 0))
 
-    assert axis_model.rowCount() == 1
-    assert axis_model.data(axis_model.index(0, 0)) == "Axis 1"
+    assert model.rowCount() == 1
+    assert model.data(model.index(0, 0)) == "Axis 1"
 
-    axis_model.append("FOO")
-    axis_model.append("BAR")
-    axis_model.append("FOOBAR")
+    model.append("FOO")
+    model.append("BAR")
+    model.append("FOOBAR")
 
-    axis_model.removeAtIndex(axis_model.index(1, 0))
-    axis_model.removeAxis("BAR")
+    model.removeAtIndex(model.index(1, 0))
+    model.removeAxis("BAR")
 
-    assert axis_model.rowCount() == 2
-    assert axis_model.data(axis_model.index(0, 0)) == "Axis 1"
-    assert axis_model.data(axis_model.index(1, 0)) == "FOOBAR"
+    assert model.rowCount() == 2
+    assert model.data(model.index(0, 0)) == "Axis 1"
+    assert model.data(model.index(1, 0)) == "FOOBAR"
 
 
 def test_set_model_axes(qtrace, get_test_file):
@@ -120,8 +120,8 @@ def test_set_model_axes(qtrace, get_test_file):
     test_filename = get_test_file("test_file.trc")
     test_data = loads(test_filename.read_text())
 
-    axis_model = qtrace.axis_table_model
-    axis_model.set_model_axes(test_data["y-axes"])
+    model = qtrace.axis_table_model
+    model.set_model_axes(test_data["y-axes"])
 
     plot_data = qtrace.main_plot.getYAxes()
     for axis_test, axis_json in zip(test_data["y-axes"], plot_data):
@@ -163,12 +163,12 @@ def test_alter_axis_data(qtrace, column, data_test, data_expected):
     ------------
     The given column and test data should result in the given expected data
     """
-    axis_model = qtrace.axis_table_model
+    model = qtrace.axis_table_model
 
-    index = axis_model.index(0, column)
-    role = Qt.CheckStateRole if column in axis_model.checkable_col else Qt.EditRole
+    index = model.index(0, column)
+    role = Qt.CheckStateRole if column in model.checkable_col else Qt.EditRole
 
-    axis_model.setData(axis_model.index(0, column), data_test, role)
+    model.setData(index, data_test, role)
     data_actual = index.data(role)
 
     assert data_expected == data_actual
