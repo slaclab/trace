@@ -59,7 +59,9 @@ def qapp(qapp_args):
     if "pytest-qt-qapp" == qapp_args[0]:
         qapp_args.remove("pytest-qt-qapp")
 
-    yield PyDMApplication(use_main_window=False, *qapp_args)
+    app = PyDMApplication(use_main_window=False, *qapp_args)
+    yield app
+    app.quit()
 
 
 @pytest.fixture
@@ -75,8 +77,11 @@ def qtrace(qapp):
 
     # updateXAxis would be called on application render; necessary for testing X-Axis
     trace.ui.main_plot.updateXAxis(True)
-
     yield trace
+
+    trace.close()
+    qapp.processEvents()
+    del trace
 
 
 @pytest.fixture
