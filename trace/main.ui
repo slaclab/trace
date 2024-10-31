@@ -434,6 +434,52 @@
              </layout>
             </item>
             <item>
+             <layout class="QHBoxLayout" name="opacity_lyt">
+              <item>
+               <widget class="QLabel" name="opacity_lbl">
+                <property name="text">
+                 <string>Gridline Opacity</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSlider" name="opacity_sldr">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximum">
+                 <number>255</number>
+                </property>
+                <property name="singleStep">
+                 <number>1</number>
+                </property>
+                <property name="value">
+                 <number>127</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="opacity_spcr">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
              <layout class="QHBoxLayout" name="legend_lyt">
               <item>
                <widget class="QLabel" name="legend_lbl">
@@ -587,52 +633,6 @@
               </item>
               <item>
                <spacer name="mouse_mode_spcr">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="opacity_lyt">
-              <item>
-               <widget class="QLabel" name="opacity_lbl">
-                <property name="text">
-                 <string>Opacity</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="opacity_sldr">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="maximum">
-                 <number>255</number>
-                </property>
-                <property name="singleStep">
-                 <number>1</number>
-                </property>
-                <property name="value">
-                 <number>127</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="opacity_spcr">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
