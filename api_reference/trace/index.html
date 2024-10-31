@@ -1576,9 +1576,9 @@ well. Also checks if the logging label has been deleted.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_table_model</span><span class="o">.</span><span class="n">reset_everything</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resetPlot</span><span class="p">)</span>
         <span class="c1"># Create reference dict for timespan_btns button group</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">button_spans</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">half_min_scale_btn</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">min_scale_btn</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">hour_scale_btn</span><span class="p">:</span> <span class="mi">3600</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">day_scale_btn</span><span class="p">:</span> <span class="mi">86400</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">week_scale_btn</span><span class="p">:</span> <span class="mi">604800</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">month_scale_btn</span><span class="p">:</span> <span class="mi">2628300</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">cursor_scale_btn</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
@@ -1631,7 +1631,7 @@ well. Also checks if the logging label has been deleted.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set footer information for application. Includes logging, nodename,</span>
 <span class="sd">        username, PID, git version, Archiver URL, and current datetime</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logging_handler</span> <span class="o">=</span> <span class="n">LoggingHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">ftr_logging_lbl</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logging_handler</span> <span class="o">=</span> <span class="n">LoggingHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">logger_lbl</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logging_handler</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s2">&quot;NOTSET&quot;</span><span class="p">)</span>
 
@@ -2207,7 +2207,7 @@ username, PID, git version, Archiver URL, and current datetime</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set footer information for application. Includes logging, nodename,</span>
 <span class="sd">    username, PID, git version, Archiver URL, and current datetime</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logging_handler</span> <span class="o">=</span> <span class="n">LoggingHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">ftr_logging_lbl</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logging_handler</span> <span class="o">=</span> <span class="n">LoggingHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">logger_lbl</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logging_handler</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s2">&quot;NOTSET&quot;</span><span class="p">)</span>
 
