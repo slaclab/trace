@@ -93,7 +93,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         """Set footer information for application. Includes logging, nodename,
         username, PID, git version, Archiver URL, and current datetime
         """
-        self.logging_handler = LoggingHandler(self.ui.ftr_logging_lbl)
+        self.logging_handler = LoggingHandler(self.ui.logger_lbl)
         logger.addHandler(self.logging_handler)
         logger.setLevel("NOTSET")
 
