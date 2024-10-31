@@ -282,17 +282,16 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
 
-        new_curve = self._plot._curves[-1]
+        new_curve = self.curve_at_index(-1)
         new_curve.hide()
         if self.rowCount() != 1:
             logger.debug("Hide blank Y-axis")
             self._axis_model.plot.plotItem.axes[y_axis.name]["item"].hide()
         new_curve.unitSignal.connect(self.setAxis)
-        logger.debug("Finished adding new empty curve to plot")
 
-        curve = self.curve_at_index(-1)
-        curve.live_channel_connection.connect(self.live_connection_slot)
-        curve.archive_channel_connection.connect(self.archive_connection_slot)
+        new_curve.live_channel_connection.connect(self.live_connection_slot)
+        new_curve.archive_channel_connection.connect(self.archive_connection_slot)
+        logger.debug("Finished adding new empty curve to plot")
 
     def set_model_curves(self, curves: List[Dict] = []) -> None:
         """Reset the model to only contain the list of given curves.
