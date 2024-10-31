@@ -1,7 +1,7 @@
 {
     "archiver_url": "http://lcls-archapp.slac.stanford.edu",
     "plot": {
-        "refreshInterval": 0.5,
+        "refreshInterval": 4,
         "title": "Test Plot Title",
         "xGrid": true,
         "yGrid": false,

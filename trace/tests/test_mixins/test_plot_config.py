@@ -99,7 +99,7 @@ def test_auto_scroll(qtrace, test_value):
         return
 
     # Constrain test value to be between expected min and max
-    constrained_value = min(max(test_value * 1000, 100), 60000)
+    constrained_value = min(max(test_value * 1000, 1000), 60000)
     qtrace.ui.refresh_interval_spnbx.setValue(test_value)
     assert qtrace.plot.auto_scroll_timer.interval() == constrained_value
     assert qtrace.plot.auto_scroll_timer.isActive()

@@ -38,9 +38,9 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.axis_table_model.reset_everything.connect(self.resetPlot)
         # Create reference dict for timespan_btns button group
         self.button_spans = {
-            self.ui.half_min_scale_btn: 30,
             self.ui.min_scale_btn: 60,
             self.ui.hour_scale_btn: 3600,
+            self.ui.day_scale_btn: 86400,
             self.ui.week_scale_btn: 604800,
             self.ui.month_scale_btn: 2628300,
             self.ui.cursor_scale_btn: -1,
@@ -93,7 +93,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         """Set footer information for application. Includes logging, nodename,
         username, PID, git version, Archiver URL, and current datetime
         """
-        self.logging_handler = LoggingHandler(self.ui.ftr_logging_lbl)
+        self.logging_handler = LoggingHandler(self.ui.logger_lbl)
         logger.addHandler(self.logging_handler)
         logger.setLevel("NOTSET")
 

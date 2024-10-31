@@ -28,7 +28,6 @@ class PlotConfigMixin:
         self.ui.background_color_lyt.insertWidget(1, self.background_color_button)
         self.background_color_button.color_changed.connect(self.plot.setBackgroundColor)
 
-        self.ui.refresh_interval_spnbx.setValue(5)
         self.ui.refresh_interval_spnbx.valueChanged.connect(lambda interval: self.autoScroll(enable=True))
 
         self.ui.legend_chckbx.stateChanged.connect(self.plot.setShowLegend)
@@ -42,7 +41,7 @@ class PlotConfigMixin:
         the import file out. For each config preset, set the widgets to match the value, which will
         send signals out that will actually cause the plot to change"""
         if "title" in config:
-            self.ui.plot_title_edit.setText(config["title"])
+            self.ui.plot_title_edit.setText(str(config["title"]))
         if "xGrid" in config:
             self.ui.x_grid_chckbx.setChecked(bool(config["xGrid"]))
         if "yGrid" in config:
@@ -58,7 +57,7 @@ class PlotConfigMixin:
         if "crosshair" in config:
             self.ui.crosshair_chckbx.setChecked(bool(config["crosshair"]))
         if "refreshInterval" in config:
-            self.ui.refresh_interval_spnbx.setValue(config["refreshInterval"])
+            self.ui.refresh_interval_spnbx.setValue(int(config["refreshInterval"]))
 
     @Slot(int)
     def set_font_size(self, size: int):
