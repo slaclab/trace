@@ -41,7 +41,7 @@ class PlotConfigMixin:
         the import file out. For each config preset, set the widgets to match the value, which will
         send signals out that will actually cause the plot to change"""
         if "title" in config:
-            self.ui.plot_title_edit.setText(config["title"])
+            self.ui.plot_title_edit.setText(str(config["title"]))
         if "xGrid" in config:
             self.ui.x_grid_chckbx.setChecked(bool(config["xGrid"]))
         if "yGrid" in config:
@@ -57,7 +57,7 @@ class PlotConfigMixin:
         if "crosshair" in config:
             self.ui.crosshair_chckbx.setChecked(bool(config["crosshair"]))
         if "refreshInterval" in config:
-            self.ui.refresh_interval_spnbx.setValue(config["refreshInterval"])
+            self.ui.refresh_interval_spnbx.setValue(int(config["refreshInterval"]))
 
     @Slot(int)
     def set_font_size(self, size: int):
