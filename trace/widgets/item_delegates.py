@@ -387,7 +387,7 @@ class ScientificNotationDelegate(EditorDelegate):
             if value is None:
                 value = self.range[0]
 
-            rx = QRegExp(r"^[+-]?\d*(?:\.\d*(?:[eE][+-]?\d+)?)?$")
+            rx = QRegExp(r"^[+-]?\d*(?:\.\d*)?(?:[eE][+-]?\d+)?$")
             validator = QRegExpValidator(rx, parent)
 
             editor = QLineEdit(parent)
