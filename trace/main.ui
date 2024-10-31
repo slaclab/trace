@@ -545,24 +545,27 @@
              <layout class="QHBoxLayout" name="refresh_interval_lyt">
               <item>
                <widget class="QLabel" name="refresh_interval_lbl">
+                <property name="toolTip">
+                 <string>seconds</string>
+                </property>
                 <property name="text">
-                 <string>Autoscroll refresh rate</string>
+                 <string>Autoscroll refresh interval</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QDoubleSpinBox" name="refresh_interval_spnbx">
-                <property name="decimals">
-                 <number>1</number>
+               <widget class="QSpinBox" name="refresh_interval_spnbx">
+                <property name="toolTip">
+                 <string>seconds</string>
                 </property>
                 <property name="minimum">
-                 <double>0.100000000000000</double>
+                 <number>1</number>
                 </property>
                 <property name="maximum">
-                 <double>60.000000000000000</double>
+                 <number>60</number>
                 </property>
-                <property name="singleStep">
-                 <double>0.100000000000000</double>
+                <property name="value">
+                 <number>5</number>
                 </property>
                </widget>
               </item>
