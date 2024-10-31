@@ -18,6 +18,9 @@ class AxisTableMixin:
         self.axis_table_model = ArchiverAxisModel(self.ui.main_plot, self)
         self.ui.time_axis_tbl.setModel(self.axis_table_model)
 
+        label_col = self.axis_table_model.getColumnIndex("Y-Axis Label")
+        self.ui.time_axis_tbl.hideColumn(label_col)
+
         hdr = self.ui.time_axis_tbl.horizontalHeader()
         hdr.setSectionResizeMode(QHeaderView.Stretch)
         del_col = self.axis_table_model.getColumnIndex("")
