@@ -28,7 +28,6 @@ class PlotConfigMixin:
         self.ui.background_color_lyt.insertWidget(1, self.background_color_button)
         self.background_color_button.color_changed.connect(self.plot.setBackgroundColor)
 
-        self.ui.refresh_interval_spnbx.setValue(5)
         self.ui.refresh_interval_spnbx.valueChanged.connect(lambda interval: self.autoScroll(enable=True))
 
         self.ui.legend_chckbx.stateChanged.connect(self.plot.setShowLegend)
