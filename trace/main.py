@@ -142,14 +142,13 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             "-i",
             "--input_file",
             action=PathAction,
-            type=str,
-            default="",
+            nargs="?",
+            default=[],
             help="Absolute file path to import from\nAlternatively can be provided as INPUT_FILE macro",
         )
         trace_parser.add_argument(
             "-p",
             "--pvs",
-            type=str,
             nargs="*",
             default=[],
             help="Space-separated list of PVs to show on startup\nFormulas should be passed without spaces: "
@@ -158,7 +157,6 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         trace_parser.add_argument(
             "-m",
             "--macro",
-            type=str,
             default="",
             help="Mimic PyDM macro replacements to use. Should be in JSON object format."
             + "\nJSON Formatting Reminder:"
@@ -182,8 +180,11 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             macros.update(**parsed_macros)
 
         # Get the file to import from if one is provided. Prioritize args over macro
-        input_file = trace_args.input_file
-        if not input_file and "INPUT_FILE" in macros:
+        input_file = ""
+        if trace_args.input_file:
+            # Need to unpack as PathAction returns a list
+            input_file = trace_args.input_file[0]
+        elif "INPUT_FILE" in macros:
             input_file = macros["INPUT_FILE"]
 
         # Get the list of PVs to show on startup
