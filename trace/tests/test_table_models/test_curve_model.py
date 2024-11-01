@@ -54,6 +54,18 @@ def test_default_curve(qtrace):
 
 
 def test_contains(qtrace):
+    """Test that __contains__ works and that the 'in' keyword works with the model
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    The 'in' keyword should correctly tell us if a curve with the requested name
+    is a part of the model
+    """
     model = qtrace.curves_model
     index = model.index(0, 0)
     model.setData(index, "FOO:CHANNEL", Qt.EditRole)
@@ -64,6 +76,17 @@ def test_contains(qtrace):
 
 
 def test_append_curve(qtrace):
+    """Test that append actually adds a curve to the model
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    The model should have 1 more curve after append is called
+    """
     model = qtrace.curves_model
     assert model.rowCount() == 1
 
@@ -75,6 +98,17 @@ def test_append_curve(qtrace):
 
 
 def test_remove_curve(qtrace):
+    """Test that removeAtIndex actually removes the curve from the model
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    The removed object should no longer be in the model
+    """
     model = qtrace.curves_model
     assert model.rowCount() == 1
 
@@ -164,6 +198,17 @@ def test_alter_curve_data(qtrace, column, data_test, data_expected):
 
 
 def test_convert_curve_to_formula(qtrace):
+    """Test that conversion from an ArchiverPlotCurveItem to a FormulaCurveItem
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    The selected curve object should be an instance of the expected class
+    """
     model = qtrace.curves_model
 
     index = model.index(0, 0)
@@ -176,6 +221,19 @@ def test_convert_curve_to_formula(qtrace):
 
 
 def test_convert_formula_to_curve(qtrace, mock_logger):
+    """Test that conversion from a FormulaCurveItem to an ArchiverPlotCurveItem
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
+
+    Expectations
+    ------------
+    The selected curve object should be an instance of the expected class
+    """
     model = qtrace.curves_model
 
     index = model.index(0, 0)
@@ -190,6 +248,19 @@ def test_convert_formula_to_curve(qtrace, mock_logger):
 
 
 def test_recursive_formula(qtrace, mock_logger):
+    """Test the recursive formula checker
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
+
+    Expectations
+    ------------
+    Users should be prevented from entering recursive formulas and an error should be printed to stdout
+    """
     model = qtrace.curves_model
 
     index = model.index(0, 0)
@@ -209,6 +280,21 @@ def test_recursive_formula(qtrace, mock_logger):
     [(None, "B"), ("L", "M"), ("Z", "AA"), ("LM", "LN"), ("AZ", "BA"), ("ZZZZ", "AAAAA")],
 )
 def test_next_header(qtrace, data_test, data_expected):
+    """Test the row header generation works as expected
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    data_test : str
+        The "last header" in the table to test against
+    data_expected : str
+        The expected header to be returned based on the "last header"
+
+    Expectations
+    ------------
+    Row headers should be generated based on the previous header
+    """
     model = qtrace.curves_model
     if data_test:
         model._row_names.append(data_test)
@@ -219,6 +305,21 @@ def test_next_header(qtrace, data_test, data_expected):
 
 @pytest.mark.parametrize("enabled", [True, False])
 def test_live_connection_status(qtrace, enabled):
+    """Test that the model reflects a curve's live connection status
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    enabled : bool
+        Enable/disable the live connection status; used as test data and
+        expected value
+
+    Expectations
+    ------------
+    When the curve's live connection status is disconnected, the table will
+    disable the checkbox for fetching live data and make its background red
+    """
     model = qtrace.curves_model
     model.setData(model.index(0, 0), "FOO:CHANNEL", Qt.EditRole)
 
