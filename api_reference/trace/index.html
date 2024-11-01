@@ -1189,8 +1189,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>trace/main.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
-<span class="normal">250</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
@@ -1209,7 +1208,8 @@
 <span class="normal">266</span>
 <span class="normal">267</span>
 <span class="normal">268</span>
-<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LoggingHandler</span><span class="p">(</span><span class="n">Handler</span><span class="p">):</span>
+<span class="normal">269</span>
+<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LoggingHandler</span><span class="p">(</span><span class="n">Handler</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logging_lbl</span><span class="p">:</span> <span class="n">QLabel</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logging_lbl</span> <span class="o">=</span> <span class="n">logging_lbl</span>
@@ -1265,8 +1265,7 @@ well. Also checks if the logging label has been deleted.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">254</span>
-<span class="normal">255</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">255</span>
 <span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
@@ -1280,7 +1279,8 @@ well. Also checks if the logging label has been deleted.</p>
 <span class="normal">266</span>
 <span class="normal">267</span>
 <span class="normal">268</span>
-<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">):</span>
+<span class="normal">269</span>
+<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Any logs from the logger will be displayed on the logging label. If</span>
 <span class="sd">    the log level is greater than 20 (INFO), then the level will be shown as</span>
 <span class="sd">    well. Also checks if the logging label has been deleted.</span>
@@ -1557,7 +1557,8 @@ well. Also checks if the logging label has been deleted.</p>
 <span class="normal">243</span>
 <span class="normal">244</span>
 <span class="normal">245</span>
-<span class="normal">246</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TraceDisplay</span><span class="p">(</span><span class="n">Display</span><span class="p">,</span> <span class="n">TracesTableMixin</span><span class="p">,</span> <span class="n">AxisTableMixin</span><span class="p">,</span> <span class="n">FileIOMixin</span><span class="p">,</span> <span class="n">PlotConfigMixin</span><span class="p">):</span>
+<span class="normal">246</span>
+<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">TraceDisplay</span><span class="p">(</span><span class="n">Display</span><span class="p">,</span> <span class="n">TracesTableMixin</span><span class="p">,</span> <span class="n">AxisTableMixin</span><span class="p">,</span> <span class="n">FileIOMixin</span><span class="p">,</span> <span class="n">PlotConfigMixin</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ui_filename</span><span class="o">=</span><span class="vm">__file__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.py&quot;</span><span class="p">,</span> <span class="s2">&quot;.ui&quot;</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TraceDisplay</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span> <span class="n">ui_filename</span><span class="o">=</span><span class="n">ui_filename</span><span class="p">)</span>
         <span class="c1"># Set up PyDMApplication</span>
@@ -1680,14 +1681,13 @@ well. Also checks if the logging label has been deleted.</p>
             <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
             <span class="s2">&quot;--input_file&quot;</span><span class="p">,</span>
             <span class="n">action</span><span class="o">=</span><span class="n">PathAction</span><span class="p">,</span>
-            <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Absolute file path to import from</span><span class="se">\n</span><span class="s2">Alternatively can be provided as INPUT_FILE macro&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
             <span class="s2">&quot;--pvs&quot;</span><span class="p">,</span>
-            <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
             <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
             <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Space-separated list of PVs to show on startup</span><span class="se">\n</span><span class="s2">Formulas should be passed without spaces: &quot;</span>
@@ -1696,7 +1696,6 @@ well. Also checks if the logging label has been deleted.</p>
         <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
             <span class="s2">&quot;--macro&quot;</span><span class="p">,</span>
-            <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
             <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Mimic PyDM macro replacements to use. Should be in JSON object format.&quot;</span>
             <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">JSON Formatting Reminder:&quot;</span>
@@ -1720,8 +1719,11 @@ well. Also checks if the logging label has been deleted.</p>
             <span class="n">macros</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">parsed_macros</span><span class="p">)</span>
 
         <span class="c1"># Get the file to import from if one is provided. Prioritize args over macro</span>
-        <span class="n">input_file</span> <span class="o">=</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">input_file</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">input_file</span> <span class="ow">and</span> <span class="s2">&quot;INPUT_FILE&quot;</span> <span class="ow">in</span> <span class="n">macros</span><span class="p">:</span>
+        <span class="n">input_file</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">input_file</span><span class="p">:</span>
+            <span class="c1"># Need to unpack as PathAction returns a list</span>
+            <span class="n">input_file</span> <span class="o">=</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">input_file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s2">&quot;INPUT_FILE&quot;</span> <span class="ow">in</span> <span class="n">macros</span><span class="p">:</span>
             <span class="n">input_file</span> <span class="o">=</span> <span class="n">macros</span><span class="p">[</span><span class="s2">&quot;INPUT_FILE&quot;</span><span class="p">]</span>
 
         <span class="c1"># Get the list of PVs to show on startup</span>
@@ -1878,12 +1880,12 @@ well. Also checks if the logging label has been deleted.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">205</span>
-<span class="normal">206</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
-<span class="normal">210</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">210</span>
+<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">git_version</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the current git tag for the project&quot;&quot;&quot;</span>
     <span class="n">project_directory</span> <span class="o">=</span> <span class="vm">__file__</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -2041,7 +2043,8 @@ args : List[str]
 <span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
-<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">parse_macros_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macros</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+<span class="normal">203</span>
+<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">parse_macros_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">macros</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse user provided macros and args into lists of PVs to use on</span>
 <span class="sd">    startup or which file to import on startup</span>
 
@@ -2079,14 +2082,13 @@ args : List[str]
         <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--input_file&quot;</span><span class="p">,</span>
         <span class="n">action</span><span class="o">=</span><span class="n">PathAction</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Absolute file path to import from</span><span class="se">\n</span><span class="s2">Alternatively can be provided as INPUT_FILE macro&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--pvs&quot;</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Space-separated list of PVs to show on startup</span><span class="se">\n</span><span class="s2">Formulas should be passed without spaces: &quot;</span>
@@ -2095,7 +2097,6 @@ args : List[str]
     <span class="n">trace_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--macro&quot;</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Mimic PyDM macro replacements to use. Should be in JSON object format.&quot;</span>
         <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">JSON Formatting Reminder:&quot;</span>
@@ -2119,8 +2120,11 @@ args : List[str]
         <span class="n">macros</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">parsed_macros</span><span class="p">)</span>
 
     <span class="c1"># Get the file to import from if one is provided. Prioritize args over macro</span>
-    <span class="n">input_file</span> <span class="o">=</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">input_file</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">input_file</span> <span class="ow">and</span> <span class="s2">&quot;INPUT_FILE&quot;</span> <span class="ow">in</span> <span class="n">macros</span><span class="p">:</span>
+    <span class="n">input_file</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">input_file</span><span class="p">:</span>
+        <span class="c1"># Need to unpack as PathAction returns a list</span>
+        <span class="n">input_file</span> <span class="o">=</span> <span class="n">trace_args</span><span class="o">.</span><span class="n">input_file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s2">&quot;INPUT_FILE&quot;</span> <span class="ow">in</span> <span class="n">macros</span><span class="p">:</span>
         <span class="n">input_file</span> <span class="o">=</span> <span class="n">macros</span><span class="p">[</span><span class="s2">&quot;INPUT_FILE&quot;</span><span class="p">]</span>
 
     <span class="c1"># Get the list of PVs to show on startup</span>
@@ -2159,11 +2163,11 @@ args : List[str]
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
-<span class="normal">213</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
-<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
+<span class="normal">216</span>
+<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">resetPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reset the Axis model and the Curve model to empty states&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">axis_table_model</span><span class="o">.</span><span class="n">set_model_axes</span><span class="p">()</span>
@@ -2247,8 +2251,7 @@ toggled : bool
 
             <details class="quote">
               <summary>Source code in <code>trace/main.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
-<span class="normal">219</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
 <span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
@@ -2275,7 +2278,8 @@ toggled : bool
 <span class="normal">243</span>
 <span class="normal">244</span>
 <span class="normal">245</span>
-<span class="normal">246</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QAbstractButton</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+<span class="normal">246</span>
+<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="n">QAbstractButton</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">set_plot_timerange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">button</span><span class="p">:</span> <span class="n">QAbstractButton</span><span class="p">,</span> <span class="n">toggled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Slot to be called when a timespan setting button is pressed.</span>
 <span class="sd">    This will enable autoscrolling along the x-axis and disable mouse</span>
