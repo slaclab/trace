@@ -89,6 +89,12 @@ class ArchiverAxisModel(BasePlotAxesModel):
         elif role == Qt.CheckStateRole and index.column() in self.checkable_col:
             return super().setData(index, value, Qt.EditRole)
         elif index.column() not in self.checkable_col:
+            # Changes to axis' name should change axis' label as well
+            if self._column_names[index.column()] == "Y-Axis Name":
+                label_col = self.getColumnIndex("Y-Axis Label")
+                label_index = self.index(index.row(), label_col)
+                self.setData(label_index, value, role)
+
             return super().setData(index, value, role)
         return None
 
