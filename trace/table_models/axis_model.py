@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from qtpy.QtCore import Qt, Signal, QVariant, QModelIndex, QPersistentModelIndex
+from qtpy.QtCore import Qt, Signal, QModelIndex, QPersistentModelIndex
 
 from pydm.widgets.baseplot import BasePlot, BasePlotAxisItem
 from pydm.widgets.axis_table_model import BasePlotAxesModel
@@ -38,6 +38,9 @@ class ArchiverAxisModel(BasePlotAxesModel):
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
         """Return flags that determine how users can interact with the items in the table"""
+        if not index.isValid():
+            return Qt.NoItemFlags
+
         flags = super().flags(index)
         if index.column() in self.checkable_col:
             flags = Qt.ItemIsEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsSelectable
@@ -56,7 +59,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
             needs, by default Qt.DisplayRole
         """
         if not index.isValid():
-            return QVariant()
+            return None
         elif role == Qt.CheckStateRole and self._column_names[index.column()] == "Hidden":
             return Qt.Unchecked if self.plot._axes[index.row()].isVisible() else Qt.Checked
         elif role == Qt.CheckStateRole and index.column() in self.checkable_col:
@@ -81,7 +84,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
         """
         logger.debug(f"Setting {self._column_names[index.column()]} on axis {index.siblingAtColumn(0).data()}")
         if not index.isValid():
-            return QVariant()
+            return None
         # Specifically the Hidden column must be affected in axis_model as opposed to elsewhere
         elif role == Qt.CheckStateRole and self._column_names[index.column()] == "Hidden":
             self.plot._axes[index.row()].setHidden(bool(value))
@@ -137,6 +140,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
         }
         cleaned_axes = []
         for a in axes:
+            # The bare requirements for a new axis
             clean_a = {
                 "name": f"Axis {len(cleaned_axes) + 1}",
                 "orientation": "left",
@@ -151,12 +155,6 @@ class ArchiverAxisModel(BasePlotAxesModel):
                 else:
                     clean_a[k] = a[k]
             cleaned_axes.append(clean_a)
-        clean_a = {
-            "name": f"Axis {len(cleaned_axes) + 1}",
-            "orientation": "left",
-            "label": f"Axis {len(cleaned_axes) + 1}",
-        }
-        cleaned_axes.append(clean_a)
         logger.debug("Clearing axes model")
         self.beginResetModel()
         self._plot.clearAxes()

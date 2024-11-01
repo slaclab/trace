@@ -172,7 +172,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 try:
                     ret_code = self.replaceToFormula(index=index, formula=value)
                 except (SyntaxError, ValueError) as e:
-                    logger.error(e)
+                    logger.error(str(e))
                     return False
             elif value_is_formula and curve_is_formula:
                 try:
@@ -180,7 +180,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                     curve.formula = value
                     curve.pvs = pv_dict
                 except (SyntaxError, ValueError) as e:
-                    logger.error(e)
+                    logger.error(str(e))
                     return False
             elif not value_is_formula:
                 if not curve_is_formula:
@@ -240,8 +240,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             Returns the model's default flags, and if the column is Live Data or
             Archive Data, then may also disable the index depending on channel status.
         """
-        flags = super().flags(index)
+        if not index.isValid():
+            return Qt.NoItemFlags
 
+        flags = super().flags(index)
         col_name = self._column_names[index.column()]
         if col_name in ("Live Data", "Archive Data"):
             curve = self.curve_at_index(index)
@@ -280,17 +282,16 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
 
-        new_curve = self._plot._curves[-1]
+        new_curve = self.curve_at_index(-1)
         new_curve.hide()
         if self.rowCount() != 1:
             logger.debug("Hide blank Y-axis")
             self._axis_model.plot.plotItem.axes[y_axis.name]["item"].hide()
         new_curve.unitSignal.connect(self.setAxis)
-        logger.debug("Finished adding new empty curve to plot")
 
-        curve = self.curve_at_index(-1)
-        curve.live_channel_connection.connect(self.live_connection_slot)
-        curve.archive_channel_connection.connect(self.archive_connection_slot)
+        new_curve.live_channel_connection.connect(self.live_connection_slot)
+        new_curve.archive_channel_connection.connect(self.archive_connection_slot)
+        logger.debug("Finished adding new empty curve to plot")
 
     def set_model_curves(self, curves: List[Dict] = []) -> None:
         """Reset the model to only contain the list of given curves.
@@ -602,6 +603,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The curve's live connection status.
         """
         curve = self.sender()
+        if not isinstance(curve, (ArchivePlotCurveItem, FormulaCurveItem)):
+            return
 
         if connection:
             self._invalid_live_channels.discard(curve)

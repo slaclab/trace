@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import Any, List
 
 from qtpy.QtGui import QDrag, QKeyEvent
 from qtpy.QtCore import (
@@ -7,7 +7,6 @@ from qtpy.QtCore import (
     QUrl,
     Signal,
     QObject,
-    QVariant,
     QMimeData,
     QModelIndex,
     QAbstractTableModel,
@@ -55,17 +54,17 @@ class ArchiveResultsTableModel(QAbstractTableModel):
             return 0
         return len(self.column_names)
 
-    def data(self, index: QModelIndex, role: int) -> QVariant:
+    def data(self, index: QModelIndex, role: int) -> Any:
         """Return the data for the associated role. Currently only supporting DisplayRole."""
         if not index.isValid():
-            return QVariant()
+            return None
 
         if role != Qt.DisplayRole:
-            return QVariant()
+            return None
 
         return self.results_list[index.row()]
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole) -> QVariant:
+    def headerData(self, section, orientation, role=Qt.DisplayRole) -> Any:
         """Return data associated with the header"""
         if role != Qt.DisplayRole:
             return super().headerData(section, orientation, role)
