@@ -604,8 +604,13 @@ def main(input_file: List[Path] = None, output_file: List[Path] = None, overwrit
 
 
 class PathAction(Action):
-    def __call__(self, parser: ArgumentParser, namespace: Namespace, values: str, option_string: str = None) -> None:
+    def __call__(
+        self, parser: ArgumentParser, namespace: Namespace, values: Union[str, List], option_string: str = None
+    ) -> None:
         """Convert filepath string from argument into  a pathlib.Path object"""
+        if isinstance(values, str):
+            values = [values]
+
         new_paths = []
         for file_path in values:
             new_path = path.expandvars(file_path)
