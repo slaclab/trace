@@ -215,11 +215,9 @@ class ArchiveSearchWidget(QWidget):
         """Send the search request to the archiver appliance based on the search string typed into the text box"""
         search_text = self.search_box.text()
         search_text = search_text.replace("?", ".")
-        search_text = search_text.replace("*", ".")
-        search_text = search_text.replace("%", ".")
-        url_string = (
-            f"http://{self.archive_url_textedit.text()}/" f"retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
-        )
+        search_text = search_text.replace("*", ".*")
+        search_text = search_text.replace("%", ".*")
+        url_string = f"{self.archive_url_textedit.text()}/retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
         request = QNetworkRequest(QUrl(url_string))
         self.network_manager.get(request)
         self.loading_label.show()
