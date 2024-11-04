@@ -42,15 +42,15 @@ class ArchiveResultsTableModel(QAbstractTableModel):
         self.results_list = []
         self.column_names = ("PV",)
 
-    def rowCount(self, parent: QObject) -> int:
+    def rowCount(self, index: QModelIndex = QModelIndex()) -> int:
         """Return the row count of the table"""
-        if parent is not None and parent.isValid():
+        if index is not None and index.isValid():
             return 0
         return len(self.results_list)
 
-    def columnCount(self, parent: QObject) -> int:
+    def columnCount(self, index: QModelIndex = QModelIndex()) -> int:
         """Return the column count of the table"""
-        if parent is not None and parent.isValid():
+        if index is not None and index.isValid():
             return 0
         return len(self.column_names)
 
