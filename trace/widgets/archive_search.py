@@ -24,7 +24,14 @@ from qtpy.QtWidgets import (
     QAbstractItemView,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("")
+if not logger.hasHandlers():
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("[%(asctime)s] [%(levelname)-8s] - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel("INFO")
+    handler.setLevel("INFO")
 
 
 class ArchiveResultsTableModel(QAbstractTableModel):
