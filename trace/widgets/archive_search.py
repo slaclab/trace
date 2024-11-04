@@ -1,4 +1,5 @@
 import logging
+from os import getenv
 from typing import Any, List
 
 from qtpy.QtGui import QDrag, QKeyEvent
@@ -134,7 +135,7 @@ class ArchiveSearchWidget(QWidget):
         self.layout = QVBoxLayout()
 
         self.archive_title_label = QLabel("Archive URL:")
-        self.archive_url_textedit = QLineEdit("lcls-archapp.slac.stanford.edu")
+        self.archive_url_textedit = QLineEdit(getenv("PYDM_ARCHIVER_URL"))
         self.archive_url_textedit.setFixedWidth(250)
         self.archive_url_textedit.setFixedHeight(25)
 
