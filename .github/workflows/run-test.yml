@@ -25,7 +25,6 @@ jobs:
     env:
       DISPLAY: ':99.0'
       QT_MAC_WANTS_LAYER: 1  # PyQT gui tests involving qtbot interaction on macOS will fail without this
-      PYDM_ARCHIVER_URL: 'http://dummy.archiver.url'
 
     steps:
     - uses: actions/checkout@v3
