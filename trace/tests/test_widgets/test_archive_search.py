@@ -86,6 +86,7 @@ def test_archive_search(mock_get, search_wid, data_test, data_expected):
 
     archiver_url = getenv("PYDM_ARCHIVER_URL")
     url_string = f"{archiver_url}/retrieval/bpl/searchForPVsRegex?regex=.*{data_expected}.*"
+    print(url_string)
     mock_get.assert_called_once_with(QNetworkRequest(QUrl(url_string)))
 
 
