@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from qtpy.QtGui import QDrag
 from qtpy.QtCore import QUrl, QMimeData, QByteArray, QModelIndex
-from qtpy.QtNetwork import QNetworkReply, QNetworkRequest
+from qtpy.QtNetwork import QNetworkReply
 
 from widgets.archive_search import ArchiveSearchWidget
 
@@ -86,8 +86,8 @@ def test_archive_search(mock_get, search_wid, data_test, data_expected):
 
     archiver_url = getenv("PYDM_ARCHIVER_URL")
     url_string = f"{archiver_url}/retrieval/bpl/searchForPVsRegex?regex=.*{data_expected}.*"
-    print(url_string)
-    mock_get.assert_called_once_with(QNetworkRequest(QUrl(url_string)))
+    mock_get.assert_called_once()
+    assert mock_get.call_args.args[0].url() == QUrl(url_string)
 
 
 def test_populate_results_list_success(search_wid):
