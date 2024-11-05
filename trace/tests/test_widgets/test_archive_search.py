@@ -1,4 +1,4 @@
-from os import getenv
+import os
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -7,6 +7,8 @@ from qtpy.QtCore import QUrl, QMimeData, QByteArray, QModelIndex
 from qtpy.QtNetwork import QNetworkReply
 
 from widgets.archive_search import ArchiveSearchWidget
+
+DUMMY_ARCHIVER_URL = "dummy.archiver.url"
 
 
 @pytest.fixture
@@ -17,7 +19,9 @@ def search_wid(qapp):
     ------
     An instance of ArchiveSearchWidget.
     """
-    yield ArchiveSearchWidget()
+    # Set PYDM_ARCHIVER_URL so tests have a predictable state
+    with patch.dict(os.environ, {"PYDM_ARCHIVER_URL": DUMMY_ARCHIVER_URL}):
+        yield ArchiveSearchWidget()
 
 
 def create_dummy_reply(data: bytes = b"", error_code=QNetworkReply.NoError):
@@ -84,10 +88,10 @@ def test_archive_search(mock_get, search_wid, data_test, data_expected):
     search_wid.search_box.setText(data_test)
     search_wid.search_button.click()
 
-    archiver_url = getenv("PYDM_ARCHIVER_URL")
-    url_string = f"{archiver_url}/retrieval/bpl/searchForPVsRegex?regex=.*{data_expected}.*"
+    url_string = f"{DUMMY_ARCHIVER_URL}/retrieval/bpl/searchForPVsRegex?regex=.*{data_expected}.*"
     mock_get.assert_called_once()
-    assert mock_get.call_args.args[0].url() == QUrl(url_string)
+    reply_actual = mock_get.call_args.args[0]
+    assert reply_actual.url() == QUrl(url_string)
 
 
 def test_populate_results_list_success(search_wid):
