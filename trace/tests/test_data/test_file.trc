@@ -1,15 +1,7 @@
 {
-    "archiver_url": "http://lcls-archapp.slac.stanford.edu",
+    "archiver_url": "http://lcls-archapp.slac.stanford.edu/retrieval",
     "plot": {
-        "refreshInterval": 4,
-        "title": "Test Plot Title",
-        "xGrid": true,
-        "yGrid": false,
-        "opacity": 200,
-        "backgroundColor": "#ffffff",
-        "legend": false,
-        "crosshair": null,
-        "mouseMode": 1
+        "legend": true
     },
     "time_axis": {
         "name": "Main Time Axis",
@@ -19,35 +11,54 @@
     },
     "y-axes": [
         {
-            "name": "Axis 1",
+            "name": "Main Range Axis",
+            "label": "Main Range Axis",
             "orientation": "left",
-            "minRange": -1.04,
-            "maxRange": 1.04,
-            "autoRange": true,
             "logMode": false
         },
         {
-            "name": "FOO Axis",
-            "orientation": "right",
-            "minRange": -15,
-            "maxRange": 15,
-            "autoRange": false,
+            "name": "torr",
+            "label": "torr",
+            "orientation": "left",
+            "logMode": false
+        },
+        {
+            "name": "Second Range Axis",
+            "label": "Second Range Axis",
+            "orientation": "left",
             "logMode": true
         }
     ],
     "curves": [
         {
-            "useArchiveData": true,
-            "liveData": true,
-            "channel": "KLYS:LI22:31:KVAC",
             "name": "KLYS:LI22:31:KVAC",
-            "color": "#008cf9",
-            "lineStyle": 1,
+            "channel": "KLYS:LI22:31:KVAC",
+            "yAxisName": "torr",
             "lineWidth": 1,
-            "symbolSize": 10,
-            "yAxisName": "Axis 1",
-            "thresholdColor": "white"
+            "color": "#ff0000",
+            "thresholdColor": "#ff0000"
+        },
+        {
+            "name": "KLYS:LI22:41:KVAC",
+            "channel": "KLYS:LI22:41:KVAC",
+            "yAxisName": "Second Range Axis",
+            "lineWidth": 1,
+            "color": "#0000ff",
+            "thresholdColor": "#0000ff"
         }
     ],
-    "formula": []
+    "formula": [
+        {
+            "name": "formula0",
+            "formula": "f://{x0}+{x1}",
+            "curveDict": {
+                "x0": "KLYS:LI22:31:KVAC",
+                "x1": "KLYS:LI22:41:KVAC"
+            },
+            "yAxisName": "Main Range Axis",
+            "lineWidth": 1.0,
+            "color": "#00ff00",
+            "thresholdColor": "#00ff00"
+        }
+    ]
 }

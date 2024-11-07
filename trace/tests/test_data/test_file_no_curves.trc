@@ -1,15 +1,13 @@
 {
-    "archiver_url": "http://lcls-archapp.slac.stanford.edu",
+    "archiver_url": "http://lcls-archapp.slac.stanford.edu/retrieval",
     "plot": {
-        "refreshInterval": 0.0,
-        "title": "",
-        "xGrid": false,
-        "yGrid": false,
-        "opacity": 128,
-        "backgroundColor": "#ffffff",
-        "legend": false,
-        "crosshair": null,
-        "mouseMode": 1
+        "title": null,
+        "legend": {
+            "show_directory_name": "false",
+            "show_range": "true",
+            "show_units": "true",
+            "show_curve_name": "true"
+        }
     },
     "time_axis": {
         "name": "Main Time Axis",
@@ -19,14 +17,26 @@
     },
     "y-axes": [
         {
-            "name": "Axis 1",
+            "name": "Main Range Axis",
+            "label": "Main Range Axis",
             "orientation": "left",
-            "minRange": -1.04,
-            "maxRange": 1.04,
-            "autoRange": true,
             "logMode": false
+        },
+        {
+            "name": "torr",
+            "label": "torr",
+            "orientation": "left",
+            "logMode": false
+        },
+        {
+            "name": "Second Range Axis",
+            "label": "Second Range Axis",
+            "orientation": "left",
+            "logMode": true
         }
     ],
-    "curves": [],
-    "formula": []
+    "curves": [
+    ],
+    "formula": [
+    ]
 }

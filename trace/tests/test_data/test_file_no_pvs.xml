@@ -9,6 +9,18 @@
     <range_axis name="Main Range Axis">
         <min/>
         <max/>
+        <type>normal</type>
+        <location>left</location>
+    </range_axis>
+    <range_axis name="torr">
+        <min/>
+        <max/>
+        <type>normal</type>
+        <location>left</location>
+    </range_axis>
+    <range_axis name="Second Range Axis">
+        <min/>
+        <max/>
         <type>log</type>
         <location>left</location>
     </range_axis>

@@ -9,6 +9,18 @@
     <range_axis name="Main Range Axis">
         <min/>
         <max/>
+        <type>normal</type>
+        <location>left</location>
+    </range_axis>
+    <range_axis name="torr">
+        <min/>
+        <max/>
+        <type>normal</type>
+        <location>left</location>
+    </range_axis>
+    <range_axis name="Second Range Axis">
+        <min/>
+        <max/>
         <type>log</type>
         <location>left</location>
     </range_axis>
@@ -16,10 +28,31 @@
     <plot_title/>
     <pv directory_name="Default" name="KLYS:LI22:31:KVAC">
         <time_axis_name>Main Time Axis</time_axis_name>
+        <range_axis_name>torr</range_axis_name>
+        <color>-65536</color>
+        <draw_type>steps</draw_type>
+        <draw_width>1.0</draw_width>
+        <visibility>true</visibility>
+    </pv>
+    <pv directory_name="Default" name="KLYS:LI22:41:KVAC">
+        <time_axis_name>Main Time Axis</time_axis_name>
+        <range_axis_name>Second Range Axis</range_axis_name>
+        <color>-16776961</color>
+        <draw_type>steps</draw_type>
+        <draw_width>1.0</draw_width>
+        <visibility>true</visibility>
+    </pv>
+    <formula directory_name="Default" name="formula0">
+        <term>x0+x1</term>
+        <argument_ave name="KLYS:LI22:31:KVAC" variable="x0"/>
+        <argument_ave name="KLYS:LI22:41:KVAC" variable="x1"/>
+        <method_name>raw</method_name>
+        <nr_values>800</nr_values>
+        <time_axis_name>Main Time Axis</time_axis_name>
         <range_axis_name>Main Range Axis</range_axis_name>
         <color>-16711936</color>
         <draw_type>steps</draw_type>
-        <draw_width>1</draw_width>
+        <draw_width>1.0</draw_width>
         <visibility>true</visibility>
-    </pv>
+    </formula>
 </AVConfiguration>
