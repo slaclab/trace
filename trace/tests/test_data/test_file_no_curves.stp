@@ -20,17 +20,3 @@ Strip.Option.GridXon          1
 Strip.Option.GridYon          1
 Strip.Option.AxisYcolorStat   1
 Strip.Option.GraphLineWidth   2
-Strip.Curve.0.Name            KLYS:LI22:31:KVAC
-Strip.Curve.0.Units           torr
-Strip.Curve.0.Precision       2
-Strip.Curve.0.Min             30.00
-Strip.Curve.0.Max             60.00
-Strip.Curve.0.Scale           0
-Strip.Curve.0.PlotStatus      1
-Strip.Curve.1.Name            KLYS:LI22:41:KVAC
-Strip.Curve.1.Units           Second Range Axis
-Strip.Curve.1.Precision       2
-Strip.Curve.1.Min             30.00
-Strip.Curve.1.Max             60.00
-Strip.Curve.1.Scale           0
-Strip.Curve.1.PlotStatus      1
