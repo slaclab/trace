@@ -30,7 +30,7 @@ class PlotConfigMixin:
 
         self.ui.refresh_interval_spnbx.valueChanged.connect(lambda interval: self.autoScroll(enable=True))
 
-        self.ui.legend_chckbx.stateChanged.connect(self.plot.setShowLegend)
+        self.ui.legend_chckbx.stateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
 
         self.ui.crosshair_chckbx.stateChanged.connect(lambda show: self.plot.enableCrosshair(show, 100, 100))
 

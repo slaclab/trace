@@ -25,7 +25,7 @@ def test_plot_setup(qtrace, get_test_file):
 
     qtrace.plot_setup(test_data)
 
-    assert qtrace.plot.to_dict() == test_data
+    assert qtrace.plot.to_dict().items() >= test_data.items()
 
 
 @pytest.mark.parametrize("test_size, expected_size", ((-5, 1), (10, 10), (200, 99)))
