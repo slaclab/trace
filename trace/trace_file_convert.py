@@ -78,16 +78,15 @@ class TraceFileConverter:
         if self.import_is_xml():
             etree = ET.ElementTree(ET.fromstring(text))
             self.stored_data = self.xml_to_dict(etree)
-            if not (self.stored_data["pv"] or self.stored_data["formula"]):
-                raise FileNotFoundError(f"Incorrect input file format: {self.input_file}")
             self.stored_data = self.convert_xml_data(self.stored_data)
         elif self.import_is_stp():
             self.stored_data = self.stp_to_dict(text)
             self.stored_data = self.convert_stp_data(self.stored_data)
         else:
             self.stored_data = json.loads(text)
-            if not self.stored_data["curves"]:
-                raise FileNotFoundError(f"Incorrect input file format: {self.input_file}")
+
+        if not self.stored_data["curves"]:
+            raise ValueError(f"Incorrect input file format: {self.input_file}")
 
         return self.stored_data
 
@@ -122,16 +121,13 @@ class TraceFileConverter:
         if not output_data:
             if not self.stored_data:
                 raise ValueError(
-                    "Output data is required but was not provided " "and the 'stored_data' property is not populated."
+                    "Output data is required but was not provided and the 'stored_data' property is not populated."
                 )
             output_data = self.stored_data
         elif isinstance(output_data, PyDMTimePlot):
             output_data = self.get_plot_data(output_data)
 
-        for obj in output_data["y-axes"] + output_data["curves"] + output_data["formula"]:
-            for k, v in obj.copy().items():
-                if v is None:
-                    del obj[k]
+        output_data = self.remove_null_values(output_data)
 
         with open(self.output_file, "w") as f:
             json.dump(output_data, f, indent=4)
@@ -159,11 +155,9 @@ class TraceFileConverter:
         converted_data["archiver_url"] = data_in.get("connection_parameter", getenv("PYDM_ARCHIVER_URL"))
         converted_data["archiver_url"] = converted_data["archiver_url"].replace("pbraw://", "http://")
 
-        legend_dict = data_in["legend_configuration"]
-        legend_dict["show_curve_name"] = legend_dict["show_ave_name"]
-        del legend_dict["show_ave_name"]
+        show_legend = data_in["legend_configuration"]["show_ave_name"] == "true"
 
-        converted_data["plot"] = {"title": data_in["plot_title"], "legend": legend_dict}
+        converted_data["plot"] = {"title": data_in["plot_title"], "legend": show_legend}
 
         # Convert date formats from MM/DD/YYYY --> YYYY-MM-DD
         converted_data["time_axis"] = {}
@@ -182,8 +176,7 @@ class TraceFileConverter:
                 "orientation": axis_in["location"],
                 "logMode": axis_in["type"] != "normal",
             }
-            filtered_dict = self.remove_null_values(ax_dict)
-            converted_data["y-axes"].append(filtered_dict)
+            converted_data["y-axes"].append(ax_dict)
 
         converted_data["curves"] = []
         for pv_in in data_in["pv"]:
@@ -196,12 +189,11 @@ class TraceFileConverter:
                 "color": color.name(),
                 "thresholdColor": color.name(),
             }
-            filtered_dict = self.remove_null_values(pv_dict)
-            converted_data["curves"].append(filtered_dict)
+            converted_data["curves"].append(pv_dict)
 
         converted_data["formula"] = []
         for formula_in in data_in["formula"]:
-            color = self.srgb_to_qColor(pv_in["color"])
+            color = self.srgb_to_qColor(formula_in["color"])
             formula = "f://" + formula_in["term"]
             for curve in formula_in["curveDict"].keys():
                 insert = "{" + curve + "}"
@@ -215,10 +207,9 @@ class TraceFileConverter:
                 "color": color.name(),
                 "thresholdColor": color.name(),
             }
-            filtered_dict = self.remove_null_values(formula_dict)
-            converted_data["formula"].append(filtered_dict)
+            converted_data["formula"].append(formula_dict)
 
-        self.stored_data = converted_data
+        self.stored_data = self.remove_null_values(converted_data)
         return self.stored_data
 
     def convert_stp_data(self, data_in: Dict = {}) -> Dict:
@@ -238,6 +229,9 @@ class TraceFileConverter:
         """
         if not data_in:
             data_in = self.stored_data
+
+        if "Curve" not in data_in:
+            raise ValueError(f"Incorrect input file format: {self.input_file}")
 
         converted = {"archiver_url": getenv("PYDM_ARCHIVER_URL")}
 
@@ -505,12 +499,12 @@ class TraceFileConverter:
         return QColor(*rgb)
 
     @staticmethod
-    def remove_null_values(dict_in: dict) -> dict:
-        """Remove all key-value pairs from a given dictionary where the value is None
+    def remove_null_values(obj_in: Union[Dict, List]) -> Union[Dict, List]:
+        """Delete None values recursively from all of the dictionaries, tuples, lists, sets
 
         Parameters
         ----------
-        dict_in : dict
+        obj_in : dict | list
             Some dictionary, possibly containing key-value pairs where value is None
 
         Returns
@@ -518,11 +512,22 @@ class TraceFileConverter:
         dict
             The same dictionary, but with those key-value pairs deleted
         """
-        dict_out = dict_in.copy()
-        for k, v in dict_in.items():
-            if v is None:
-                del dict_out[k]
-        return dict_out
+        if isinstance(obj_in, dict):
+            for key, value in list(obj_in.items()):
+                if isinstance(value, (list, dict, tuple, set)):
+                    obj_in[key] = TraceFileConverter.remove_null_values(value)
+                elif value is None or key is None:
+                    del obj_in[key]
+
+        elif isinstance(obj_in, (list, set, tuple)):
+            temp_list = []
+            for item in obj_in:
+                if item is None:
+                    continue
+                temp_list.append(TraceFileConverter.remove_null_values(item))
+            obj_in = type(obj_in)(temp_list)
+
+        return obj_in
 
 
 def convert(converter: TraceFileConverter, input_file: Path = None, output_file: Path = None, overwrite: bool = False):
