@@ -150,6 +150,30 @@ def test_set_model_curves(qtrace, get_test_file):
     assert "FOO:BAR:CHANNEL" not in qtrace.curves_model
 
 
+def test_set_model_curves_empty(qtrace, get_test_file):
+    """Test that ArchiverCurveModel.set_model_curves() called with no arguments clears
+    the model
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    get_test_file : fixture
+        A fixture used to get test files from the test_data directory
+
+    Expectations
+    ------------
+    The ArchiverCurveModel will have 1 curve
+    """
+    test_filename = get_test_file("test_file.trc")
+    test_data = loads(test_filename.read_text())
+
+    qtrace.curves_model.set_model_curves(test_data["curves"])
+    qtrace.curves_model.set_model_curves()
+
+    assert qtrace.curves_model.rowCount() == 1
+
+
 @pytest.mark.parametrize(
     ["column", "data_test", "data_expected"],
     [
