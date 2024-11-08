@@ -92,6 +92,9 @@
        <property name="checkable">
         <bool>true</bool>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">timespan_btns</string>
+       </attribute>
       </widget>
      </item>
      <item>
@@ -324,8 +327,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1146</width>
-             <height>416</height>
+             <width>230</width>
+             <height>310</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
