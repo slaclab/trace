@@ -53,7 +53,7 @@ def patch_datetime_now(monkeypatch):
 
 
 @mock.patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
-def test_export_save_file_success(mock_get_save_name, qtrace, tmpdir):
+def test_export_save_file_success(mock_get_save_name, qtrace, tmp_path):
     """Test TraceDisplay.export_save_file() successfully writes a file and it
     matches the expected output.
 
@@ -63,7 +63,7 @@ def test_export_save_file_success(mock_get_save_name, qtrace, tmpdir):
         Mock qtpy.QtWidgets.QFileDialog.getSaveFileName to return an expected file name
     qtrace : fixture
         Instance of TraceDisplay for application testing
-    tmpdir : fixture
+    tmp_path : fixture
          A fixture which will provide a temporary directory unique to each test function
 
     Expectations
@@ -71,23 +71,20 @@ def test_export_save_file_success(mock_get_save_name, qtrace, tmpdir):
     TraceDisplay and TraceFileConverter will make a file with the expected name and content.
     """
     # Construct testcase
-    file = tmpdir / "test_export_save_file_success.trc"
-    mock_get_save_name.return_value = (file.strpath, None)
+    file = tmp_path / "test_export_save_file_success.trc"
+    mock_get_save_name.return_value = (str(file), None)
 
     # Construct plot_data to compare against
     plot_data = TraceFileConverter.get_plot_data(qtrace.ui.main_plot)
-    for obj in plot_data["y-axes"] + plot_data["curves"] + plot_data["formula"]:
-        for k, v in obj.copy().items():
-            if v is None:
-                del obj[k]
+    plot_data = TraceFileConverter.remove_null_values(plot_data)
 
     qtrace.export_save_file()
-    assert file.isfile()
-    assert file.read() == dumps(plot_data, indent=4)
+    assert file.is_file()
+    assert file.read_text() == dumps(plot_data, indent=4)
 
 
 @mock.patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
-def test_export_save_file_dir(mock_get_save_name, qtrace, mock_logger, tmpdir):
+def test_export_save_file_dir(mock_get_save_name, qtrace, mock_logger, tmp_path):
     """Test TraceDisplay.export_save_file() is interrupted when the provided filename
     is a directory.
 
@@ -99,7 +96,7 @@ def test_export_save_file_dir(mock_get_save_name, qtrace, mock_logger, tmpdir):
         Instance of TraceDisplay for application testing
     mock_logger : fixture
         A fixture used for mocking the logger's warning and error methods
-    tmpdir : fixture
+    tmp_path : fixture
         A fixture which will provide a temporary directory unique to each test function
 
     Expectations
@@ -107,15 +104,15 @@ def test_export_save_file_dir(mock_get_save_name, qtrace, mock_logger, tmpdir):
     No files/directories should be made and the logger should give a warning.
     """
     # Construct testcase & mocks
-    mock_get_save_name.return_value = (tmpdir.strpath, None)
+    mock_get_save_name.return_value = (str(tmp_path), None)
 
     qtrace.export_save_file()
     mock_logger.warning.assert_called_once_with("No file name provided to export save file to")
-    assert not tmpdir.isfile()
+    assert not tmp_path.is_file()
 
 
 @mock.patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
-def test_export_save_file_invalid_extension(mock_get_save_name, qtrace, mock_logger, tmpdir):
+def test_export_save_file_invalid_extension(mock_get_save_name, qtrace, mock_logger, tmp_path):
     """Test TraceDisplay.export_save_file() is interrupted when the provided filename
     has an extension other than *.trc . Needed to make a *.trc file after to prevent
     a recursive loop.
@@ -128,7 +125,7 @@ def test_export_save_file_invalid_extension(mock_get_save_name, qtrace, mock_log
         Instance of TraceDisplay for application testing
     mock_logger : fixture
         A fixture used for mocking the logger's warning and error methods
-    tmpdir : fixture
+    tmp_path : fixture
         A fixture which will provide a temporary directory unique to each test function
 
     Expectations
@@ -136,14 +133,14 @@ def test_export_save_file_invalid_extension(mock_get_save_name, qtrace, mock_log
     An error should be given when trying to make the *.csv file, but *.trc succeeds.
     """
     # Construct testcases & mocks
-    file_csv = tmpdir / "test_export_save_file_invalid_extension.csv"
-    file_trc = tmpdir / "test_export_save_file_invalid_extension.trc"
-    mock_get_save_name.side_effect = [(file_csv.strpath, None), (file_trc.strpath, None)]
+    file_csv = tmp_path / "test_export_save_file_invalid_extension.csv"
+    file_trc = tmp_path / "test_export_save_file_invalid_extension.trc"
+    mock_get_save_name.side_effect = [(str(file_csv), None), (str(file_trc), None)]
 
     qtrace.export_save_file()
     mock_logger.error.assert_called_once_with("Incorrect output file format: .csv")
-    assert not file_csv.isfile()
-    assert file_trc.isfile()
+    assert not file_csv.is_file()
+    assert file_trc.is_file()
 
 
 @pytest.mark.parametrize(("test_file_ext"), [".trc", ".xml", ".stp"])

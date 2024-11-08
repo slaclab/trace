@@ -1,4 +1,5 @@
 import logging
+from os import getenv
 from typing import Any, List
 
 from qtpy.QtGui import QDrag, QKeyEvent
@@ -24,7 +25,14 @@ from qtpy.QtWidgets import (
     QAbstractItemView,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("")
+if not logger.hasHandlers():
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("[%(asctime)s] [%(levelname)-8s] - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel("INFO")
+    handler.setLevel("INFO")
 
 
 class ArchiveResultsTableModel(QAbstractTableModel):
@@ -42,15 +50,15 @@ class ArchiveResultsTableModel(QAbstractTableModel):
         self.results_list = []
         self.column_names = ("PV",)
 
-    def rowCount(self, parent: QObject) -> int:
+    def rowCount(self, index: QModelIndex = QModelIndex()) -> int:
         """Return the row count of the table"""
-        if parent is not None and parent.isValid():
+        if index is not None and index.isValid():
             return 0
         return len(self.results_list)
 
-    def columnCount(self, parent: QObject) -> int:
+    def columnCount(self, index: QModelIndex = QModelIndex()) -> int:
         """Return the column count of the table"""
-        if parent is not None and parent.isValid():
+        if index is not None and index.isValid():
             return 0
         return len(self.column_names)
 
@@ -127,7 +135,7 @@ class ArchiveSearchWidget(QWidget):
         self.layout = QVBoxLayout()
 
         self.archive_title_label = QLabel("Archive URL:")
-        self.archive_url_textedit = QLineEdit("lcls-archapp.slac.stanford.edu")
+        self.archive_url_textedit = QLineEdit(getenv("PYDM_ARCHIVER_URL"))
         self.archive_url_textedit.setFixedWidth(250)
         self.archive_url_textedit.setFixedHeight(25)
 
@@ -207,11 +215,9 @@ class ArchiveSearchWidget(QWidget):
         """Send the search request to the archiver appliance based on the search string typed into the text box"""
         search_text = self.search_box.text()
         search_text = search_text.replace("?", ".")
-        search_text = search_text.replace("*", ".")
-        search_text = search_text.replace("%", ".")
-        url_string = (
-            f"http://{self.archive_url_textedit.text()}/" f"retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
-        )
+        search_text = search_text.replace("*", ".*")
+        search_text = search_text.replace("%", ".*")
+        url_string = f"{self.archive_url_textedit.text()}/retrieval/bpl/searchForPVsRegex?regex=.*{search_text}.*"
         request = QNetworkRequest(QUrl(url_string))
         self.network_manager.get(request)
         self.loading_label.show()
