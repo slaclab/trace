@@ -129,6 +129,31 @@ def test_set_model_axes(qtrace, get_test_file):
         assert axis_test.items() <= axis_actual.items()
 
 
+def test_set_model_axes_empty(qtrace, get_test_file):
+    """Test that ArchiverAxisModel.set_model_axes() called with no arguments clears
+    the model
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    get_test_file : fixture
+        A fixture used to get test files from the test_data directory
+
+    Expectations
+    ------------
+    The ArchiverAxisModel will have no axes
+    """
+    test_filename = get_test_file("test_file.trc")
+    test_data = loads(test_filename.read_text())
+
+    model = qtrace.axis_table_model
+    model.set_model_axes(test_data["y-axes"])
+    model.set_model_axes()
+
+    assert model.rowCount() == 0
+
+
 @pytest.mark.parametrize(
     ["column", "data_test", "data_expected"],
     [
