@@ -399,7 +399,7 @@ def test_convert_cli_overwrite(get_test_file, tmp_path):
     """
     input_path = get_test_file("test_file.xml")
     output_path = tmp_path / "test_out.trc"
-    expected_data = json.loads(get_test_file("test_file.trc").read_text())
+    expected_data = get_test_file("test_file.trc").read_text()
 
     output_path.write_text("content")
     assert output_path.exists()
@@ -417,13 +417,13 @@ def test_convert_cli_overwrite(get_test_file, tmp_path):
 
     result = subprocess.run(**run_kwargs)
     assert "Output file exists but overwrite not enabled:" in result.stderr
-    assert json.loads(output_path.read_text()) != expected_data
+    assert output_path.read_text() != expected_data
 
     run_kwargs["args"].append("--overwrite")
     result = subprocess.run(**run_kwargs)
 
     assert result.returncode == 0
-    assert json.loads(output_path.read_text()) == expected_data
+    assert output_path.read_text() == expected_data
 
 
 def test_convert_cli_clean(get_test_file, tmp_path):

@@ -59,7 +59,7 @@ class FileIOMixin:
             logger.debug(f"Attempting to import file: {file_name}")
             file_data = self.converter.import_file(file_name)
             self.io_path = file_name.parent
-        except FileNotFoundError as e:
+        except (FileNotFoundError, ValueError) as e:
             logger.error(str(e))
             self.import_save_file()
             return
