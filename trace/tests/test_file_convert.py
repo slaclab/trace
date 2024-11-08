@@ -1,3 +1,4 @@
+import sys
 import json
 import subprocess
 from os import environ
@@ -370,6 +371,7 @@ def test_convert_cli(get_test_file, tmp_path):
 
     result = subprocess.run(
         [
+            sys.executable,
             str(SCRIPT_PATH),
             str(input_path),  # Input file
             "--output_file",
@@ -406,6 +408,7 @@ def test_convert_cli_overwrite(get_test_file, tmp_path):
 
     run_kwargs = {
         "args": [
+            sys.executable,
             str(SCRIPT_PATH),
             str(input_path),  # Input file
             "--output_file",
@@ -448,7 +451,7 @@ def test_convert_cli_clean(get_test_file, tmp_path):
     assert input_path.exists()
 
     result = subprocess.run(
-        [str(SCRIPT_PATH), str(input_path), "--output_file", str(output_path), "--clean"],
+        [sys.executable, str(SCRIPT_PATH), str(input_path), "--output_file", str(output_path), "--clean"],
         capture_output=True,
         text=True,
     )
@@ -477,6 +480,7 @@ def test_convert_cli_batch(get_test_file, tmp_path):
 
     result = subprocess.run(
         [
+            sys.executable,
             str(SCRIPT_PATH),
             str(get_test_file("test_file.xml")),  # Input files
             str(get_test_file("test_file.stp")),
