@@ -76,10 +76,7 @@ def test_export_save_file_success(mock_get_save_name, qtrace, tmp_path):
 
     # Construct plot_data to compare against
     plot_data = TraceFileConverter.get_plot_data(qtrace.ui.main_plot)
-    for obj in plot_data["y-axes"] + plot_data["curves"] + plot_data["formula"]:
-        for k, v in obj.copy().items():
-            if v is None:
-                del obj[k]
+    plot_data = TraceFileConverter.remove_null_values(plot_data)
 
     qtrace.export_save_file()
     assert file.is_file()
