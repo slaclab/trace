@@ -1,10 +1,10 @@
 import os
 import argparse
+import subprocess
 from socket import gethostname
 from typing import Dict, List, Tuple, Union
 from getpass import getuser
 from logging import Handler, LogRecord
-from subprocess import run
 
 from qtpy.sip import isdeleted
 from qtpy.QtCore import Qt, Slot
@@ -207,7 +207,9 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
     def git_version():
         """Get the current git tag for the project"""
         project_directory = __file__.rsplit("/", 1)[0]
-        git_cmd = run(f"cd {project_directory} && git describe --tags", text=True, shell=True, capture_output=True)
+        git_cmd = subprocess.run(
+            f"cd {project_directory} && git describe --tags", text=True, shell=True, capture_output=True
+        )
         return git_cmd.stdout.strip()
 
     @Slot()
