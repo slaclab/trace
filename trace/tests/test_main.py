@@ -1,4 +1,8 @@
+import json
+from pathlib import Path
 from datetime import datetime, timedelta
+from subprocess import CompletedProcess
+from unittest.mock import patch
 
 
 def test_defaults(qtrace):
@@ -41,17 +45,264 @@ def test_defaults(qtrace):
     assert qtrace.crosshair_chckbx.isChecked() is False
 
 
-def test_parse_macros_and_args(qtrace):
-    pass
+def test_timespan_buttons(qtbot, qtrace):
+    """Confirm that the QButtonGroup timespan_btns contains the right buttons and
+    they are connected to the correct slot
+
+    Parameters
+    ----------
+    qtbot : fixture
+        pytest-qt window for widget testing
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    timespan_btns should contain all expected buttons and toggling buttons should emit buttonToggled
+    """
+    button_spans = {
+        qtrace.ui.min_scale_btn: 60,
+        qtrace.ui.hour_scale_btn: 3600,
+        qtrace.ui.day_scale_btn: 86400,
+        qtrace.ui.week_scale_btn: 604800,
+        qtrace.ui.month_scale_btn: 2628300,
+        qtrace.ui.cursor_scale_btn: -1,
+    }
+    assert qtrace.ui.timespan_btns.buttons() == list(button_spans.keys())
+
+    # Check that the qtrace.ui.timespan_btns.buttonToggled signal is emitted
+    for btn in button_spans.keys():
+        with qtbot.waitSignal(qtrace.ui.timespan_btns.buttonToggled, timeout=100):
+            btn.click()
 
 
-def test_git_version(qtrace):
-    pass
+def test_click_toggled_timespan_button(qtbot, qtrace):
+    """Confirm that clicking the toggled button in timespan_btns does not emit
+    the buttonToggled signal
+
+    Parameters
+    ----------
+    qtbot : fixture
+        pytest-qt window for widget testing
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    Clicking the toggled button should do nothing
+    """
+    qtrace.ui.hour_scale_btn.click()
+
+    with qtbot.assertNotEmitted(qtrace.ui.timespan_btns.buttonToggled, wait=100):
+        qtrace.ui.hour_scale_btn.click()
 
 
-def test_reset_plot(qtrace):
-    pass
+def test_parse_macros_and_args_file_and_pvs(qtrace):
+    """Test that TraceDisplay.parse_macros_and_args correctly parses user inputted
+    macros and arguments
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    All arguments and macros should be parsed as a tuple of PVs and a file; If
+    a file is passed as a macro and an argument, the argument is prioritized
+    """
+    # Define macros and args for the test case
+    macros = {"INPUT_FILE": "macros_file.trc"}
+    args = ["--input_file", "args_file.trc", "--pvs", "PV1", "PV2", "--macro", '{"PVS": ["ADDITIONAL:PV"]}']
+
+    # Call the function
+    result = qtrace.parse_macros_and_args(macros, args)
+
+    # Check the expected outcome
+    expected_file = Path("args_file.trc").resolve()  # args input_file should take priority over macro
+    expected_pvs = ["ADDITIONAL:PV", "PV1", "PV2"]
+
+    assert result == (expected_file, expected_pvs)
 
 
-def test_set_plot_timerange(qtrace):
-    pass
+def test_parse_macros_and_args_only_macros(qtrace):
+    """Test that TraceDisplay.parse_macros_and_args correctly parses user inputted
+    macros
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    All macros should be parsed as a tuple of PVs and a file
+    """
+    # Define macros and args with no additional PVs or input_file from args
+    macros = {"PVS": ["MACRO_PV1", "MACRO_PV2"], "INPUT_FILE": "macros_file.trc"}
+    args = []
+
+    # Call the function
+    result = qtrace.parse_macros_and_args(
+        macros,
+        args,
+    )
+
+    # Expected values when only macros are provided
+    expected_file = "macros_file.trc"
+    expected_pvs = ["MACRO_PV1", "MACRO_PV2"]
+
+    assert result == (expected_file, expected_pvs)
+
+
+def test_parse_macros_and_args_empty_input(qtrace):
+    """Test that TraceDisplay.parse_macros_and_args works given empty arguments
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    The returned tuple should contain an empty string and an empty list
+    """
+    # No macros and no arguments provided
+    macros = {}
+    args = []
+
+    # Call the function
+    result = qtrace.parse_macros_and_args(macros, args)
+
+    # Expected to return empty file and PVs list
+    expected_file = ""
+    expected_pvs = []
+
+    assert result == (expected_file, expected_pvs)
+
+
+@patch("subprocess.run")
+def test_git_version(mock_run, qtrace):
+    """Test that TraceDisplay.git_version gets the correct git tag
+
+    Parameters
+    ----------
+    mock_run : mock.patch
+        Mock subprocess.run to return an expected git tag
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    TraceDisplay.git_version should return the mocked git tag
+    """
+    # Define the expected output of the git command
+    expected_tag = "R1.2.3"
+
+    # Mock the subprocess.run call to return this output
+    mock_run.return_value = CompletedProcess(args=["git describe --tags"], returncode=0, stdout=expected_tag, stderr="")
+
+    # Call the git_version method and check the output
+    result = qtrace.git_version()
+    assert result == expected_tag
+
+
+def test_reset_plot(qtrace, get_test_file):
+    """Test that TraceDisplay.resetPlot sets the axis model and curve model to
+    expected default states
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    get_test_file : fixture
+        A fixture used to get test files from the test_data directory
+
+    Expectations
+    ------------
+    TraceDisplay.resetPlot should set the axis model and curve model to expected
+    default states
+    """
+    test_filename = get_test_file("test_file.trc")
+    test_data = json.loads(test_filename.read_text())
+
+    qtrace.curves_model.set_model_curves(test_data["curves"])
+    qtrace.axis_table_model.set_model_axes(test_data["y-axes"])
+
+    qtrace.resetPlot()
+
+    assert qtrace.curves_model.rowCount() == 1
+    assert qtrace.axis_table_model.rowCount() == 1
+
+
+def test_set_plot_timerange_enable_autoscroll(qtrace, mock_logger):
+    """Test that autoscrolling is enabled for valid non-cursor buttons
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
+
+    Expectations
+    ------------
+    TraceDisplay.timespan is set to the expected value, TraceDisplay.autoScroll
+    gets called once, and the logger is given a debug message to print
+    """
+    button = qtrace.ui.min_scale_btn
+    with patch.object(qtrace, "autoScroll") as mock_autoScroll:
+        qtrace.set_plot_timerange(button, toggled=True)
+
+    # Check that autoScroll was called with enable=True
+    assert qtrace.timespan == 60
+    mock_autoScroll.assert_called_once_with(enable=True)
+    mock_logger.debug.assert_called_with("Enabling plot autoscroll for 60s")
+
+
+def test_set_plot_timerange_disable_autoscroll(qtrace, mock_logger):
+    """Test that autoscrolling is disabled when cursor button is toggled
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
+
+    Expectations
+    ------------
+    TraceDisplay.autoScroll gets called with 'False' and the logger is given a
+    debug message to print
+    """
+    button = qtrace.ui.cursor_scale_btn
+    with patch.object(qtrace, "autoScroll") as mock_autoScroll:
+        qtrace.set_plot_timerange(button, toggled=True)
+
+    # Check that autoScroll was called with enable=False
+    assert qtrace.timespan == -1
+    mock_autoScroll.assert_called_with(enable=False)
+    mock_logger.debug.assert_called_with("Disabling plot autoscroll, using mouse controls")
+
+
+def test_set_plot_timerange_not_toggled(qtrace, mock_logger):
+    """Test that the function does nothing if toggled is False
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    mock_logger : fixture
+        A fixture used for mocking the logger's warning and error methods
+
+    Expectations
+    ------------
+    Neither TraceDisplay.autoScroll or the logger are called
+    """
+    button = qtrace.ui.min_scale_btn
+    with patch.object(qtrace, "autoScroll") as mock_autoScroll:
+        qtrace.set_plot_timerange(button, toggled=False)
+
+    # Check that autoScroll and logger.debug are not called
+    mock_autoScroll.assert_not_called()
+    mock_logger.debug.assert_not_called()
