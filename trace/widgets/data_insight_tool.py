@@ -61,6 +61,7 @@ class DataVisualizationModel(QAbstractTableModel):
         super().__init__(parent)
         self.df = pd.DataFrame(columns=["Datetime", "Value", "Severity", "Source"])
 
+        self.address = None
         self.unit = None
         self.description = None
 
@@ -86,6 +87,10 @@ class DataVisualizationModel(QAbstractTableModel):
             return self.df.columns[section]
 
     def set_all_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]):
+        self.address = curve_item.address
+        self.unit = curve_item.units
+        self.description = caget(curve_item.address + ".DESC")
+
         curve_range = (curve_item.min_x(), curve_item.max_x())
         left_ts = max(x_range[0], curve_range[0])
         right_ts = min(x_range[1], curve_range[1])
@@ -96,19 +101,25 @@ class DataVisualizationModel(QAbstractTableModel):
 
         # Populate the model with archive data if it is shown on the plot
         if x_range[0] <= curve_range[0]:
-            from_dt = datetime.fromtimestamp(x_range[0], tz=timezone.utc)
-            to_dt = datetime.fromtimestamp(left_ts, tz=timezone.utc)
-            self.request_archive_data(curve_item.address, from_dt, to_dt)
+            self.request_archive_data(curve_item.address, (x_range[0], left_ts))
         else:
+            # Emulate network reply being recieved for parent widget
             self.reply_recieved.emit()
 
-        self.unit = curve_item.units
-        self.description = caget(curve_item.address + ".DESC")
+    def set_live_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]):
+        """Set the live data for the given curve in the given time range. Appends
+        rows within the time range to the end of the model's dataframe.
 
-    def set_live_data(self, curve_item: TimePlotCurveItem, ts_range: Iterable[int]):
+        Parameters
+        ----------
+        curve_item : TimePlotCurveItem
+            The curve for the model to collect and store data on
+        x_range : Iterable[int]
+            The time range to collect and store data between
+        """
         data_n = curve_item.getBufferSize()
         data = curve_item.data_buffer[:, :data_n]
-        indices = np.where((ts_range[0] <= data[0]) & (data[0] <= ts_range[1]))[0]
+        indices = np.where((x_range[0] <= data[0]) & (data[0] <= x_range[1]))[0]
 
         convert_data = {"Datetime": [], "Value": [], "Severity": []}
         convert_data["Datetime"] = data[0, indices]
@@ -123,10 +134,20 @@ class DataVisualizationModel(QAbstractTableModel):
         self.df = live_df
         self.endResetModel()
 
-    def request_archive_data(self, pv_name: str, from_dt: datetime, to_dt: datetime):
-        from_date_str = from_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-        to_date_str = to_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+    def request_archive_data(self, pv_name: str, x_range: Iterable[int]):
+        """Request data from the Archiver Appliance for the given PV and time range.
+        Only gets raw data, never optimized. Ends early if there is no environment
+        variable PYDM_ARCHIVER_URL, which would contain the url for the Archiver
+        Appliance.
 
+        Parameters
+        ----------
+        pv_name : str
+            The PV address to request data for
+        x_range : Iterable[int]
+            The time range to collect and store data between
+        """
+        # Check the $PYDM_ARCHIVER_URL is populated
         base_url = os.getenv("PYDM_ARCHIVER_URL")
         if base_url is None:
             logger.error(
@@ -135,8 +156,15 @@ class DataVisualizationModel(QAbstractTableModel):
             )
             return
 
-        url_string = f"{base_url}/retrieval/data/getData.json?pv={pv_name}&from={from_date_str}&to={to_date_str}"
+        # Correctly format the timestamps for the Archiver Appliance
+        from_dt = datetime.fromtimestamp(x_range[0], tz=timezone.utc)
+        from_date_str = from_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
+        to_dt = datetime.fromtimestamp(x_range[1], tz=timezone.utc)
+        to_date_str = to_dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+        # Construct the request url and make the request
+        url_string = f"{base_url}/retrieval/data/getData.json?pv={pv_name}&from={from_date_str}&to={to_date_str}"
         request = QNetworkRequest(QUrl(url_string))
         self.network_manager.get(request)
 
@@ -173,26 +201,34 @@ class DataVisualizationModel(QAbstractTableModel):
             self.endInsertRows()
         self.layoutChanged.emit()
 
-    def export_data(self, file_name: Path, extension: str):
+    def export_data(self, file_path: Path, extension: str):
         if self.df.empty:
             raise ValueError("No data to export. Request data first.")
-        if file_name.is_dir():
+        if file_path.is_dir():
             raise IsADirectoryError("The selected path is a directory. Select a file to export to.")
         if extension not in [".csv", ".mat", ".json"]:
             raise ValueError("Unrecognized file format requested. Skipping export.")
 
-        backup = self.df["Datetime"]
-        self.df["Datetime"] = self.df["Datetime"].astype("int64") / 1e9
+        header_dict = {"Address": self.address, "Unit": self.unit, "Description": self.description}
+
+        export_df = self.df.copy()
+        export_df["Datetime"] = export_df["Datetime"].astype("int64") / 1e9
 
         if extension == ".csv":
-            self.df.to_csv(file_name, index=False)
+            file_header = "".join([f"{k}: {v}\n" for k, v in header_dict.items()])
+            with file_path.open("w") as file:
+                file.write(file_header)
+                export_df.to_csv(file, index=False, mode="a")
         elif extension == ".mat":
-            df_dict = {name: col.values for name, col in self.df.items()}
-            savemat(file_name, df_dict)
+            header_dict.update({name: col.values for name, col in export_df.items()})
+            savemat(file_path, header_dict)
         elif extension == ".json":
-            self.df.to_json(file_name, orient="records", indent=2)
-
-        self.df["Datetime"] = backup
+            if export_df["Value"].dtype == object:
+                export_df["Value"] = export_df["Value"].astype("str")
+            data_dict = export_df.to_dict(orient="records")
+            export_dict = {"meta": header_dict, "data": data_dict}
+            with file_path.open("w") as file:
+                json.dump(export_dict, file, indent=2)
 
 
 class CurveFilterModel(QSortFilterProxyModel):
