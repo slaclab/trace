@@ -55,6 +55,11 @@ if not logger.hasHandlers():
 
 
 class DataVisualizationModel(QAbstractTableModel):
+    """Table Model for fetching and storing the data for a given curve on the
+    model. Gathers live data directly from the curve, but makes an HTTP request
+    to the Archiver Appliance
+    """
+
     reply_recieved = Signal()
 
     def __init__(self, parent: QObject = None) -> None:
@@ -69,12 +74,19 @@ class DataVisualizationModel(QAbstractTableModel):
         self.network_manager.finished.connect(self.recieve_archive_reply)
 
     def rowCount(self, index: QModelIndex = QModelIndex()):
+        """Return the row count of the table"""
+        if index is not None and index.isValid():
+            return 0
         return self.df.shape[0]
 
     def columnCount(self, index: QModelIndex = QModelIndex()):
+        """Return the column count of the table"""
+        if index is not None and index.isValid():
+            return 0
         return self.df.shape[1]
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = Qt.DisplayRole):
+        """Return the data for the associated role. Currently only supporting DisplayRole."""
         if not index.isValid():
             return None
         elif role == Qt.DisplayRole:
@@ -83,10 +95,23 @@ class DataVisualizationModel(QAbstractTableModel):
         return None
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = Qt.DisplayRole):
+        """Return data associated with the header"""
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.df.columns[section]
 
     def set_all_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]):
+        """Set the model's data for the given curve and the given time range.
+        This function determines what kind of data should be saved and prompts
+        the methods for setting live or archived data as necessary. This also
+        saves the meta data.
+
+        Parameters
+        ----------
+        curve_item : TimePlotCurveItem
+            The curve for the model to collect and store data on
+        x_range : Iterable[int]
+            The time range to collect and store data between
+        """
         self.address = curve_item.address
         self.unit = curve_item.units
         self.description = caget(curve_item.address + ".DESC")
@@ -169,6 +194,15 @@ class DataVisualizationModel(QAbstractTableModel):
         self.network_manager.get(request)
 
     def recieve_archive_reply(self, reply: QNetworkReply):
+        """Process the recieved reply to the request made in request_archive_data.
+        Unpack the data and call set_archive_data. Mostly checks if the reply
+        contains an error.
+
+        Parameters
+        ----------
+        reply : QNetworkReply
+            Reply to the network request made in request_archive_data
+        """
         self.reply_recieved.emit()
         if reply.error() == QNetworkReply.NoError:
             bytes_str = reply.readAll()
@@ -182,6 +216,14 @@ class DataVisualizationModel(QAbstractTableModel):
         reply.deleteLater()
 
     def set_archive_data(self, data_dict: dict):
+        """Set the live data for the given curve in the given time range. Appends
+        rows within the time range to the end of the model's dataframe.
+
+        Parameters
+        ----------
+        data_dict : dict
+            Dictionary containing all data to be added to the model's dataframe
+        """
         convert_data = {"Datetime": [], "Value": [], "Severity": []}
         for point in data_dict[0]["data"]:
             ts = point["secs"] + (point["nanos"] * 1e-9)
@@ -202,6 +244,24 @@ class DataVisualizationModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
     def export_data(self, file_path: Path, extension: str):
+        """Export the model's data to the given file. Adds metadata to the top of
+        the exported file with the curve's address, unit (if any), and description.
+
+        Parameters
+        ----------
+        file_path : Path
+            The path of the file to be (over)written with the exported data
+        extension : str
+            The extension of the file to be (over)written
+
+        Raises
+        ------
+        ValueError
+            Raised when export is requested without data in the model, or when an
+            invalid file format is requested for export
+        IsADirectoryError
+            Raised when the provided filepath is a directory
+        """
         if self.df.empty:
             raise ValueError("No data to export. Request data first.")
         if file_path.is_dir():
@@ -232,12 +292,29 @@ class DataVisualizationModel(QAbstractTableModel):
 
 
 class CurveFilterModel(QSortFilterProxyModel):
+    """FilterProxyModel for trace's curves model. This proxy model filters out
+    the curves without an address and the FormulaCurveItems.
+    """
+
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex):
+        """Determine if the given row is valid and should be presented to the user.
+        This includes ArchivePlotCurveItems that have an address.
+
+        Returns
+        -------
+        bool :
+            The row is valid and should be presented to the user
+        """
         curve = self.sourceModel().curve_at_index(source_row)
         return isinstance(curve, ArchivePlotCurveItem) and bool(curve.address)
 
 
 class DataInsightTool(QWidget):
+    """The Data Insight Tool is a standalone widget that allows users to display
+    all archive and live data on the plot for any given curve. Users are also able
+    to export the raw data from this tool.
+    """
+
     def __init__(self, parent: QObject, curves_model: QAbstractTableModel, plot: PyDMArchiverTimePlot) -> None:
         super().__init__(parent=parent)
         self.setWindowFlag(Qt.Window)
@@ -260,6 +337,7 @@ class DataInsightTool(QWidget):
         self.get_data(0)
 
     def layout_init(self):
+        """Initialize the layout of the Data Insight Tool widget."""
         self.main_layout = QVBoxLayout()
 
         # Populate the PV selection and request layout at the top of the widget
@@ -279,8 +357,8 @@ class DataInsightTool(QWidget):
 
         # Create the metadata label and refresh button
         self.metadata_layout = QHBoxLayout()
-        self.metadata_label = QLabel()
-        self.metadata_layout.addWidget(self.metadata_label, alignment=Qt.AlignLeft)
+        self.meta_data_label = QLabel()
+        self.metadata_layout.addWidget(self.meta_data_label, alignment=Qt.AlignLeft)
 
         self.refresh_button = QPushButton("Refresh Data")
         self.metadata_layout.addWidget(self.refresh_button, alignment=Qt.AlignRight)
@@ -293,13 +371,47 @@ class DataInsightTool(QWidget):
 
         self.setLayout(self.main_layout)
 
+    def set_meta_data(self):
+        """Populate the meta_data_label with the curve's unit (if any) and description."""
+        meta_str = ""
+        if self.data_vis_model.unit:
+            meta_str = self.data_vis_model.unit + ", "
+        meta_str += self.data_vis_model.description
+        self.meta_data_label.setText(meta_str)
+
+    def combobox_to_curve(self, combobox_ind: int) -> ArchivePlotCurveItem:
+        """Convert an index for the pv_select_box combobox to the corresponding
+        curve item from the curves model.
+
+        Parameters
+        ----------
+        combobox_ind : int
+            The index for pv_select_box
+
+        Returns
+        -------
+        ArchivePlotCurveItem
+            The curve item that corresponds to the PV chosen on the combobox
+        """
+        if combobox_ind < 0 or self.pv_select_box.count() <= combobox_ind:
+            combobox_ind = self.pv_select_box.currentIndex()
+        model_ind = self.curve_filter_model.index(combobox_ind, 0)
+        corrected_ind = self.curve_filter_model.mapToSource(model_ind)
+        return self.curves_model.curve_at_index(corrected_ind)
+
+    @Slot()
     def export_data_to_file(self):
+        """Prompt the user to select a file to export data to then prompt the
+        DataVisualizationModel to export its data to the selected file.
+        """
         file_name, extension_filter = QFileDialog.getSaveFileName(
             self,
             "Export Archive Data",
             Path(".").name,
             "Comma-Separated Values File (*.csv);;MAT-File (*.mat);;JSON File (*.json)",
         )
+        if not extension_filter:
+            return
         extension = re.search(r"\*(.*?)\)", extension_filter).group(1)
         file_name = Path(file_name).with_suffix(extension)
 
@@ -309,21 +421,20 @@ class DataInsightTool(QWidget):
             logger.error(str(e))
             QMessageBox.critical(self, "Error", str(e))
 
-    def set_metadata(self):
-        meta_str = ""
-        if self.data_vis_model.unit:
-            meta_str = self.data_vis_model.unit + ", "
-        meta_str += self.data_vis_model.description
-        self.metadata_label.setText(meta_str)
-
     @Slot()
     @Slot(int)
-    def get_data(self, curve_index: int = -1):
-        if curve_index < 0:
-            curve_index = self.pv_select_box.currentIndex()
-        curve_item = self.curves_model.curve_at_index(curve_index)
+    def get_data(self, combobox_index: int = -1):
+        """Prompt the DataVisualizationModel to fetch and save the data for the
+        curve chosen by the user for the time range on the associated plot.
+
+        Parameters
+        ----------
+        combobox_index : int, optional
+            The index in the pv_select_box for the user selected curve, by default -1
+        """
+        curve_item = self.combobox_to_curve(combobox_index)
         x_range = self.plot.getXAxis().range
 
         self.data_vis_model.set_all_data(curve_item, x_range)
-        self.set_metadata()
+        self.set_meta_data()
         self.loading_label.show()
