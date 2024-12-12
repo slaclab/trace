@@ -207,6 +207,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         return (input_file, startup_pvs)
 
     def open_data_insight_tool(self):
+        """Create a new instance of the Data Insight Tool"""
         dit = DataInsightTool(self, self.curves_model, self.ui.main_plot)
         dit.show()
 
