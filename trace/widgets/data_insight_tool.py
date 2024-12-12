@@ -6,10 +6,10 @@ from typing import Iterable
 from pathlib import Path
 from datetime import datetime, timezone
 
+import epics
 import numpy as np
 import pandas as pd
 import tzlocal
-from epics import caget
 from scipy.io import savemat
 from qtpy.QtCore import (
     Qt,
@@ -114,7 +114,7 @@ class DataVisualizationModel(QAbstractTableModel):
         """
         self.address = curve_item.address
         self.unit = curve_item.units
-        self.description = caget(curve_item.address + ".DESC")
+        self.description = epics.caget(curve_item.address + ".DESC")
 
         curve_range = (curve_item.min_x(), curve_item.max_x())
         left_ts = max(x_range[0], curve_range[0])

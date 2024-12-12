@@ -47,8 +47,8 @@ def test_archive_results_table_qtmodeltester(qtmodeltester, search_wid):
     ----------
     qtmodeltester : fixture
         pytest-qt fixture used for testing the validity of AbstractItemModels
-    qtrace : fixture
-        Instance of TraceDisplay for application testing
+    search_wid : fixture
+        Instance of ArchiveSearchWidget for application testing
 
     Expectations
     ------------
