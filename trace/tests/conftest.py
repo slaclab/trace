@@ -65,7 +65,7 @@ def qapp(qapp_args):
 
 
 @pytest.fixture
-def qtrace(qapp):
+def qtrace(qtbot, qapp):
     """Fixture for an instance of the TraceDisplay. Always uses an instance of
     PyDMApplication.
 
@@ -81,7 +81,7 @@ def qtrace(qapp):
 
     trace.close()
     qapp.processEvents()
-    del trace
+    trace.deleteLater()
 
 
 @pytest.fixture
