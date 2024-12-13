@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 import epics
 import numpy as np
 import pandas as pd
-import tzlocal
 from scipy.io import savemat
 from qtpy.QtCore import (
     Qt,
@@ -41,7 +40,7 @@ from pydm.widgets.archiver_time_plot import (
 
 from widgets import FrozenTableView
 
-TZ = tzlocal.get_localzone()
+TZ = datetime.now().astimezone().tzinfo
 SEVERITY_MAP = {0: "NO_ALARM", 1: "MINOR", 2: "MAJOR", 3: "INVALID"}
 
 logger = logging.getLogger("")
