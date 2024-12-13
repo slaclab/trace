@@ -333,7 +333,8 @@ class DataInsightTool(QWidget):
         self.pv_select_box.currentIndexChanged.connect(self.get_data)
         self.refresh_button.clicked.connect(self.get_data)
 
-        self.get_data(0)
+        if self.pv_select_box.count() > 0:
+            self.get_data(0)
 
     def layout_init(self) -> None:
         """Initialize the layout of the Data Insight Tool widget."""
@@ -431,6 +432,10 @@ class DataInsightTool(QWidget):
         combobox_index : int, optional
             The index in the pv_select_box for the user selected curve, by default -1
         """
+        if self.pv_select_box.count() < 1:
+            logger.warning("Curves must be added to the main display before data can be requested.")
+            return
+
         curve_item = self.combobox_to_curve(combobox_index)
         x_range = self.plot.getXAxis().range
 
