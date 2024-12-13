@@ -73,19 +73,19 @@ class DataVisualizationModel(QAbstractTableModel):
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.recieve_archive_reply)
 
-    def rowCount(self, index: QModelIndex = QModelIndex()):
+    def rowCount(self, index: QModelIndex = QModelIndex()) -> int:
         """Return the row count of the table"""
         if index is not None and index.isValid():
             return 0
         return self.df.shape[0]
 
-    def columnCount(self, index: QModelIndex = QModelIndex()):
+    def columnCount(self, index: QModelIndex = QModelIndex()) -> int:
         """Return the column count of the table"""
         if index is not None and index.isValid():
             return 0
         return self.df.shape[1]
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole = Qt.DisplayRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = Qt.DisplayRole) -> str:
         """Return the data for the associated role. Currently only supporting DisplayRole."""
         if not index.isValid():
             return None
@@ -94,12 +94,12 @@ class DataVisualizationModel(QAbstractTableModel):
             return str(val)
         return None
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = Qt.DisplayRole):
+    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = Qt.DisplayRole) -> str:
         """Return data associated with the header"""
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.df.columns[section]
 
-    def set_all_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]):
+    def set_all_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]) -> None:
         """Set the model's data for the given curve and the given time range.
         This function determines what kind of data should be saved and prompts
         the methods for setting live or archived data as necessary. This also
@@ -131,7 +131,7 @@ class DataVisualizationModel(QAbstractTableModel):
             # Emulate network reply being recieved for parent widget
             self.reply_recieved.emit()
 
-    def set_live_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]):
+    def set_live_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]) -> None:
         """Set the live data for the given curve in the given time range. Appends
         rows within the time range to the end of the model's dataframe.
 
@@ -159,7 +159,7 @@ class DataVisualizationModel(QAbstractTableModel):
         self.df = live_df
         self.endResetModel()
 
-    def request_archive_data(self, pv_name: str, x_range: Iterable[int]):
+    def request_archive_data(self, pv_name: str, x_range: Iterable[int]) -> None:
         """Request data from the Archiver Appliance for the given PV and time range.
         Only gets raw data, never optimized. Ends early if there is no environment
         variable PYDM_ARCHIVER_URL, which would contain the url for the Archiver
@@ -193,7 +193,7 @@ class DataVisualizationModel(QAbstractTableModel):
         request = QNetworkRequest(QUrl(url_string))
         self.network_manager.get(request)
 
-    def recieve_archive_reply(self, reply: QNetworkReply):
+    def recieve_archive_reply(self, reply: QNetworkReply) -> None:
         """Process the recieved reply to the request made in request_archive_data.
         Unpack the data and call set_archive_data. Mostly checks if the reply
         contains an error.
@@ -215,7 +215,7 @@ class DataVisualizationModel(QAbstractTableModel):
             )
         reply.deleteLater()
 
-    def set_archive_data(self, data_dict: dict):
+    def set_archive_data(self, data_dict: dict) -> None:
         """Set the live data for the given curve in the given time range. Appends
         rows within the time range to the end of the model's dataframe.
 
@@ -243,7 +243,7 @@ class DataVisualizationModel(QAbstractTableModel):
             self.endInsertRows()
         self.layoutChanged.emit()
 
-    def export_data(self, file_path: Path, extension: str):
+    def export_data(self, file_path: Path, extension: str) -> None:
         """Export the model's data to the given file. Adds metadata to the top of
         the exported file with the curve's address, unit (if any), and description.
 
@@ -296,7 +296,7 @@ class CurveFilterModel(QSortFilterProxyModel):
     the curves without an address and the FormulaCurveItems.
     """
 
-    def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex):
+    def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
         """Determine if the given row is valid and should be presented to the user.
         This includes ArchivePlotCurveItems that have an address.
 
@@ -336,7 +336,7 @@ class DataInsightTool(QWidget):
 
         self.get_data(0)
 
-    def layout_init(self):
+    def layout_init(self) -> None:
         """Initialize the layout of the Data Insight Tool widget."""
         self.main_layout = QVBoxLayout()
 
@@ -371,7 +371,7 @@ class DataInsightTool(QWidget):
 
         self.setLayout(self.main_layout)
 
-    def set_meta_data(self):
+    def set_meta_data(self) -> None:
         """Populate the meta_data_label with the curve's unit (if any) and description."""
         meta_str = ""
         if self.data_vis_model.unit:
@@ -400,7 +400,7 @@ class DataInsightTool(QWidget):
         return self.curves_model.curve_at_index(corrected_ind)
 
     @Slot()
-    def export_data_to_file(self):
+    def export_data_to_file(self) -> None:
         """Prompt the user to select a file to export data to then prompt the
         DataVisualizationModel to export its data to the selected file.
         """
@@ -423,7 +423,7 @@ class DataInsightTool(QWidget):
 
     @Slot()
     @Slot(int)
-    def get_data(self, combobox_index: int = -1):
+    def get_data(self, combobox_index: int = -1) -> None:
         """Prompt the DataVisualizationModel to fetch and save the data for the
         curve chosen by the user for the time range on the associated plot.
 
