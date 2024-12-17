@@ -8,3 +8,5 @@ from .item_delegates import (
     ScientificNotationDelegate,
     InsertPVDelegate,
 )
+from .frozen_table_view import FrozenTableView
+from .data_insight_tool import DataInsightTool

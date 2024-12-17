@@ -25,6 +25,13 @@
    <item>
     <layout class="QHBoxLayout" name="scale_ctrl_lyt">
      <item>
+      <widget class="QPushButton" name="dit_btn">
+       <property name="text">
+        <string>Data Insight Tool</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="scale_ctrl_spcr">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

@@ -21,7 +21,12 @@ def search_wid(qapp):
     """
     # Set PYDM_ARCHIVER_URL so tests have a predictable state
     with patch.dict(os.environ, {"PYDM_ARCHIVER_URL": DUMMY_ARCHIVER_URL}):
-        yield ArchiveSearchWidget()
+        asw = ArchiveSearchWidget()
+        yield asw
+
+    asw.close()
+    qapp.processEvents()
+    asw.deleteLater()
 
 
 def create_dummy_reply(data: bytes = b"", error_code=QNetworkReply.NoError):
@@ -47,8 +52,8 @@ def test_archive_results_table_qtmodeltester(qtmodeltester, search_wid):
     ----------
     qtmodeltester : fixture
         pytest-qt fixture used for testing the validity of AbstractItemModels
-    qtrace : fixture
-        Instance of TraceDisplay for application testing
+    search_wid : fixture
+        Instance of ArchiveSearchWidget for application testing
 
     Expectations
     ------------

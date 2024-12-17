@@ -16,6 +16,7 @@ from pydm.utilities.macro import parse_macro_string
 from config import logger, datetime_pv
 from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
 from styles import CenterCheckStyle
+from widgets import DataInsightTool
 from trace_file_convert import PathAction
 
 
@@ -46,6 +47,8 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             self.ui.cursor_scale_btn: -1,
         }
         self.ui.timespan_btns.buttonToggled.connect(self.set_plot_timerange)
+
+        self.ui.dit_btn.clicked.connect(self.open_data_insight_tool)
 
         # Toggle "Cursor" button on plot-mouse interaction
         multi_axis_plot = self.ui.main_plot.plotItem
@@ -202,6 +205,11 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         startup_pvs = list(dict.fromkeys(startup_pvs))
 
         return (input_file, startup_pvs)
+
+    def open_data_insight_tool(self):
+        """Create a new instance of the Data Insight Tool"""
+        dit = DataInsightTool(self, self.curves_model, self.ui.main_plot)
+        dit.show()
 
     @staticmethod
     def git_version():
