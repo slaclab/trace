@@ -5,12 +5,12 @@ from socket import gethostname
 from typing import Dict, List, Tuple, Union
 from getpass import getuser
 from logging import Handler, LogRecord
-import pyqtgraph.exporters
 from datetime import datetime
 
+import pyqtgraph.exporters
 from qtpy.sip import isdeleted
 from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import QLabel, QApplication, QAbstractButton, QFileDialog
+from qtpy.QtWidgets import QLabel, QFileDialog, QApplication, QAbstractButton
 
 from pydm import Display
 from pydm.utilities.macro import parse_macro_string
