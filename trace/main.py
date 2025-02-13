@@ -5,10 +5,12 @@ from socket import gethostname
 from typing import Dict, List, Tuple, Union
 from getpass import getuser
 from logging import Handler, LogRecord
+import pyqtgraph.exporters
+from datetime import datetime
 
 from qtpy.sip import isdeleted
 from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import QLabel, QApplication, QAbstractButton
+from qtpy.QtWidgets import QLabel, QApplication, QAbstractButton, QFileDialog
 
 from pydm import Display
 from pydm.utilities.macro import parse_macro_string
@@ -49,6 +51,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.ui.timespan_btns.buttonToggled.connect(self.set_plot_timerange)
 
         self.ui.dit_btn.clicked.connect(self.open_data_insight_tool)
+        self.ui.save_img_btn.clicked.connect(self.save_plot_image)
 
         # Toggle "Cursor" button on plot-mouse interaction
         multi_axis_plot = self.ui.main_plot.plotItem
@@ -210,6 +213,22 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         """Create a new instance of the Data Insight Tool"""
         dit = DataInsightTool(self, self.curves_model, self.ui.main_plot)
         dit.show()
+
+    def save_plot_image(self):
+        """Saves current plot as an image. Opens file dialog to allow user to
+        set custom location."""
+        exporter = pyqtgraph.exporters.ImageExporter(self.ui.main_plot.plotItem)
+        default_filename = datetime.now().strftime(f"{getuser()}_trace_%Y%m%d_%H%M%S.png")
+        usr_home_dir = os.path.expanduser("~")
+        file_path, _ = QFileDialog.getSaveFileName(
+            None,
+            "Save Plot Image",
+            os.path.join(usr_home_dir, default_filename),
+            "PNG Files (*.png);;JPEG Files (*.jpg);;All Files (*)",
+        )
+        if file_path != "":
+            exporter.export(file_path)
+            logger.info(f"Saved image file to: {file_path}")
 
     @staticmethod
     def git_version():
