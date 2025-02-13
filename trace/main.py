@@ -226,9 +226,12 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             os.path.join(usr_home_dir, default_filename),
             "PNG Files (*.png);;JPEG Files (*.jpg);;All Files (*)",
         )
-        if file_path != "":
-            exporter.export(file_path)
-            logger.info(f"Saved image file to: {file_path}")
+        if file_path:
+            try:
+                exporter.export(file_path)
+                logger.info(f"Saved image file to: {file_path}")
+            except Exception as e:
+                logger.error(f"Failed to save image: {e}")
 
     @staticmethod
     def git_version():
