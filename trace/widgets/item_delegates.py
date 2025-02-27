@@ -395,7 +395,7 @@ class ScientificNotationDelegate(EditorDelegate):
             editor.editingFinished.connect(lambda: self.commitData.emit(editor))
 
             # List containing the editor, scientific notation flag, and precision
-            self.editor_list.append([editor, False, -1])
+            self.editor_list.append([editor, False, 6])
             return editor
         return super().createEditor(parent, option, index)
 
@@ -442,6 +442,9 @@ class ScientificNotationDelegate(EditorDelegate):
         else:
             prec = len(text) - text.index(".") - 1
         self.editor_list[index.row()][1:] = [sci_not, prec]
+
+        # Do not exceed maximum precision
+        prec = min(6, prec)
 
         data = float(text)
         model.setData(index, data, Qt.EditRole)
