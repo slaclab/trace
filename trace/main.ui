@@ -32,6 +32,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="save_img_btn">
+       <property name="text">
+        <string>Save Image</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="scale_ctrl_spcr">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
