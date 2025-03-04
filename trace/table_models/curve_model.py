@@ -505,9 +505,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._plot.set_needs_redraw()
         self._plot.redrawPlot()
         logger.debug(f"Finished removing curve previously at index {index.row()}")
-        self._plot.archive_data_received()
-        self._plot.set_needs_redraw()
-        self._plot.redrawPlot()
+        curve.deleteLater()
         return ret
 
     def headerData(self, section, orientation, role=Qt.DisplayRole) -> Any:
