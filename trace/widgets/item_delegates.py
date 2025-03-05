@@ -346,6 +346,8 @@ class ScientificNotationDelegate(EditorDelegate):
         The delegate's associated QTableView.
     """
 
+    MAX_DECIMALS = 6
+
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
         """Create a new persistent editor on the Table View at the given index.
 
@@ -414,9 +416,10 @@ class ScientificNotationDelegate(EditorDelegate):
 
         _, sci_not, prec = self.editor_list[index.row()]
         if prec != -1:
+            prec = min(prec, self.MAX_DECIMALS)
             value = f"{value:.{prec}{'e' if sci_not else 'f'}}"
         else:
-            value = str(value)
+            value = str(round(value, self.MAX_DECIMALS))
 
         editor.setText(value)
 
@@ -441,6 +444,7 @@ class ScientificNotationDelegate(EditorDelegate):
             prec = text.index("e") - text.index(".") - 1
         else:
             prec = len(text) - text.index(".") - 1
+        prec = min(self.MAX_DECIMALS, prec)
         self.editor_list[index.row()][1:] = [sci_not, prec]
 
         data = float(text)
