@@ -154,8 +154,7 @@ def test_save_image_button_error(mock_get_save_filename, mock_export, qtbot, qtr
 
     Expectations
     ------------
-    When getSaveFileName returns a file path (accepted), export is triggered with that
-    file path.
+    When an error occurs when exporting, the error is logged.
     """
     save_image_button = qtrace.ui.save_img_btn
     mock_get_save_filename.return_value = ("/fake/path.png", "PNG Files (*.png)")
