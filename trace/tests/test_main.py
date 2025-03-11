@@ -76,6 +76,95 @@ def test_timespan_buttons(qtbot, qtrace):
             btn.click()
 
 
+@patch("pyqtgraph.exporters.ImageExporter.export")
+@patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
+def test_save_image_button_success(mock_get_save_filename, mock_export, qtbot, qtrace):
+    """Test saving an image successfully
+
+    Parameters
+    ----------
+    mock_get_save_filename : patch
+        Mock qtpy.QtWidgets.QFileDialog.getSaveFileName to return an expected filename
+    mock_export : patch
+        Mock pyqtgraph.exporters.ImageExporter.export
+    qtbot : fixture
+        pytest-qt window for widget testing
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    When getSaveFileName returns a file path (accepted), export is triggered with that
+    file path.
+    """
+
+    save_image_button = qtrace.ui.save_img_btn
+    mock_get_save_filename.return_value = ("/fake/path.png", "PNG Files (*.png)")
+
+    with qtbot.waitSignal(qtrace.ui.save_img_btn.clicked, timeout=100):
+        save_image_button.click()
+
+    mock_export.assert_called_once_with("/fake/path.png")
+
+
+@patch("pyqtgraph.exporters.ImageExporter.export")
+@patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
+def test_save_image_button_cancelled(mock_get_save_filename, mock_export, qtbot, qtrace):
+    """Test when user cancels file dialog (empty path)
+
+    Parameters
+    ----------
+    mock_get_save_filename : patch
+        Mock qtpy.QtWidgets.QFileDialog.getSaveFileName to return an expected filename
+    mock_export : patch
+        Mock pyqtgraph.exporters.ImageExporter.export
+    qtbot : fixture
+        pytest-qt window for widget testing
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    When getSaveFileName returns an empty string (rejected), export is not triggered.
+    """
+    save_image_button = qtrace.ui.save_img_btn
+    mock_get_save_filename.return_value = ("", "")
+
+    with qtbot.waitSignal(qtrace.ui.save_img_btn.clicked, timeout=100):
+        save_image_button.click()
+
+    mock_export.assert_not_called()
+
+
+@patch("pyqtgraph.exporters.ImageExporter.export")
+@patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
+def test_save_image_button_error(mock_get_save_filename, mock_export, qtbot, qtrace, mock_logger):
+    """Test handling of an export failure
+
+    Parameters
+    ----------
+    mock_get_save_filename : patch
+        Mock qtpy.QtWidgets.QFileDialog.getSaveFileName to return an expected filename
+    mock_export : patch
+        Mock pyqtgraph.exporters.ImageExporter.export
+    qtbot : fixture
+        pytest-qt window for widget testing
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    When an error occurs when exporting, the error is logged.
+    """
+    save_image_button = qtrace.ui.save_img_btn
+    mock_get_save_filename.return_value = ("/fake/path.png", "PNG Files (*.png)")
+    mock_export.side_effect = Exception("Export failed!")
+    with qtbot.waitSignal(qtrace.ui.save_img_btn.clicked, timeout=100):
+        save_image_button.click()
+
+    mock_logger.error.assert_called_with("Failed to save image: Export failed!")
+
+
 def test_click_toggled_timespan_button(qtbot, qtrace):
     """Confirm that clicking the toggled button in timespan_btns does not emit
     the buttonToggled signal
