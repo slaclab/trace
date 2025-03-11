@@ -41,7 +41,7 @@ def test_default_curve(qtrace):
     model = qtrace.curves_model
 
     row_actual = []
-    row_expected = ["", Qt.Checked, Qt.Checked, "", "#008cf9", "Axis 1",
+    row_expected = [None, Qt.Checked, Qt.Checked, "", "#008cf9", "Axis 1",
                     "Direct", "Solid", "1px", "None", "10px", Qt.Checked, None]  # fmt: skip
 
     for col in range(model.columnCount()):
