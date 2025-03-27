@@ -33,7 +33,7 @@ class PlotConfigMixin:
 
         self.ui.crosshair_chckbx.stateChanged.connect(lambda show: self.plot.enableCrosshair(show, 100, 100))
 
-        self.ui.mouse_mode_cmbbx.currentTextChanged.connect(self.changeMouseMode)
+        self.ui.mouse_mode_cmbbx.currentTextChanged.connect(self.plot.plotItem.changeMouseMode)
 
     def plot_setup(self, config: Dict):
         """Read in the full config dictionary, making sure not to fail if a user manually typed
@@ -63,11 +63,6 @@ class PlotConfigMixin:
         font = QFont()
         font.setPixelSize(size)
         self.plot.getAxis("bottom").setStyle(tickFont=font)
-
-    @Slot(str)
-    def changeMouseMode(self, mode: str):
-        """If the user wants to have their mouse in PAN or RECT mode"""
-        self.plot.plotItem.changeMouseMode(mode)
 
     @Slot()
     def autoScroll(self, enable: bool = False):
