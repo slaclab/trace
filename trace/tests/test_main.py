@@ -188,7 +188,7 @@ def test_fetch_archive_button_success(qtbot, qtrace):
     with qtbot.waitSignal(fetch_archive_button.clicked, timeout=100):
         fetch_archive_button.click()
 
-    assert qtrace.ui.main_plot._archive_request_queued == True
+    assert qtrace.ui.main_plot._archive_request_queued is True
 
 
 def test_fetch_archive_button_duplicate(qtbot, qtrace, mock_logger):
