@@ -58,6 +58,8 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         multi_axis_plot.vb.menu = None
         multi_axis_plot.sigXRangeChangedManually.connect(self.ui.cursor_scale_btn.toggle)
 
+        self.ui.main_plot.show_extension_lines = True
+
         # Parse macros & arguments, then include them in startup
         input_file, startup_pvs = self.parse_macros_and_args(macros, args)
         if input_file:
