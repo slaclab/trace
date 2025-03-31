@@ -58,6 +58,9 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         multi_axis_plot.vb.menu = None
         multi_axis_plot.sigXRangeChangedManually.connect(self.ui.cursor_scale_btn.toggle)
 
+        # Additional configuration of main plot
+        self.ui.main_plot.cache_data = False
+        self.ui.main_plot._show_all = False
         self.ui.main_plot.show_extension_lines = True
 
         # Parse macros & arguments, then include them in startup
