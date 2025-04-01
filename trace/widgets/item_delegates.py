@@ -413,6 +413,8 @@ class ScientificNotationDelegate(EditorDelegate):
             The index of the editor to be changed.
         """
         value = index.data(Qt.DisplayRole)
+        log_mode_index = index.model().getColumnIndex("Log Mode")
+        log_index = index.siblingAtColumn(log_mode_index)
 
         _, sci_not, prec = self.editor_list[index.row()]
         if prec != -1:
@@ -420,6 +422,10 @@ class ScientificNotationDelegate(EditorDelegate):
             value = f"{value:.{prec}{'e' if sci_not else 'f'}}"
         else:
             value = str(round(value, self.MAX_DECIMALS))
+
+        # Prepend "1e" if in log scale. Data in this mode is the exponent
+        if log_index.data(Qt.CheckStateRole) == Qt.Checked:
+            value = f"1e{value}"
 
         editor.setText(value)
 
@@ -435,7 +441,14 @@ class ScientificNotationDelegate(EditorDelegate):
         index : QModelIndex
             The index of the editor to be changed.
         """
+        log_mode_index = index.model().getColumnIndex("Log Mode")
+        log_index = index.siblingAtColumn(log_mode_index)
+
         text = editor.text().lower()
+
+        # If using log scale, remove prepended "1e". Data in this mode is the exponent
+        if log_index.data(Qt.CheckStateRole) == Qt.Checked and "1e" in text:
+            text = text[text.index("1e") + 2 :]
 
         sci_not = "e" in text
         if "." not in text:
