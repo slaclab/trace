@@ -61,6 +61,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         # Additional configuration of main plot
         self.ui.main_plot.cache_data = False
         self.ui.main_plot._show_all = False
+        self.ui.main_plot.show_extension_lines = True
 
         # Parse macros & arguments, then include them in startup
         input_file, startup_pvs = self.parse_macros_and_args(macros, args)
