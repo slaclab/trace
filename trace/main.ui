@@ -39,6 +39,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="fetch_archive_btn">
+       <property name="text">
+        <string>Fetch Archive</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="scale_ctrl_spcr">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

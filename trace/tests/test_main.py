@@ -151,6 +151,9 @@ def test_save_image_button_error(mock_get_save_filename, mock_export, qtbot, qtr
         pytest-qt window for widget testing
     qtrace : fixture
         Instance of TraceDisplay for application testing
+    mock_logger: fixture
+        Mock logger
+
 
     Expectations
     ------------
@@ -163,6 +166,54 @@ def test_save_image_button_error(mock_get_save_filename, mock_export, qtbot, qtr
         save_image_button.click()
 
     mock_logger.error.assert_called_with("Failed to save image: Export failed!")
+
+
+def test_fetch_archive_button_success(qtbot, qtrace):
+    """Test fetch archive button correctly prompts for archive request
+
+    Parameters
+    ----------
+    qtbot : fixture
+        pytest-qt window for widget testing
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+
+    Expectations
+    ------------
+    When the button is clicked, an archive data request is queued and the flag is set to True.
+    """
+    fetch_archive_button = qtrace.ui.fetch_archive_btn
+
+    with qtbot.waitSignal(fetch_archive_button.clicked, timeout=100):
+        fetch_archive_button.click()
+
+    assert qtrace.ui.main_plot._archive_request_queued is True
+
+
+def test_fetch_archive_button_duplicate(qtbot, qtrace, mock_logger):
+    """Test fetch archive button doesn't make an additional request if a request is already queued
+
+    Parameters
+    ----------
+    qtbot : fixture
+        pytest-qt window for widget testing
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    mock_logger: fixture
+        Mock logger
+
+    Expectations
+    ------------
+    When the button is clicked, but there is already a request, a duplicate shouldn't be done.
+    """
+    fetch_archive_button = qtrace.ui.fetch_archive_btn
+    qtrace.ui.main_plot._archive_request_queued = True
+
+    with qtbot.waitSignal(fetch_archive_button.clicked, timeout=100):
+        fetch_archive_button.click()
+
+    mock_logger.info.assert_called_with("Archive fetch is already queued")
 
 
 def test_click_toggled_timespan_button(qtbot, qtrace):

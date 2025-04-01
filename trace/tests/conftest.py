@@ -95,4 +95,5 @@ def mock_logger():
     logger.debug = mock.Mock()
     logger.warning = mock.Mock()
     logger.error = mock.Mock()
+    logger.info = mock.Mock()
     yield logger

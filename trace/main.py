@@ -52,6 +52,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
 
         self.ui.dit_btn.clicked.connect(self.open_data_insight_tool)
         self.ui.save_img_btn.clicked.connect(self.save_plot_image)
+        self.ui.fetch_archive_btn.clicked.connect(self.fetch_archive)
 
         # Toggle "Cursor" button on plot-mouse interaction
         multi_axis_plot = self.ui.main_plot.plotItem
@@ -219,7 +220,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         dit = DataInsightTool(self, self.curves_model, self.ui.main_plot)
         dit.show()
 
-    def save_plot_image(self):
+    def save_plot_image(self) -> None:
         """Saves current plot as an image. Opens file dialog to allow user to
         set custom location."""
         exporter = pyqtgraph.exporters.ImageExporter(self.ui.main_plot.plotItem)
@@ -237,6 +238,14 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
                 logger.info(f"Saved image file to: {file_path}")
             except Exception as e:
                 logger.error(f"Failed to save image: {e}")
+
+    def fetch_archive(self) -> None:
+        """Triggers a fetch to the archive"""
+        if not (self.ui.main_plot._archive_request_queued):
+            logger.info("Requesting data from archiver")
+            self.ui.main_plot.requestDataFromArchiver()
+        else:
+            logger.info("Archive fetch is already queued")
 
     @staticmethod
     def git_version():
