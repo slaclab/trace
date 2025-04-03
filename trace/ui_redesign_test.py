@@ -29,14 +29,13 @@ from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 
 from config import logger, datetime_pv
 from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
-from widgets import DataInsightTool
+from widgets import DataInsightTool, PlotSettingsModal
 
 
 class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
     def __init__(self, parent=None, args=None, macros=None) -> None:
         super(TraceDisplay, self).__init__(parent=parent, args=args, macros=macros, ui_filename=None)
         self.build_ui()
-        self.setup_ui()
         self.configure_app()
         self.resize(1000, 600)
 
@@ -84,11 +83,17 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             show_all=False,
             show_extension_lines=True,
         )
-        self.plot.setShowLegend(True)
-        self.settings_button = QPushButton(self.plot)
-        settings_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)  # TODO: replace temporary icon
-        self.settings_button.setIcon(settings_icon)
+        multi_axis_plot = self.plot.plotItem
+        multi_axis_plot.vb.menu = None
+        multi_axis_plot.sigXRangeChangedManually.connect(self.disable_auto_scroll_button.click)
         plot_side_layout.addWidget(self.plot)
+
+        settings_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)  # TODO: replace temporary icon
+        self.settings_button = QPushButton(self.plot)
+        self.settings_button.setIcon(settings_icon)
+
+        self.plot_settings = PlotSettingsModal(self.settings_button, self.plot)
+        self.settings_button.clicked.connect(self.plot_settings.show)
 
         return plot_side_widget
 
@@ -143,6 +148,8 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
 
         self.disable_auto_scroll_button = self.timespan_buttons.button(-2)
         self.disable_auto_scroll_button.hide()
+
+        self.timespan_buttons.buttonToggled.connect(self.set_plot_timerange)
 
         return timespan_button_widget
 
@@ -207,15 +214,6 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
 
         return footer_widget
 
-    def setup_ui(self):
-        self.setup_plot_side()
-
-    def setup_plot_side(self):
-        multi_axis_plot = self.plot.plotItem
-        multi_axis_plot.vb.menu = None
-        multi_axis_plot.sigXRangeChangedManually.connect(self.disable_auto_scroll_button.click)
-        self.timespan_buttons.buttonToggled.connect(self.set_plot_timerange)
-
     def configure_app(self):
         """UI changes to be made to the PyDMApplication"""
         app = QApplication.instance()
@@ -279,7 +277,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             logger.debug(f"Enabling plot autoscroll for {timespan}s")
         else:
             logger.debug("Disabling plot autoscroll, using mouse controls")
-        # self.autoScroll(enable=enable_scroll, timespan=timespan)
+        self.autoScroll(enable=enable_scroll, timespan=timespan)
 
     @Slot(bool)
     @Slot(bool, int)

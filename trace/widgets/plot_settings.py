@@ -23,14 +23,15 @@ class PlotSettingsModal(QWidget):
 
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot):
         super().__init__(parent)
-        self.setWindowFlag(Qt.WindowModal)
+        self.setWindowFlag(Qt.Popup)
 
         self.plot = plot
         main_layout = QVBoxLayout()
+        self.setLayout(main_layout)
 
         bold_font = QFont()
         bold_font.setBold(True)
-        bold_font.setPointSize(14)
+        bold_font.setPixelSize(14)
         title_label = QLabel("Plot Settings", self)
         title_label.setFont(bold_font)
         main_layout.addWidget(title_label)
@@ -52,7 +53,6 @@ class PlotSettingsModal(QWidget):
         legend_spacer = QSpacerItem(40, 12, QSizePolicy.Expanding, QSizePolicy.Minimum)
         legend_layout.addSpacerItem(legend_spacer)
         legend_checkbox = QCheckBox(self)
-        legend_checkbox.setChecked(True)
         legend_checkbox.stateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
         legend_layout.addWidget(legend_checkbox)
         main_layout.addLayout(legend_layout)
@@ -69,7 +69,10 @@ class PlotSettingsModal(QWidget):
         as_interval_layout.addWidget(self.as_interval_spinbox)
         main_layout.addLayout(as_interval_layout)
 
+        bold_font = QFont()
+        bold_font.setBold(True)
         appearance_label = QLabel("Appearance", self)
+        appearance_label.setFont(bold_font)
         main_layout.addWidget(appearance_label)
 
         background_layout = QHBoxLayout()
@@ -90,7 +93,7 @@ class PlotSettingsModal(QWidget):
         x_axis_font_size_spinbox = QSpinBox(self)
         x_axis_font_size_spinbox.setValue(12)
         x_axis_font_size_spinbox.setSuffix(" pt")
-        x_axis_font_size_spinbox.valueChanged.connect(self.auto_scroll_interval_change.emit)
+        x_axis_font_size_spinbox.valueChanged.connect(self.set_x_axis_font_size)
         x_axis_font_size_layout.addWidget(x_axis_font_size_spinbox)
         main_layout.addLayout(x_axis_font_size_layout)
 
@@ -100,7 +103,6 @@ class PlotSettingsModal(QWidget):
         y_grid_spacer = QSpacerItem(40, 12, QSizePolicy.Expanding, QSizePolicy.Minimum)
         y_grid_layout.addSpacerItem(y_grid_spacer)
         self.y_grid_checkbox = QCheckBox(self)
-        self.y_grid_checkbox.setChecked(True)
         self.y_grid_checkbox.stateChanged.connect(self.show_y_grid)
         y_grid_layout.addWidget(self.y_grid_checkbox)
         main_layout.addLayout(y_grid_layout)
@@ -111,7 +113,6 @@ class PlotSettingsModal(QWidget):
         x_grid_spacer = QSpacerItem(40, 12, QSizePolicy.Expanding, QSizePolicy.Minimum)
         x_grid_layout.addSpacerItem(x_grid_spacer)
         self.x_grid_checkbox = QCheckBox(self)
-        self.x_grid_checkbox.setChecked(True)
         self.x_grid_checkbox.stateChanged.connect(self.show_x_grid)
         x_grid_layout.addWidget(self.x_grid_checkbox)
         main_layout.addLayout(x_grid_layout)
@@ -147,22 +148,29 @@ class PlotSettingsModal(QWidget):
         opacity /= 100
         return opacity
 
+    def show(self):
+        parent_pos = self.parent().rect().bottomRight()
+        global_pos = self.parent().mapToGlobal(parent_pos)
+        self.move(global_pos)
+        super().show()
+
     @Slot(int)
     def set_x_axis_font_size(self, size: int) -> None:
         font = QFont()
-        font.setPointSize(size)
+        font.setPixelSize(size)
         x_axis = self.plot.getAxis("bottom")
         x_axis.setStyle(tickFont=font)
 
-    @Slot(bool)
-    def show_y_grid(self, visible: bool):
-        self.plot.setShowYGrid(visible, self.gridline_opacity)
+    @Slot(int)
+    def show_y_grid(self, visible: int):
+        self.plot.setShowYGrid(bool(visible), self.gridline_opacity)
 
-    @Slot(bool)
-    def show_x_grid(self, visible: bool):
-        self.plot.setShowXGrid(visible, self.gridline_opacity)
+    @Slot(int)
+    def show_x_grid(self, visible: int):
+        self.plot.setShowXGrid(bool(visible), self.gridline_opacity)
 
     @Slot(int)
     def change_gridline_opacity(self, opacity: int):
+        opacity /= 100
         self.plot.setShowYGrid(self.y_grid_visible, opacity)
         self.plot.setShowXGrid(self.x_grid_visible, opacity)
