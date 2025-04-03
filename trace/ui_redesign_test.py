@@ -2,15 +2,18 @@ import os
 import subprocess
 from socket import gethostname
 from getpass import getuser
+from datetime import datetime
 
 from qtpy.QtGui import QFont
-from qtpy.QtCore import Qt, QSize
+from qtpy.QtCore import Qt, Slot, QSize
 from qtpy.QtWidgets import (
     QLabel,
+    QStyle,
     QWidget,
     QLineEdit,
     QSplitter,
     QTreeView,
+    QFileDialog,
     QHBoxLayout,
     QPushButton,
     QSizePolicy,
@@ -19,20 +22,23 @@ from qtpy.QtWidgets import (
     QApplication,
     QButtonGroup,
 )
+from pyqtgraph.exporters import ImageExporter
 
 from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 
-from config import datetime_pv
+from config import logger, datetime_pv
+from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
+from widgets import DataInsightTool
 
 
-class TraceDisplay(Display):
+class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
     def __init__(self, parent=None, args=None, macros=None) -> None:
         super(TraceDisplay, self).__init__(parent=parent, args=args, macros=macros, ui_filename=None)
         self.build_ui()
         self.setup_ui()
         self.configure_app()
-        self.resize(1100, 700)
+        self.resize(1000, 600)
 
     def minimumSizeHint(self):
         return QSize(700, 350)
@@ -67,11 +73,22 @@ class TraceDisplay(Display):
         plot_side_widget.setLayout(plot_side_layout)
 
         toolbar = self.build_toolbar(plot_side_widget)
-        plot_side_layout.addLayout(toolbar)
+        plot_side_layout.addWidget(toolbar)
 
         # Create plot
-        self.main_plot = PyDMArchiverTimePlot(plot_side_widget, background="white", optimized_data_bins=5000)
-        plot_side_layout.addWidget(self.main_plot)
+        self.plot = PyDMArchiverTimePlot(
+            plot_side_widget,
+            background="white",
+            optimized_data_bins=5000,
+            cache_data=False,
+            show_all=False,
+            show_extension_lines=True,
+        )
+        self.plot.setShowLegend(True)
+        self.settings_button = QPushButton(self.plot)
+        settings_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)  # TODO: replace temporary icon
+        self.settings_button.setIcon(settings_icon)
+        plot_side_layout.addWidget(self.plot)
 
         return plot_side_widget
 
@@ -79,7 +96,10 @@ class TraceDisplay(Display):
         toolbar_widget = QWidget(parent)
         # Create tool layout
         tool_layout = QHBoxLayout()
+        tool_layout.setContentsMargins(0, 0, 0, 0)
+        toolbar_widget.setLayout(tool_layout)
         save_image_button = QPushButton("Save Image", toolbar_widget)
+        save_image_button.clicked.connect(self.save_plot_image)
         tool_layout.addWidget(save_image_button)
         logger_button = QPushButton("Logger", toolbar_widget)
         tool_layout.addWidget(logger_button)
@@ -88,6 +108,7 @@ class TraceDisplay(Display):
         timespan_buttons = self.build_timespan_buttons(toolbar_widget)
         tool_layout.addWidget(timespan_buttons)
         data_insight_tool_button = QPushButton("Data Insight Tool", toolbar_widget)
+        data_insight_tool_button.clicked.connect(self.open_data_insight_tool)
         tool_layout.addWidget(data_insight_tool_button)
 
         return toolbar_widget
@@ -98,40 +119,30 @@ class TraceDisplay(Display):
         timespan_button_layout.setContentsMargins(0, 0, 0, 0)
         timespan_button_widget.setLayout(timespan_button_layout)
 
-        self.min_scale_btn = QPushButton("1m", timespan_button_widget)
-        self.min_scale_btn.setMaximumWidth(40)
-        self.min_scale_btn.setCheckable(True)
-        timespan_button_layout.addWidget(self.min_scale_btn)
+        self.timespan_buttons = QButtonGroup(timespan_button_widget)
+        self.timespan_buttons.setExclusive(True)
 
-        self.hour_scale_btn = QPushButton("1h", timespan_button_widget)
-        self.hour_scale_btn.setMaximumWidth(40)
-        self.hour_scale_btn.setCheckable(True)
-        self.hour_scale_btn.setChecked(True)
-        timespan_button_layout.addWidget(self.hour_scale_btn)
+        timespan_button_data = (
+            ("1m", 60),
+            ("1h", 3600),
+            ("1d", 86400),
+            ("1w", 604800),
+            ("1M", 2628300),
+            ("Disable AutoScroll", -2),
+        )
 
-        self.day_scale_btn = QPushButton("1d", timespan_button_widget)
-        self.day_scale_btn.setMaximumWidth(40)
-        self.day_scale_btn.setCheckable(True)
-        timespan_button_layout.addWidget(self.day_scale_btn)
+        for text, id in timespan_button_data:
+            timespan_button = QPushButton(text, timespan_button_widget)
+            timespan_button.setMaximumWidth(35)
+            timespan_button.setCheckable(True)
+            timespan_button_layout.addWidget(timespan_button)
+            self.timespan_buttons.addButton(timespan_button, id)
 
-        self.week_scale_btn = QPushButton("1w", timespan_button_widget)
-        self.week_scale_btn.setMaximumWidth(40)
-        self.week_scale_btn.setCheckable(True)
-        timespan_button_layout.addWidget(self.week_scale_btn)
+        default_button = self.timespan_buttons.button(3600)
+        default_button.setChecked(True)
 
-        self.month_scale_btn = QPushButton("1M", timespan_button_widget)
-        self.month_scale_btn.setMaximumWidth(40)
-        self.month_scale_btn.setCheckable(True)
-        timespan_button_layout.addWidget(self.month_scale_btn)
-
-        # Create timespan button group
-        timespan_buttons = QButtonGroup(timespan_button_widget)
-        timespan_buttons.setExclusive(True)
-        timespan_buttons.addButton(self.min_scale_btn)
-        timespan_buttons.addButton(self.hour_scale_btn)
-        timespan_buttons.addButton(self.day_scale_btn)
-        timespan_buttons.addButton(self.week_scale_btn)
-        timespan_buttons.addButton(self.month_scale_btn)
+        self.disable_auto_scroll_button = self.timespan_buttons.button(-2)
+        self.disable_auto_scroll_button.hide()
 
         return timespan_button_widget
 
@@ -144,7 +155,8 @@ class TraceDisplay(Display):
         # Create pv plotter layout
         pv_plotter_layout = QHBoxLayout()
         control_side_layout.addLayout(pv_plotter_layout)
-        pv_line_edit = QLineEdit("Enter PV", control_side_widget)
+        pv_line_edit = QLineEdit(control_side_widget)
+        pv_line_edit.setPlaceholderText("Enter PV")
         pv_plotter_layout.addWidget(pv_line_edit)
         pv_plot_button = QPushButton("Plot", control_side_widget)
         pv_plotter_layout.addWidget(pv_plot_button)
@@ -162,45 +174,29 @@ class TraceDisplay(Display):
         label_font.setPointSize(8)
 
         footer_widget = QWidget(parent)
-        # footer_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         footer_widget.setFixedHeight(12)
         footer_layout = QHBoxLayout()
         footer_layout.setContentsMargins(0, 0, 0, 0)
         footer_widget.setLayout(footer_layout)
 
-        self.version_label = QLabel("<version_tag>", footer_widget)
-        self.version_label.setFont(label_font)
-        self.version_label.setToolTip("Trace Version")
-        self.version_label.setAlignment(Qt.AlignBottom)
-        footer_layout.addWidget(self.version_label)
-        footer_layout.addWidget(BreakerLabel(footer_widget))
+        footer_label_data = (
+            (self.git_version(), "Trace Version"),
+            (gethostname(), "Node Name"),
+            (getuser(), "User Name"),
+            (str(os.getpid()), "PID"),
+            (os.getenv("PYDM_ARCHIVER_URL"), "Archiver URL"),
+        )
 
-        self.node_label = QLabel("<node_name>", footer_widget)
-        self.node_label.setFont(label_font)
-        self.node_label.setToolTip("Node Name")
-        self.node_label.setAlignment(Qt.AlignBottom)
-        footer_layout.addWidget(self.node_label)
-        footer_layout.addWidget(BreakerLabel(footer_widget))
+        for text, tooltip in footer_label_data:
+            label = QLabel(text, footer_widget)
+            label.setFont(label_font)
+            label.setToolTip(tooltip)
+            label.setAlignment(Qt.AlignBottom)
+            footer_layout.addWidget(label)
+            footer_layout.addWidget(BreakerLabel(footer_widget))
 
-        self.user_label = QLabel("<user>", footer_widget)
-        self.user_label.setFont(label_font)
-        self.user_label.setToolTip("User Name")
-        self.user_label.setAlignment(Qt.AlignBottom)
-        footer_layout.addWidget(self.user_label)
-        footer_layout.addWidget(BreakerLabel(footer_widget))
-
-        self.pid_label = QLabel("<PID>", footer_widget)
-        self.pid_label.setFont(label_font)
-        self.pid_label.setToolTip("PID")
-        self.pid_label.setAlignment(Qt.AlignBottom)
-        footer_layout.addWidget(self.pid_label)
-        footer_layout.addWidget(BreakerLabel(footer_widget))
-
-        self.url_label = QLabel("<PYDM_ARCHIVER_URL>", footer_widget)
-        self.url_label.setFont(label_font)
-        self.url_label.setToolTip("Archiver URL")
-        self.url_label.setAlignment(Qt.AlignBottom)
-        footer_layout.addWidget(self.url_label)
+        last_breaker = footer_widget.children()[-1]
+        footer_layout.removeWidget(last_breaker)
 
         footer_spacer = QSpacerItem(40, 12, QSizePolicy.Expanding, QSizePolicy.Minimum)
         footer_layout.addSpacerItem(footer_spacer)
@@ -212,17 +208,13 @@ class TraceDisplay(Display):
         return footer_widget
 
     def setup_ui(self):
-        self.setup_footer()
+        self.setup_plot_side()
 
-    def setup_footer(self):
-        """Set footer information for application. Includes logging, nodename,
-        username, PID, git version, Archiver URL, and current datetime
-        """
-        self.version_label.setText(self.git_version())
-        self.node_label.setText(gethostname())
-        self.user_label.setText(getuser())
-        self.pid_label.setText(str(os.getpid()))
-        self.url_label.setText(os.getenv("PYDM_ARCHIVER_URL"))
+    def setup_plot_side(self):
+        multi_axis_plot = self.plot.plotItem
+        multi_axis_plot.vb.menu = None
+        multi_axis_plot.sigXRangeChangedManually.connect(self.disable_auto_scroll_button.click)
+        self.timespan_buttons.buttonToggled.connect(self.set_plot_timerange)
 
     def configure_app(self):
         """UI changes to be made to the PyDMApplication"""
@@ -237,6 +229,68 @@ class TraceDisplay(Display):
         # Hide status bar by default (can be shown in menu bar)
         app.main_window.toggle_status_bar(False)
         app.main_window.ui.actionShow_Status_Bar.setChecked(False)
+
+    @Slot()
+    def save_plot_image(self) -> None:
+        """Saves current plot as an image. Opens file dialog to allow user to
+        set custom location."""
+        exporter = ImageExporter(self.plot.plotItem)
+        default_filename = datetime.now().strftime(f"{getuser()}_trace_%Y%m%d_%H%M%S.png")
+        usr_home_dir = os.path.expanduser("~")
+        file_path, _ = QFileDialog.getSaveFileName(
+            None,
+            "Save Plot Image",
+            os.path.join(usr_home_dir, default_filename),
+            "PNG Files (*.png);;JPEG Files (*.jpg);;All Files (*)",
+        )
+        if file_path:
+            try:
+                exporter.export(file_path)
+                logger.info(f"Saved image file to: {file_path}")
+            except Exception as e:
+                logger.error(f"Failed to save image: {e}")
+
+    @Slot()
+    def fetch_archive(self) -> None:
+        """Triggers a fetch to the archive"""
+        if not (self.plot._archive_request_queued):
+            logger.info("Requesting data from archiver")
+            self.plot.requestDataFromArchiver()
+        else:
+            logger.info("Archive fetch is already queued")
+
+    @Slot()
+    def open_data_insight_tool(self):
+        """Create a new instance of the Data Insight Tool"""
+        dit = DataInsightTool(self, self.curves_model, self.plot)
+        dit.show()
+
+    @Slot()
+    def set_plot_timerange(self) -> None:
+        """Slot to be called when a timespan setting button is pressed.
+        This will enable autoscrolling along the x-axis and disable mouse
+        controls. If the "Cursor" button is pressed, then autoscrolling is
+        disabled and mouse controls are enabled.
+        """
+        timespan = self.timespan_buttons.checkedId()
+
+        enable_scroll = timespan != -2
+        if enable_scroll:
+            logger.debug(f"Enabling plot autoscroll for {timespan}s")
+        else:
+            logger.debug("Disabling plot autoscroll, using mouse controls")
+        # self.autoScroll(enable=enable_scroll, timespan=timespan)
+
+    @Slot(bool)
+    @Slot(bool, int)
+    def autoScroll(self, enable: bool, timespan: int = None):
+        if timespan is None:
+            timespan = self.timespan_buttons.checkedId()
+            if timespan < 0:
+                return
+
+        refresh_rate = self.plot_settings.auto_scroll_interval
+        self.plot.setAutoScroll(enable, timespan, refresh_rate=refresh_rate)
 
     @staticmethod
     def git_version():
