@@ -10,3 +10,4 @@ from .item_delegates import (
 )
 from .frozen_table_view import FrozenTableView
 from .data_insight_tool import DataInsightTool
+from .plot_settings import PlotSettingsModal
