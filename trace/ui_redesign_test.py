@@ -88,7 +88,6 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             optimized_data_bins=5000,
             cache_data=False,
             show_all=False,
-            show_extension_lines=True,
         )
         multi_axis_plot = self.plot.plotItem
         multi_axis_plot.vb.menu = None
