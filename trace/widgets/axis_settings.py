@@ -70,6 +70,6 @@ class AxisSettingsModal(QWidget):
         if self.axis.isVisible():
             self.axis.show()
 
-    @Slot(bool)
-    def set_axis_log_mode(self, checked: bool):
-        self.axis.log_mode = checked
+    @Slot(int)
+    def set_axis_log_mode(self, checked: int):
+        self.axis.log_mode = bool(checked)
