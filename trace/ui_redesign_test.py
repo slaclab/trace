@@ -12,7 +12,6 @@ from qtpy.QtWidgets import (
     QWidget,
     QLineEdit,
     QSplitter,
-    QTreeView,
     QFileDialog,
     QHBoxLayout,
     QPushButton,
@@ -27,6 +26,7 @@ from pyqtgraph.exporters import ImageExporter
 from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 
+from axis_item import AxisItem
 from config import logger, datetime_pv
 from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
 from widgets import DataInsightTool, PlotSettingsModal
@@ -174,9 +174,17 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         pv_plotter_layout.addWidget(pv_plot_button)
 
         # Create axis & curve view
-        axis_view = QTreeView(control_side_widget)
-        control_side_layout.addWidget(axis_view)
+        axis_list = QVBoxLayout()
+        axis_list.addStretch()
+        control_side_layout.addLayout(axis_list)
         new_axis_button = QPushButton("New Axis", control_side_widget)
+
+        def add_axis():
+            new_axis = AxisItem()
+            new_axis.axis_label.setText(f"Y-Axis {axis_list.count()}")
+            axis_list.insertWidget(axis_list.count() - 1, new_axis)
+
+        new_axis_button.clicked.connect(add_axis)
         control_side_layout.addWidget(new_axis_button)
 
         return control_side_widget
