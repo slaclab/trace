@@ -4,8 +4,9 @@ from curve_item import CurveItem
 
 
 class AxisItem(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, plot_axis_item):
         super().__init__()
+        self.source = plot_axis_item
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self.header_layout = QtWidgets.QHBoxLayout()
@@ -22,7 +23,7 @@ class AxisItem(QtWidgets.QWidget):
         self.header_layout.addLayout(layout)
         self.top_settings_layout = QtWidgets.QHBoxLayout()
         layout.addLayout(self.top_settings_layout)
-        self.axis_label = QtWidgets.QLabel()
+        self.axis_label = QtWidgets.QLabel(self.source.name)
         self.top_settings_layout.addWidget(self.axis_label)
         self.settings_button = QtWidgets.QPushButton()
         self.settings_button.setIcon(qta.icon("msc.settings-gear"))
@@ -68,6 +69,8 @@ class AxisItem(QtWidgets.QWidget):
     def close(self) -> bool:
         for i in range(1, self.layout().count()):
             self.layout().itemAt(i).widget().close()
+        index = self.parent().plot._axes.index(self.source)
+        self.parent().plot.removeAxisAtIndex(index)
         self.setParent(None)
         self.deleteLater()
         return super().close()

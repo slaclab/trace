@@ -28,11 +28,11 @@ from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 
 from config import logger, datetime_pv
-from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
+from mixins import FileIOMixin, PlotConfigMixin
 from widgets import DataInsightTool, PlotSettingsModal
 
 
-class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
+class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
     gridline_opacity_change = Signal(int)
 
     def __init__(self, parent=None, args=None, macros=None) -> None:
@@ -59,6 +59,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         # Create the plotting and control widgets
         plot_side_widget = self.build_plot_side(self)
         control_panel = ControlPanel()
+        control_panel.plot = self.plot
 
         # Create main splitter
         main_splitter = QSplitter(self)
@@ -324,10 +325,33 @@ class ControlPanel(QWidget):
         last_axis.add_curve(pv)
         self.pv_line_edit.clear()
 
-    def add_axis(self):
-        new_axis = AxisItem()
-        new_axis.axis_label.setText(f"Y-Axis {self.axis_list.count()}")
-        self.axis_list.insertWidget(self.axis_list.count() - 1, new_axis)
+    @property
+    def plot(self):
+        if not self._plot:
+            parent = self.parent()
+            while not hasattr(parent, "plot"):
+                parent = parent.parent()
+            self._plot = parent.plot
+        return self._plot
+
+    @plot.setter
+    def plot(self, plot):
+        self._plot = plot
+
+    def add_axis(self, name: str = ""):
+        logger.debug("Adding new empty axis to the plot")
+        if not name:
+            counter = len(self.plot.plotItem.axes) - 2
+            while (name := f"Y-Axis {counter}") in self.plot.plotItem.axes:
+                counter += 1
+
+        self.plot.addAxis(plot_data_item=None, name=name, orientation="left", label=name)
+        new_axis = self.plot._axes[-1]
+
+        axis_item = AxisItem(new_axis)
+        self.axis_list.insertWidget(self.axis_list.count() - 1, axis_item)
+
+        logger.debug(f"Added axis {new_axis.name} to plot")
 
     def closeEvent(self, a0: QCloseEvent):
         for axis_item in range(self.axis_list.count()):
