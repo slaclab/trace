@@ -72,6 +72,7 @@ class PlotSettingsModal(QWidget):
         self.grid_opacity_slider.setOrientation(Qt.Horizontal)
         self.grid_opacity_slider.setMaximum(255)
         self.grid_opacity_slider.setValue(127)
+        self.grid_opacity_slider.setSingleStep(32)
         self.grid_opacity_slider.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.grid_opacity_slider.valueChanged.connect(self.change_gridline_opacity)
         grid_opacity_row = SettingsRowItem(self, "  Gridline Opacity", self.grid_opacity_slider)
@@ -110,6 +111,6 @@ class PlotSettingsModal(QWidget):
 
     @Slot(int)
     def change_gridline_opacity(self, opacity: int):
+        normalized_opacity = opacity / 255
+        self.plot.setShowXGrid(self.x_grid_visible, normalized_opacity)
         self.grid_alpha_change.emit(opacity)
-        opacity /= 255
-        self.plot.setShowXGrid(self.x_grid_visible, opacity)
