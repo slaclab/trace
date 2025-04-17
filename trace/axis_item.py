@@ -11,7 +11,11 @@ class AxisItem(QtWidgets.QWidget):
         self.header_layout = QtWidgets.QHBoxLayout()
         self.layout().addLayout(self.header_layout)
 
+        self._expanded = False
         self.expand_button = QtWidgets.QPushButton()
+        self.expand_button.setIcon(qta.icon("msc.chevron-right"))
+        self.expand_button.setFlat(True)
+        self.expand_button.clicked.connect(self.toggle_expand)
         self.header_layout.addWidget(self.expand_button)
 
         layout = QtWidgets.QVBoxLayout()
@@ -46,6 +50,17 @@ class AxisItem(QtWidgets.QWidget):
     def add_curve(self, curve):
         curve_item = CurveItem()
         self.layout().addWidget(curve_item)
+
+    def toggle_expand(self):
+        if self._expanded:
+            for index in range(1, self.layout().count()):
+                self.layout().itemAt(index).widget().hide()
+            self.expand_button.setIcon(qta.icon("msc.chevron-right"))
+        else:
+            for index in range(1, self.layout().count()):
+                self.layout().itemAt(index).widget().show()
+            self.expand_button.setIcon(qta.icon("msc.chevron-down"))
+        self._expanded = not self._expanded
 
     def close(self) -> bool:
         for i in range(1, self.layout().count()):
