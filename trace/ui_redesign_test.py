@@ -187,6 +187,15 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         new_axis_button.clicked.connect(add_axis)
         control_side_layout.addWidget(new_axis_button)
 
+        def plot_pv_from_line_edit():
+            pv = pv_line_edit.text()
+            last_axis = axis_list.itemAt(axis_list.count() - 2).widget()
+            last_axis.add_curve(pv)
+            pv_line_edit.clear()
+
+        pv_line_edit.returnPressed.connect(plot_pv_from_line_edit)
+        pv_plot_button.clicked.connect(plot_pv_from_line_edit)
+
         return control_side_widget
 
     def build_footer(self, parent: QWidget):

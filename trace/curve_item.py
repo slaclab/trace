@@ -18,7 +18,7 @@ class CurveItem(QtWidgets.QWidget):
         data_type_layout = QtWidgets.QHBoxLayout()
         second_layout.addLayout(data_type_layout)
 
-        self.label = QtWidgets.QLabel("PV Name")
+        self.label = QtWidgets.QLabel()
         pv_settings_layout.addWidget(self.label)
         self.pv_settings_button = QtWidgets.QPushButton()
         self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))

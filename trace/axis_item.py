@@ -47,9 +47,12 @@ class AxisItem(QtWidgets.QWidget):
         self.active_toggle = QtWidgets.QCheckBox("Active")
         self.header_layout.addWidget(self.active_toggle)
 
-    def add_curve(self, curve):
+    def add_curve(self, pv):
         curve_item = CurveItem()
+        curve_item.label.setText(pv)
         self.layout().addWidget(curve_item)
+        if not self._expanded:
+            self.toggle_expand()
 
     def toggle_expand(self):
         if self._expanded:
