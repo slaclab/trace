@@ -6,7 +6,7 @@ from datetime import datetime
 
 import qtawesome as qta
 from qtpy.QtGui import QFont
-from qtpy.QtCore import Qt, Slot, QSize
+from qtpy.QtCore import Qt, Slot, QSize, Signal
 from qtpy.QtWidgets import (
     QLabel,
     QWidget,
@@ -33,11 +33,18 @@ from widgets import DataInsightTool, PlotSettingsModal
 
 
 class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
+    gridline_opacity_change = Signal(int)
+
     def __init__(self, parent=None, args=None, macros=None) -> None:
         super(TraceDisplay, self).__init__(parent=parent, args=args, macros=macros, ui_filename=None)
         self.build_ui()
         self.configure_app()
         self.resize(1000, 600)
+
+    @property
+    def gridline_opacity(self) -> int:
+        """Get the current gridline opacity value from the plot settings"""
+        return self.plot_settings.gridline_opacity
 
     def minimumSizeHint(self):
         return QSize(700, 350)
@@ -93,6 +100,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.settings_button.setFlat(True)
 
         self.plot_settings = PlotSettingsModal(self.settings_button, self.plot)
+        self.plot_settings.grid_alpha_change.connect(self.gridline_opacity_change.emit)
         self.settings_button.clicked.connect(self.plot_settings.show)
 
         return plot_side_widget
