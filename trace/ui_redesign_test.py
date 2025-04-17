@@ -5,7 +5,8 @@ from getpass import getuser
 from datetime import datetime
 
 import qtawesome as qta
-from qtpy.QtGui import QFont
+from axis_item import AxisItem
+from qtpy.QtGui import QFont, QCloseEvent
 from qtpy.QtCore import Qt, Slot, QSize, Signal
 from qtpy.QtWidgets import (
     QLabel,
@@ -26,7 +27,6 @@ from pyqtgraph.exporters import ImageExporter
 from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 
-from axis_item import AxisItem
 from config import logger, datetime_pv
 from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
 from widgets import DataInsightTool, PlotSettingsModal
@@ -58,12 +58,12 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
 
         # Create the plotting and control widgets
         plot_side_widget = self.build_plot_side(self)
-        control_side_widget = self.build_control_side(self)
+        control_panel = ControlPanel()
 
         # Create main splitter
         main_splitter = QSplitter(self)
         main_splitter.addWidget(plot_side_widget)
-        main_splitter.addWidget(control_side_widget)
+        main_splitter.addWidget(control_panel)
         main_splitter.setSizes([1, 300])
         main_splitter.setCollapsible(0, False)
         main_splitter.setStretchFactor(0, 1)
@@ -157,46 +157,6 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.timespan_buttons.buttonToggled.connect(self.set_plot_timerange)
 
         return timespan_button_widget
-
-    def build_control_side(self, parent):
-        # Create right layout
-        control_side_widget = QWidget(parent)
-        control_side_layout = QVBoxLayout()
-        control_side_widget.setLayout(control_side_layout)
-
-        # Create pv plotter layout
-        pv_plotter_layout = QHBoxLayout()
-        control_side_layout.addLayout(pv_plotter_layout)
-        pv_line_edit = QLineEdit(control_side_widget)
-        pv_line_edit.setPlaceholderText("Enter PV")
-        pv_plotter_layout.addWidget(pv_line_edit)
-        pv_plot_button = QPushButton("Plot", control_side_widget)
-        pv_plotter_layout.addWidget(pv_plot_button)
-
-        # Create axis & curve view
-        axis_list = QVBoxLayout()
-        axis_list.addStretch()
-        control_side_layout.addLayout(axis_list)
-        new_axis_button = QPushButton("New Axis", control_side_widget)
-
-        def add_axis():
-            new_axis = AxisItem()
-            new_axis.axis_label.setText(f"Y-Axis {axis_list.count()}")
-            axis_list.insertWidget(axis_list.count() - 1, new_axis)
-
-        new_axis_button.clicked.connect(add_axis)
-        control_side_layout.addWidget(new_axis_button)
-
-        def plot_pv_from_line_edit():
-            pv = pv_line_edit.text()
-            last_axis = axis_list.itemAt(axis_list.count() - 2).widget()
-            last_axis.add_curve(pv)
-            pv_line_edit.clear()
-
-        pv_line_edit.returnPressed.connect(plot_pv_from_line_edit)
-        pv_plot_button.clicked.connect(plot_pv_from_line_edit)
-
-        return control_side_widget
 
     def build_footer(self, parent: QWidget):
         label_font = QFont()
@@ -332,3 +292,44 @@ class BreakerLabel(QLabel):
         self.setText("|")
         self.setFont(self.breaker_font)
         self.setAlignment(Qt.AlignBottom)
+
+
+class ControlPanel(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setLayout(QVBoxLayout())
+
+        # Create pv plotter layout
+        pv_plotter_layout = QHBoxLayout()
+        self.layout().addLayout(pv_plotter_layout)
+        self.pv_line_edit = QLineEdit()
+        self.pv_line_edit.setPlaceholderText("Enter PV")
+        self.pv_line_edit.returnPressed.connect(self.plot_pv_from_line_edit)
+        pv_plotter_layout.addWidget(self.pv_line_edit)
+        pv_plot_button = QPushButton("Plot")
+        pv_plot_button.clicked.connect(self.plot_pv_from_line_edit)
+        pv_plotter_layout.addWidget(pv_plot_button)
+
+        # Create axis & curve view
+        self.axis_list = QVBoxLayout()
+        self.axis_list.addStretch()
+        self.layout().addLayout(self.axis_list)
+        new_axis_button = QPushButton("New Axis")
+        new_axis_button.clicked.connect(self.add_axis)
+        self.layout().addWidget(new_axis_button)
+
+    def plot_pv_from_line_edit(self):
+        pv = self.pv_line_edit.text()
+        last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
+        last_axis.add_curve(pv)
+        self.pv_line_edit.clear()
+
+    def add_axis(self):
+        new_axis = AxisItem()
+        new_axis.axis_label.setText(f"Y-Axis {self.axis_list.count()}")
+        self.axis_list.insertWidget(self.axis_list.count() - 1, new_axis)
+
+    def closeEvent(self, a0: QCloseEvent):
+        for axis_item in range(self.axis_list.count()):
+            axis_item.close()
+        super().closeEvent(a0)
