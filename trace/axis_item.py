@@ -38,8 +38,13 @@ class AxisItem(QtWidgets.QWidget):
         self.top_settings_layout.addWidget(self.delete_button)
         self.bottom_settings_layout = QtWidgets.QHBoxLayout()
         layout.addLayout(self.bottom_settings_layout)
-        self.autorange_checkbox = QtWidgets.QCheckBox("Auto")
-        self.bottom_settings_layout.addWidget(self.autorange_checkbox)
+        self.auto_range_checkbox = QtWidgets.QCheckBox("Auto")
+        self.auto_range_checkbox.setCheckState(QtCore.Qt.Checked if self.source.auto_range else QtCore.Qt.Unchecked)
+        self.auto_range_checkbox.stateChanged.connect(self.set_auto_range)
+        self.source.linkedView().sigRangeChangedManually.connect(
+            lambda: self.auto_range_checkbox.setCheckState(QtCore.Qt.Unchecked)
+        )
+        self.bottom_settings_layout.addWidget(self.auto_range_checkbox)
         self.bottom_settings_layout.addWidget(QtWidgets.QLabel("min, max"))
         self.min_range_line_edit = QtWidgets.QLineEdit()
         self.bottom_settings_layout.addWidget(self.min_range_line_edit)
@@ -87,6 +92,9 @@ class AxisItem(QtWidgets.QWidget):
             self.source.show()
         for i in range(1, self.layout().count()):
             self.layout().itemAt(i).widget().active_toggle.setCheckState(state)
+
+    def set_auto_range(self, state: QtCore.Qt.CheckState):
+        self.source.auto_range = state == QtCore.Qt.Checked
 
     def close(self) -> bool:
         for i in range(1, self.layout().count()):
