@@ -47,9 +47,27 @@ class AxisItem(QtWidgets.QWidget):
         self.bottom_settings_layout.addWidget(self.auto_range_checkbox)
         self.bottom_settings_layout.addWidget(QtWidgets.QLabel("min, max"))
         self.min_range_line_edit = QtWidgets.QLineEdit()
+
+        def set_min_range(min):
+            self.source.min_range = min
+
+        self.min_range_line_edit.editingFinished.connect(lambda: set_min_range(float(self.min_range_line_edit.text())))
+        self.min_range_line_edit.editingFinished.connect(
+            lambda: self.auto_range_checkbox.setCheckState(QtCore.Qt.Unchecked)
+        )
+        self.source.sigYRangeChanged.connect(lambda _, range: self.min_range_line_edit.setText(f"{range[0]:.3g}"))
         self.bottom_settings_layout.addWidget(self.min_range_line_edit)
         self.bottom_settings_layout.addWidget(QtWidgets.QLabel(","))
         self.max_range_line_edit = QtWidgets.QLineEdit()
+
+        def set_max_range(max):
+            self.source.min_range = max
+
+        self.max_range_line_edit.editingFinished.connect(lambda: set_max_range(float(self.min_range_line_edit.text())))
+        self.max_range_line_edit.editingFinished.connect(
+            lambda: self.auto_range_checkbox.setCheckState(QtCore.Qt.Unchecked)
+        )
+        self.source.sigYRangeChanged.connect(lambda _, range: self.max_range_line_edit.setText(f"{range[1]:.3g}"))
         self.bottom_settings_layout.addWidget(self.max_range_line_edit)
 
         self.active_toggle = QtWidgets.QCheckBox("Active")
