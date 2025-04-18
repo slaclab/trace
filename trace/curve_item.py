@@ -1,5 +1,5 @@
 import qtawesome as qta
-from qtpy import QtWidgets
+from qtpy import QtCore, QtWidgets
 
 
 class CurveItem(QtWidgets.QWidget):
@@ -9,6 +9,8 @@ class CurveItem(QtWidgets.QWidget):
         self.setLayout(QtWidgets.QHBoxLayout())
 
         self.active_toggle = QtWidgets.QCheckBox("Active")
+        self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
+        self.active_toggle.stateChanged.connect(self.set_active)
         self.layout().addWidget(self.active_toggle)
 
         second_layout = QtWidgets.QVBoxLayout()
@@ -34,6 +36,12 @@ class CurveItem(QtWidgets.QWidget):
         data_type_layout.addWidget(self.live_toggle)
         self.archive_toggle = QtWidgets.QCheckBox("Archive")
         data_type_layout.addWidget(self.archive_toggle)
+
+    def set_active(self, state: QtCore.Qt.CheckState):
+        if state == QtCore.Qt.Unchecked:
+            self.source.hide()
+        else:
+            self.source.show()
 
     def close(self) -> bool:
         self.parent().parent().plot.removeCurve(self.source)

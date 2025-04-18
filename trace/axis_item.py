@@ -1,5 +1,5 @@
 import qtawesome as qta
-from qtpy import QtWidgets
+from qtpy import QtCore, QtWidgets
 from curve_item import CurveItem
 
 from widgets.table_widgets import ColorButton
@@ -48,6 +48,8 @@ class AxisItem(QtWidgets.QWidget):
         self.bottom_settings_layout.addWidget(self.max_range_line_edit)
 
         self.active_toggle = QtWidgets.QCheckBox("Active")
+        self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
+        self.active_toggle.stateChanged.connect(self.set_active)
         self.header_layout.addWidget(self.active_toggle)
 
     def add_curve(self, pv):
@@ -77,6 +79,14 @@ class AxisItem(QtWidgets.QWidget):
                 self.layout().itemAt(index).widget().show()
             self.expand_button.setIcon(qta.icon("msc.chevron-down"))
         self._expanded = not self._expanded
+
+    def set_active(self, state: QtCore.Qt.CheckState):
+        if state == QtCore.Qt.Unchecked:
+            self.source.hide()
+        else:
+            self.source.show()
+        for i in range(1, self.layout().count()):
+            self.layout().itemAt(i).widget().active_toggle.setCheckState(state)
 
     def close(self) -> bool:
         for i in range(1, self.layout().count()):
