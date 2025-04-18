@@ -353,6 +353,8 @@ class ControlPanel(QWidget):
         logger.debug(f"Added axis {new_axis.name} to plot")
 
     def add_curve(self, pv):
+        if self.axis_list.count() == 1:  # the header makes count >= 1
+            self.add_axis()
         last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
         last_axis.add_curve(pv)
 
