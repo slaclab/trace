@@ -2,6 +2,8 @@ import qtawesome as qta
 from qtpy import QtWidgets
 from curve_item import CurveItem
 
+from widgets.table_widgets import ColorButton
+
 
 class AxisItem(QtWidgets.QWidget):
     def __init__(self, plot_axis_item):
@@ -49,8 +51,18 @@ class AxisItem(QtWidgets.QWidget):
         self.header_layout.addWidget(self.active_toggle)
 
     def add_curve(self, pv):
-        curve_item = CurveItem()
-        curve_item.label.setText(pv)
+        index = len(self.parent().plot._curves)
+        color = ColorButton.index_color(index)
+        self.parent().plot.addYChannel(
+            y_channel=pv,
+            name=pv,
+            color=color,
+            useArchiveData=True,
+            yAxisName=self.source.name,
+        )
+
+        plot_curve_item = self.parent().plot._curves[-1]
+        curve_item = CurveItem(plot_curve_item)
         self.layout().addWidget(curve_item)
         if not self._expanded:
             self.toggle_expand()

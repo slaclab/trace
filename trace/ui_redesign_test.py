@@ -305,10 +305,10 @@ class ControlPanel(QWidget):
         self.layout().addLayout(pv_plotter_layout)
         self.pv_line_edit = QLineEdit()
         self.pv_line_edit.setPlaceholderText("Enter PV")
-        self.pv_line_edit.returnPressed.connect(self.plot_pv_from_line_edit)
+        self.pv_line_edit.returnPressed.connect(self.add_curve_from_line_edit)
         pv_plotter_layout.addWidget(self.pv_line_edit)
         pv_plot_button = QPushButton("Plot")
-        pv_plot_button.clicked.connect(self.plot_pv_from_line_edit)
+        pv_plot_button.clicked.connect(self.add_curve_from_line_edit)
         pv_plotter_layout.addWidget(pv_plot_button)
 
         # Create axis & curve view
@@ -319,10 +319,9 @@ class ControlPanel(QWidget):
         new_axis_button.clicked.connect(self.add_axis)
         self.layout().addWidget(new_axis_button)
 
-    def plot_pv_from_line_edit(self):
+    def add_curve_from_line_edit(self):
         pv = self.pv_line_edit.text()
-        last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
-        last_axis.add_curve(pv)
+        self.add_curve(pv)
         self.pv_line_edit.clear()
 
     @property
@@ -352,6 +351,10 @@ class ControlPanel(QWidget):
         self.axis_list.insertWidget(self.axis_list.count() - 1, axis_item)
 
         logger.debug(f"Added axis {new_axis.name} to plot")
+
+    def add_curve(self, pv):
+        last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
+        last_axis.add_curve(pv)
 
     def closeEvent(self, a0: QCloseEvent):
         for axis_item in range(self.axis_list.count()):

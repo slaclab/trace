@@ -3,9 +3,9 @@ from qtpy import QtWidgets
 
 
 class CurveItem(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, plot_curve_item):
         super().__init__()
-
+        self.source = plot_curve_item
         self.setLayout(QtWidgets.QHBoxLayout())
 
         self.active_toggle = QtWidgets.QCheckBox("Active")
@@ -18,7 +18,7 @@ class CurveItem(QtWidgets.QWidget):
         data_type_layout = QtWidgets.QHBoxLayout()
         second_layout.addLayout(data_type_layout)
 
-        self.label = QtWidgets.QLabel()
+        self.label = QtWidgets.QLabel(self.source.name())
         pv_settings_layout.addWidget(self.label)
         self.pv_settings_button = QtWidgets.QPushButton()
         self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))
@@ -36,6 +36,7 @@ class CurveItem(QtWidgets.QWidget):
         data_type_layout.addWidget(self.archive_toggle)
 
     def close(self) -> bool:
+        self.parent().parent().plot.removeCurve(self.source)
         self.setParent(None)
         self.deleteLater()
         return super().close()
