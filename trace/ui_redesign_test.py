@@ -3,13 +3,12 @@ import subprocess
 from socket import gethostname
 from getpass import getuser
 from datetime import datetime
-import qtawesome as qta
 
+import qtawesome as qta
 from qtpy.QtGui import QFont
 from qtpy.QtCore import Qt, Slot, QSize
 from qtpy.QtWidgets import (
     QLabel,
-    QStyle,
     QWidget,
     QLineEdit,
     QSplitter,
