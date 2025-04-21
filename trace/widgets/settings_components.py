@@ -21,9 +21,9 @@ class SettingsTitle(QLabel):
 
 
 class SettingsRowItem(QHBoxLayout):
-    def __init__(self, parent: QWidget, label_txt: str, widget: QWidget):
-        super().__init__(parent)
-        label = QLabel(label_txt, self)
+    def __init__(self, label_parent: QWidget, label_txt: str, widget: QWidget):
+        super().__init__()
+        label = QLabel(label_txt, label_parent)
         self.addWidget(label)
 
         spacer = QSpacerItem(40, 12, QSizePolicy.Expanding, QSizePolicy.Minimum)
