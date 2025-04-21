@@ -80,8 +80,7 @@ class CurveSettingsModal(QWidget):
     def set_curve_color(self, color: QColor):
         self.curve.color = color
 
-    @Slot(str)
-    @Slot(None)
+    @Slot(object)
     def set_curve_type(self, curve_type: str | None):
         self.curve.stepMode = curve_type
 
