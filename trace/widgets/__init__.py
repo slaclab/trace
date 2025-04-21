@@ -10,4 +10,6 @@ from .item_delegates import (
 )
 from .frozen_table_view import FrozenTableView
 from .data_insight_tool import DataInsightTool
+from .settings_components import SettingsTitle, SettingsRowItem, ComboBoxWrapper
 from .plot_settings import PlotSettingsModal
+from .curve_settings import CurveSettingsModal
