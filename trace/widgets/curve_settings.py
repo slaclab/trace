@@ -24,7 +24,7 @@ class CurveSettingsModal(QWidget):
         name_row = SettingsRowItem(self, "Curve Name", name_edit)
         main_layout.addLayout(name_row)
 
-        color_button = ColorButton(self, curve.color_string)
+        color_button = ColorButton(parent=self, color=curve.color_string)
         color_button.color_changed.connect(self.set_curve_color)
         color_row = SettingsRowItem(self, "Color", color_button)
         main_layout.addLayout(color_row)
