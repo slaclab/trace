@@ -34,18 +34,18 @@ class CurveSettingsModal(QWidget):
 
         init_curve_type = "Step" if curve.stepMode in ["left", "right", "center"] else "Direct"
         type_combo = ComboBoxWrapper(self, {"Direct": None, "Step": "right"}, init_curve_type)
-        type_combo.clean_text_changed.connect(self.set_curve_type)
+        type_combo.text_changed.connect(self.set_curve_type)
         type_row = SettingsRowItem(self, "  Type", type_combo)
         main_layout.addLayout(type_row)
 
         style_combo = ComboBoxWrapper(self, TimePlotCurveItem.lines, curve.lineStyle)
-        style_combo.clean_text_changed.connect(self.set_curve_style)
+        style_combo.text_changed.connect(self.set_curve_style)
         style_row = SettingsRowItem(self, "  Style", style_combo)
         main_layout.addLayout(style_row)
 
         width_options = {f"{i}px": i for i in range(1, 6)}
         width_combo = ComboBoxWrapper(self, width_options, curve.lineWidth)
-        width_combo.clean_text_changed.connect(self.set_curve_width)
+        width_combo.text_changed.connect(self.set_curve_width)
         width_row = SettingsRowItem(self, "  Width", width_combo)
         main_layout.addLayout(width_row)
 
@@ -53,13 +53,13 @@ class CurveSettingsModal(QWidget):
         main_layout.addWidget(symbol_title_label)
 
         shape_combo = ComboBoxWrapper(self, TimePlotCurveItem.symbols, curve.symbol)
-        shape_combo.clean_text_changed.connect(self.set_symbol_shape)
+        shape_combo.text_changed.connect(self.set_symbol_shape)
         shape_row = SettingsRowItem(self, "  Shape", shape_combo)
         main_layout.addLayout(shape_row)
 
         size_options = {f"{i}px": i for i in range(5, 26, 5)}
         size_combo = ComboBoxWrapper(self, size_options, curve.symbolSize)
-        size_combo.clean_text_changed.connect(self.set_symbol_size)
+        size_combo.text_changed.connect(self.set_symbol_size)
         size_row = SettingsRowItem(self, "  Size", size_combo)
         main_layout.addLayout(size_row)
 
@@ -84,18 +84,18 @@ class CurveSettingsModal(QWidget):
     def set_curve_type(self, curve_type: str | None):
         self.curve.stepMode = curve_type
 
-    @Slot(int)
+    @Slot(object)
     def set_curve_style(self, style: int):
         self.curve.lineStyle = style
 
-    @Slot(int)
+    @Slot(object)
     def set_curve_width(self, width: int):
         self.curve.lineWidth = width
 
-    @Slot(str)
+    @Slot(object)
     def set_symbol_shape(self, shape: str):
         self.curve.symbol = shape
 
-    @Slot(int)
+    @Slot(object)
     def set_symbol_size(self, size: int):
         self.curve.symbolSize = size
