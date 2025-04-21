@@ -1,6 +1,4 @@
-/* PyDM Application Stylesheet
- * Based on the provided Figma mockup screenshot
- */
+/* PyDM Application Stylesheet */
 
 /* Global styles */
 QMainWindow, QDialog, QWidget {
@@ -311,13 +309,3 @@ QSpinBox::down-arrow {
     height: 8px;
 }
 
-/* Custom colors for PV connections */
-/* Magenta for the PVs shown in the screenshot */
-PyDMLabel[pvName*="KLYS:LI22:11:KVAC"] {
-    color: #e91e63;
-}
-
-/* Blue for other connections - customize as needed */
-PyDMLabel[pvName*="other"] {
-    color: #2196f3;
-}
