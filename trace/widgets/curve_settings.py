@@ -63,6 +63,12 @@ class CurveSettingsModal(QWidget):
         size_row = SettingsRowItem(self, "  Size", size_combo)
         main_layout.addLayout(size_row)
 
+    def show(self):
+        parent_pos = self.parent().rect().bottomRight()
+        global_pos = self.parent().mapToGlobal(parent_pos)
+        self.move(global_pos)
+        super().show()
+
     @Slot()
     def set_curve_name(self):
         sender = self.sender()
