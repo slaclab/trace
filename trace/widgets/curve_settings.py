@@ -2,16 +2,17 @@ from qtpy.QtGui import QColor
 from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import QWidget, QLineEdit, QVBoxLayout
 
-from pydm.widgets.archiver_time_plot import TimePlotCurveItem
+from pydm.widgets.archiver_time_plot import TimePlotCurveItem, PyDMArchiverTimePlot
 
 from widgets import ColorButton, SettingsTitle, ComboBoxWrapper, SettingsRowItem
 
 
 class CurveSettingsModal(QWidget):
-    def __init__(self, parent: QWidget, curve: TimePlotCurveItem):
+    def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot, curve: TimePlotCurveItem):
         super().__init__(parent)
         self.setWindowFlag(Qt.Popup)
 
+        self.legend = plot._legend
         self.curve = curve
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
@@ -79,8 +80,11 @@ class CurveSettingsModal(QWidget):
             sender.setText(self.curve.name())
             sender.blockSignals(False)
         elif name != self.curve.name():
-            self.curve.setName(name)
-            self.curve.update()
+            legend_label = self.legend.getLabel(self.curve)
+            legend_label.setText(name)
+
+            x, y = self.curve.getData()
+            self.curve.setData(name=name, x=x, y=y)
 
     @Slot(QColor)
     def set_curve_color(self, color: QColor):
