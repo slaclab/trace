@@ -33,8 +33,12 @@ class CurveItem(QtWidgets.QWidget):
         pv_settings_layout.addWidget(self.delete_button)
 
         self.live_toggle = QtWidgets.QCheckBox("Live")
+        self.live_toggle.setCheckState(QtCore.Qt.Checked if self.source.liveData else QtCore.Qt.Unchecked)
+        self.live_toggle.stateChanged.connect(self.set_live_data_connection)
         data_type_layout.addWidget(self.live_toggle)
         self.archive_toggle = QtWidgets.QCheckBox("Archive")
+        self.archive_toggle.setCheckState(QtCore.Qt.Checked if self.source.use_archive_data else QtCore.Qt.Unchecked)
+        self.archive_toggle.stateChanged.connect(self.set_archive_data_connection)
         data_type_layout.addWidget(self.archive_toggle)
 
     def set_active(self, state: QtCore.Qt.CheckState):
@@ -42,6 +46,12 @@ class CurveItem(QtWidgets.QWidget):
             self.source.hide()
         else:
             self.source.show()
+
+    def set_live_data_connection(self, state: QtCore.Qt.CheckState) -> None:
+        self.source.liveData = state == QtCore.Qt.Checked
+
+    def set_archive_data_connection(self, state: QtCore.Qt.CheckState) -> None:
+        self.source.use_archive_data = state == QtCore.Qt.Checked
 
     def close(self) -> bool:
         self.parent().parent().plot.removeCurve(self.source)
