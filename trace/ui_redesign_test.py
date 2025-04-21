@@ -3,6 +3,7 @@ import subprocess
 from socket import gethostname
 from getpass import getuser
 from datetime import datetime
+import qtawesome as qta
 
 from qtpy.QtGui import QFont
 from qtpy.QtCore import Qt, Slot, QSize
@@ -88,9 +89,9 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         multi_axis_plot.sigXRangeChangedManually.connect(self.disable_auto_scroll_button.click)
         plot_side_layout.addWidget(self.plot)
 
-        settings_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)  # TODO: replace temporary icon
         self.settings_button = QPushButton(self.plot)
-        self.settings_button.setIcon(settings_icon)
+        self.settings_button.setIcon(qta.icon("msc.settings-gear"))
+        self.settings_button.setFlat(True)
 
         self.plot_settings = PlotSettingsModal(self.settings_button, self.plot)
         self.settings_button.clicked.connect(self.plot_settings.show)

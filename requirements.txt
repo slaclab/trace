@@ -2,6 +2,7 @@ pydm
 pandas
 pytest
 pytest-qt
+qtawesome
 mkdocs
 mkdocs-material
 mkdocstrings
