@@ -37,7 +37,7 @@ class ComboBoxWrapper(QComboBox):
 
     def __init__(self, parent: QWidget, data_source: list | tuple | dict, init_value: int | str = None):
         super().__init__(parent)
-        if isinstance(data_source, list, tuple):
+        if isinstance(data_source, (list, tuple)):
             data_source = {v: v for v in data_source}
         self.data_source = data_source
         self.addItems(self.data_source.keys())
