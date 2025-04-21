@@ -214,6 +214,16 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         if not app.main_window:
             return
 
+        
+        stylesheet_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "trace_light.qss")
+    
+        if os.path.exists(stylesheet_path):
+            with open(stylesheet_path, "r") as f:
+                app.setStyleSheet(f.read())
+        else:
+            print(f"Warning: Stylesheet not found at {stylesheet_path}")
+        
+
         # Hide navigation bar by default (can be shown in menu bar)
         app.main_window.toggle_nav_bar(False)
         app.main_window.ui.actionShow_Navigation_Bar.setChecked(False)
