@@ -106,8 +106,6 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         save_image_button = QPushButton("Save Image", toolbar_widget)
         save_image_button.clicked.connect(self.save_plot_image)
         tool_layout.addWidget(save_image_button)
-        logger_button = QPushButton("Logger", toolbar_widget)
-        tool_layout.addWidget(logger_button)
         tool_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         tool_layout.addSpacerItem(tool_spacer)
         timespan_buttons = self.build_timespan_buttons(toolbar_widget)
