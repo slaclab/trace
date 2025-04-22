@@ -1,8 +1,79 @@
 import qtawesome as qta
 from qtpy import QtCore, QtWidgets
-from curve_item import CurveItem
+from qtpy.QtGui import QCloseEvent
 
+from config import logger
 from widgets.table_widgets import ColorButton
+
+
+class ControlPanel(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setLayout(QtWidgets.QVBoxLayout())
+
+        # Create pv plotter layout
+        pv_plotter_layout = QtWidgets.QHBoxLayout()
+        self.layout().addLayout(pv_plotter_layout)
+        self.pv_line_edit = QtWidgets.QLineEdit()
+        self.pv_line_edit.setPlaceholderText("Enter PV")
+        self.pv_line_edit.returnPressed.connect(self.add_curve_from_line_edit)
+        pv_plotter_layout.addWidget(self.pv_line_edit)
+        pv_plot_button = QtWidgets.QPushButton("Plot")
+        pv_plot_button.clicked.connect(self.add_curve_from_line_edit)
+        pv_plotter_layout.addWidget(pv_plot_button)
+
+        # Create axis & curve view
+        self.axis_list = QtWidgets.QVBoxLayout()
+        self.axis_list.addStretch()
+        self.layout().addLayout(self.axis_list)
+        new_axis_button = QtWidgets.QPushButton("New Axis")
+        new_axis_button.clicked.connect(self.add_axis)
+        self.layout().addWidget(new_axis_button)
+
+    def add_curve_from_line_edit(self):
+        pv = self.pv_line_edit.text()
+        self.add_curve(pv)
+        self.pv_line_edit.clear()
+
+    @property
+    def plot(self):
+        if not self._plot:
+            parent = self.parent()
+            while not hasattr(parent, "plot"):
+                parent = parent.parent()
+            self._plot = parent.plot
+        return self._plot
+
+    @plot.setter
+    def plot(self, plot):
+        self._plot = plot
+
+    def add_axis(self, name: str = ""):
+        logger.debug("Adding new empty axis to the plot")
+        if not name:
+            counter = len(self.plot.plotItem.axes) - 2
+            while (name := f"Y-Axis {counter}") in self.plot.plotItem.axes:
+                counter += 1
+
+        self.plot.addAxis(plot_data_item=None, name=name, orientation="left", label=name)
+        new_axis = self.plot._axes[-1]
+        new_axis.setLabel(name, color="black")
+
+        axis_item = AxisItem(new_axis)
+        self.axis_list.insertWidget(self.axis_list.count() - 1, axis_item)
+
+        logger.debug(f"Added axis {new_axis.name} to plot")
+
+    def add_curve(self, pv):
+        if self.axis_list.count() == 1:  # the header makes count >= 1
+            self.add_axis()
+        last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
+        last_axis.add_curve(pv)
+
+    def closeEvent(self, a0: QCloseEvent):
+        for axis_item in range(self.axis_list.count()):
+            axis_item.close()
+        super().closeEvent(a0)
 
 
 class AxisItem(QtWidgets.QWidget):
@@ -129,6 +200,65 @@ class AxisItem(QtWidgets.QWidget):
             self.layout().itemAt(i).widget().close()
         index = self.parent().plot._axes.index(self.source)
         self.parent().plot.removeAxisAtIndex(index)
+        self.setParent(None)
+        self.deleteLater()
+        return super().close()
+
+
+class CurveItem(QtWidgets.QWidget):
+    def __init__(self, plot_curve_item):
+        super().__init__()
+        self.source = plot_curve_item
+        self.setLayout(QtWidgets.QHBoxLayout())
+
+        self.active_toggle = QtWidgets.QCheckBox("Active")
+        self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
+        self.active_toggle.stateChanged.connect(self.set_active)
+        self.layout().addWidget(self.active_toggle)
+
+        second_layout = QtWidgets.QVBoxLayout()
+        self.layout().addLayout(second_layout)
+        pv_settings_layout = QtWidgets.QHBoxLayout()
+        second_layout.addLayout(pv_settings_layout)
+        data_type_layout = QtWidgets.QHBoxLayout()
+        second_layout.addLayout(data_type_layout)
+
+        self.label = QtWidgets.QLabel(self.source.name())
+        pv_settings_layout.addWidget(self.label)
+        self.pv_settings_button = QtWidgets.QPushButton()
+        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))
+        self.pv_settings_button.setFlat(True)
+        pv_settings_layout.addWidget(self.pv_settings_button)
+        self.delete_button = QtWidgets.QPushButton()
+        self.delete_button.setIcon(qta.icon("msc.trash"))
+        self.delete_button.setFlat(True)
+        self.delete_button.clicked.connect(self.close)
+        pv_settings_layout.addWidget(self.delete_button)
+
+        self.live_toggle = QtWidgets.QCheckBox("Live")
+        self.live_toggle.setCheckState(QtCore.Qt.Checked if self.source.liveData else QtCore.Qt.Unchecked)
+        self.live_toggle.stateChanged.connect(self.set_live_data_connection)
+        data_type_layout.addWidget(self.live_toggle)
+        self.archive_toggle = QtWidgets.QCheckBox("Archive")
+        self.archive_toggle.setCheckState(QtCore.Qt.Checked if self.source.use_archive_data else QtCore.Qt.Unchecked)
+        self.archive_toggle.stateChanged.connect(self.set_archive_data_connection)
+        data_type_layout.addWidget(self.archive_toggle)
+        data_type_layout.addStretch()
+
+    def set_active(self, state: QtCore.Qt.CheckState):
+        if state == QtCore.Qt.Unchecked:
+            self.source.hide()
+        else:
+            self.source.show()
+
+    def set_live_data_connection(self, state: QtCore.Qt.CheckState) -> None:
+        self.source.liveData = state == QtCore.Qt.Checked
+
+    def set_archive_data_connection(self, state: QtCore.Qt.CheckState) -> None:
+        self.source.use_archive_data = state == QtCore.Qt.Checked
+
+    def close(self) -> bool:
+        self.parent().parent().plot.removeCurve(self.source)
         self.setParent(None)
         self.deleteLater()
         return super().close()
