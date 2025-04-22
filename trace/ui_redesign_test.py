@@ -31,6 +31,8 @@ from config import logger, datetime_pv
 from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
 from widgets import DataInsightTool, PlotSettingsModal
 
+DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
+
 
 class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
     gridline_opacity_change = Signal(int)
@@ -40,6 +42,10 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.build_ui()
         self.configure_app()
         self.resize(1000, 600)
+
+        # Set plot's timerange after the UI is built
+        default_button = self.timespan_buttons.button(3600)
+        default_button.setChecked(True)
 
     @property
     def gridline_opacity(self) -> int:
@@ -100,6 +106,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.settings_button.setFlat(True)
 
         self.plot_settings = PlotSettingsModal(self.settings_button, self.plot)
+        self.plot_settings.auto_scroll_interval_change.connect(self.set_auto_scroll_interval)
         self.plot_settings.grid_alpha_change.connect(self.gridline_opacity_change.emit)
         self.settings_button.clicked.connect(self.plot_settings.show)
 
@@ -139,7 +146,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             ("1d", 86400),
             ("1w", 604800),
             ("1M", 2628300),
-            ("Disable AutoScroll", -2),
+            ("Disable AutoScroll", DISABLE_AUTO_SCROLL),
         )
 
         for text, id in timespan_button_data:
@@ -149,10 +156,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             timespan_button_layout.addWidget(timespan_button)
             self.timespan_buttons.addButton(timespan_button, id)
 
-        default_button = self.timespan_buttons.button(3600)
-        default_button.setChecked(True)
-
-        self.disable_auto_scroll_button = self.timespan_buttons.button(-2)
+        self.disable_auto_scroll_button = self.timespan_buttons.button(DISABLE_AUTO_SCROLL)
         self.disable_auto_scroll_button.hide()
 
         self.timespan_buttons.buttonToggled.connect(self.set_plot_timerange)
@@ -278,12 +282,20 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         """
         timespan = self.timespan_buttons.checkedId()
 
-        enable_scroll = timespan != -2
+        enable_scroll = timespan != DISABLE_AUTO_SCROLL
         if enable_scroll:
             logger.debug(f"Enabling plot autoscroll for {timespan}s")
         else:
             logger.debug("Disabling plot autoscroll, using mouse controls")
         self.autoScroll(enable=enable_scroll, timespan=timespan)
+
+    @Slot(int)
+    def set_auto_scroll_interval(self, inteval: int) -> None:
+        """Set the auto scroll interval for the plot"""
+        timespan = self.timespan_buttons.checkedId()
+        enable_scroll = timespan != DISABLE_AUTO_SCROLL
+
+        self.plot.setAutoScroll(enable_scroll, timespan, refresh_rate=inteval)
 
     @Slot(bool)
     @Slot(bool, int)
@@ -293,8 +305,8 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             if timespan < 0:
                 return
 
-        refresh_rate = self.plot_settings.auto_scroll_interval
-        self.plot.setAutoScroll(enable, timespan, refresh_rate=refresh_rate)
+        refresh_interval = self.plot_settings.auto_scroll_interval
+        self.plot.setAutoScroll(enable, timespan, refresh_rate=refresh_interval)
 
     @staticmethod
     def git_version():
