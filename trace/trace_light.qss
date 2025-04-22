@@ -262,6 +262,7 @@ QScrollBar::handle:horizontal {
     border-radius: 5px;
 }
 
+/* Spin Box styling */
 QSpinBox {
     border: 1px solid #cccccc;
     border-radius: 2px;
@@ -273,11 +274,6 @@ QSpinBox {
 QSpinBox:focus {
     border: 1px solid #cccccc;
     outline: none;
-}
-
-QSpinBox:disabled {
-    background-color: #f5f5f5;
-    color: #a0a0a0;
 }
 
 QSpinBox::up-button {
@@ -298,14 +294,19 @@ QSpinBox::down-button {
 }
 
 QSpinBox::up-arrow {
-    image: url(path/to/up_arrow.png);
-    width: 8px;
-    height: 8px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #000;
+    margin-right: 3px;
 }
 
 QSpinBox::down-arrow {
-    image: url(path/to/down_arrow.png);
-    width: 8px;
-    height: 8px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #000;
+    margin-right: 3px;
 }
-
