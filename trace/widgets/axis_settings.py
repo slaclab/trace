@@ -1,18 +1,10 @@
-from qtpy.QtGui import QFont
 from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import (
-    QLabel,
-    QWidget,
-    QCheckBox,
-    QComboBox,
-    QHBoxLayout,
-    QSizePolicy,
-    QSpacerItem,
-    QVBoxLayout,
-)
+from qtpy.QtWidgets import QWidget, QCheckBox, QComboBox, QVBoxLayout
 
 from pydm.widgets import PyDMArchiverTimePlot
 from pydm.widgets.baseplot import BasePlotAxisItem
+
+from widgets import SettingsTitle, SettingsRowItem
 
 
 class AxisSettingsModal(QWidget):
@@ -25,45 +17,26 @@ class AxisSettingsModal(QWidget):
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
 
-        bold_font = QFont()
-        bold_font.setBold(True)
-        bold_font.setPixelSize(14)
-        title_label = QLabel("Axis Settings", self)
-        title_label.setFont(bold_font)
+        title_label = SettingsTitle(self, "Axis Settings", size=14)
         main_layout.addWidget(title_label)
 
-        orientation_layout = QHBoxLayout()
-        orientation_label = QLabel("Orientation", self)
-        orientation_layout.addWidget(orientation_label)
-        orientation_spacer = QSpacerItem(40, 12, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        orientation_layout.addSpacerItem(orientation_spacer)
         orientation_combo = QComboBox(self)
         orientation_combo.addItems(["Left", "Right"])
         orientation_combo.currentTextChanged.connect(self.set_axis_orientation)
         orientation_combo.setCurrentText("Right" if self.axis.orientation == "right" else "Left")
-        orientation_layout.addWidget(orientation_combo)
-        main_layout.addLayout(orientation_layout)
+        orientation_row = SettingsRowItem(self, "Orientation", orientation_combo)
+        main_layout.addLayout(orientation_row)
 
-        log_layout = QHBoxLayout()
-        log_label = QLabel("Log Mode", self)
-        log_layout.addWidget(log_label)
-        log_spacer = QSpacerItem(40, 12, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        log_layout.addSpacerItem(log_spacer)
         log_checkbox = QCheckBox(self)
         log_checkbox.setChecked(self.axis.log_mode)
         log_checkbox.stateChanged.connect(self.set_axis_log_mode)
-        log_layout.addWidget(log_checkbox)
-        main_layout.addLayout(log_layout)
+        log_mode_row = SettingsRowItem(self, "Log Mode", log_checkbox)
+        main_layout.addLayout(log_mode_row)
 
-        grid_layout = QHBoxLayout()
-        grid_label = QLabel("Gridline", self)
-        grid_layout.addWidget(grid_label)
-        grid_spacer = QSpacerItem(40, 12, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        grid_layout.addSpacerItem(grid_spacer)
         self.grid_checkbox = QCheckBox(self)
         self.grid_checkbox.stateChanged.connect(self.show_grid)
-        grid_layout.addWidget(self.grid_checkbox)
-        main_layout.addLayout(grid_layout)
+        y_grid_row = SettingsRowItem(self, "Y Axis Gridline", self.grid_checkbox)
+        main_layout.addLayout(y_grid_row)
 
         self.parent().gridline_opacity_change.connect(self.change_gridline_opacity)
 
