@@ -234,7 +234,10 @@ class CurveItem(QtWidgets.QWidget):
         data_type_layout = QtWidgets.QHBoxLayout()
         second_layout.addLayout(data_type_layout)
 
-        self.label = QtWidgets.QLabel(self.source.name())
+        self.label = QtWidgets.QLineEdit()
+        self.label.setText(self.source.name())
+        self.label.editingFinished.connect(self.set_curve_pv)
+        self.label.returnPressed.connect(self.label.clearFocus)
         pv_settings_layout.addWidget(self.label)
         self.pv_settings_button = QtWidgets.QPushButton()
         self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))
@@ -277,6 +280,12 @@ class CurveItem(QtWidgets.QWidget):
                 self.pv_settings_button, self.parent().parent().plot, self.source
             )
         self.pv_settings_modal.show()
+
+    @QtCore.Slot()
+    def set_curve_pv(self, pv: str = None):
+        if pv is None and self.sender():
+            pv = self.sender().text()
+        self.source.address = pv
 
     def close(self) -> bool:
         self.parent().parent().plot.removeCurve(self.source)
