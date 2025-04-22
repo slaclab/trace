@@ -3,6 +3,7 @@ from qtpy import QtCore, QtWidgets
 from qtpy.QtGui import QCloseEvent
 
 from config import logger
+from widgets import CurveSettingsModal
 from widgets.table_widgets import ColorButton
 
 
@@ -228,6 +229,8 @@ class CurveItem(QtWidgets.QWidget):
         self.pv_settings_button = QtWidgets.QPushButton()
         self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))
         self.pv_settings_button.setFlat(True)
+        self.pv_settings_modal = None
+        self.pv_settings_button.clicked.connect(self.show_settings_modal)
         pv_settings_layout.addWidget(self.pv_settings_button)
         self.delete_button = QtWidgets.QPushButton()
         self.delete_button.setIcon(qta.icon("msc.trash"))
@@ -256,6 +259,14 @@ class CurveItem(QtWidgets.QWidget):
 
     def set_archive_data_connection(self, state: QtCore.Qt.CheckState) -> None:
         self.source.use_archive_data = state == QtCore.Qt.Checked
+
+    @QtCore.Slot()
+    def show_settings_modal(self):
+        if self.pv_settings_modal is None:
+            self.pv_settings_modal = CurveSettingsModal(
+                self.pv_settings_button, self.parent().parent().plot, self.source
+            )
+        self.pv_settings_modal.show()
 
     def close(self) -> bool:
         self.parent().parent().plot.removeCurve(self.source)
