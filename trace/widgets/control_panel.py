@@ -3,7 +3,7 @@ from qtpy import QtCore, QtWidgets
 from qtpy.QtGui import QCloseEvent
 
 from config import logger
-from widgets import CurveSettingsModal
+from widgets import AxisSettingsModal, CurveSettingsModal
 from widgets.table_widgets import ColorButton
 
 
@@ -105,6 +105,8 @@ class AxisItem(QtWidgets.QWidget):
         self.settings_button = QtWidgets.QPushButton()
         self.settings_button.setIcon(qta.icon("msc.settings-gear"))
         self.settings_button.setFlat(True)
+        self.settings_modal = None
+        self.settings_button.clicked.connect(self.show_settings_modal)
         self.top_settings_layout.addWidget(self.settings_button)
         self.delete_button = QtWidgets.QPushButton()
         self.delete_button.setIcon(qta.icon("msc.trash"))
@@ -203,6 +205,12 @@ class AxisItem(QtWidgets.QWidget):
             name = self.sender().text()
         self.source.name = name
         self.source.label_text = name
+
+    @QtCore.Slot()
+    def show_settings_modal(self):
+        if self.settings_modal is None:
+            self.settings_modal = AxisSettingsModal(self.settings_button, self.parent().plot, self.source)
+        self.settings_modal.show()
 
     def close(self) -> bool:
         self.source.sigYRangeChanged.disconnect(self.handle_range_change)

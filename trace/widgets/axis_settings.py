@@ -38,7 +38,13 @@ class AxisSettingsModal(QWidget):
         y_grid_row = SettingsRowItem(self, "Y Axis Gridline", self.grid_checkbox)
         main_layout.addLayout(y_grid_row)
 
-        self.parent().gridline_opacity_change.connect(self.change_gridline_opacity)
+        trace_display = self.parent()
+        while trace_display is not None:
+            try:
+                trace_display.gridline_opacity_change.connect(self.change_gridline_opacity)
+                break
+            except AttributeError:
+                trace_display = trace_display.parent()
 
     @property
     def grid_visible(self):
@@ -68,7 +74,13 @@ class AxisSettingsModal(QWidget):
         if not visible:
             self.axis.setGrid(False)
         else:
-            self.axis.setGrid(self.parent().gridline_opacity)
+            trace_display = self.parent()
+            while trace_display is not None:
+                try:
+                    self.axis.setGrid(trace_display.gridline_opacity)
+                    break
+                except AttributeError:
+                    trace_display = trace_display.parent()
 
     @Slot(int)
     def change_gridline_opacity(self, opacity: int):
