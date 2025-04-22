@@ -97,7 +97,10 @@ class AxisItem(QtWidgets.QWidget):
         self.header_layout.addLayout(layout)
         self.top_settings_layout = QtWidgets.QHBoxLayout()
         layout.addLayout(self.top_settings_layout)
-        self.axis_label = QtWidgets.QLabel(self.source.name)
+        self.axis_label = QtWidgets.QLineEdit()
+        self.axis_label.setText(self.source.name)
+        self.axis_label.editingFinished.connect(self.set_axis_name)
+        self.axis_label.returnPressed.connect(self.axis_label.clearFocus)
         self.top_settings_layout.addWidget(self.axis_label)
         self.settings_button = QtWidgets.QPushButton()
         self.settings_button.setIcon(qta.icon("msc.settings-gear"))
@@ -193,6 +196,13 @@ class AxisItem(QtWidgets.QWidget):
         else:
             self.max_range_line_edit.setText(f"{value:.3g}")
         self.source.min_range = value
+
+    @QtCore.Slot()
+    def set_axis_name(self, name: str = None):
+        if name is None and self.sender():
+            name = self.sender().text()
+        self.source.name = name
+        self.source.label_text = name
 
     def close(self) -> bool:
         self.source.sigYRangeChanged.disconnect(self.handle_range_change)
