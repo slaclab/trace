@@ -1,5 +1,8 @@
+from datetime import datetime
+
+from pyqtgraph import ViewBox
 from qtpy.QtGui import QFont
-from qtpy.QtCore import Qt, Slot, Signal
+from qtpy.QtCore import Qt, Slot, Signal, QDateTime
 from qtpy.QtWidgets import (
     QSlider,
     QWidget,
@@ -8,10 +11,12 @@ from qtpy.QtWidgets import (
     QLineEdit,
     QSizePolicy,
     QVBoxLayout,
+    QDateTimeEdit,
 )
 
 from pydm.widgets import PyDMArchiverTimePlot
 
+from config import logger
 from widgets import ColorButton, SettingsTitle, SettingsRowItem
 
 
@@ -43,10 +48,26 @@ class PlotSettingsModal(QWidget):
 
         self.as_interval_spinbox = QSpinBox(self)
         self.as_interval_spinbox.setValue(5)
+        self.as_interval_spinbox.setMinimum(1)
+        self.as_interval_spinbox.setMaximum(60)
         self.as_interval_spinbox.setSuffix(" s")
         self.as_interval_spinbox.valueChanged.connect(self.auto_scroll_interval_change.emit)
         as_interval_row = SettingsRowItem(self, "Autoscroll Interval", self.as_interval_spinbox)
         main_layout.addLayout(as_interval_row)
+
+        self.start_datetime = QDateTimeEdit(self)
+        self.start_datetime.setDisplayFormat("yyyy-MM-dd HH:mm:ss")
+        self.start_datetime.setCalendarPopup(True)
+        self.start_datetime.dateTimeChanged.connect(lambda qdt: self.set_time_axis_range((qdt, None)))
+        start_dt_row = SettingsRowItem(self, "Start Time", self.start_datetime)
+        main_layout.addLayout(start_dt_row)
+
+        self.end_datetime = QDateTimeEdit(self)
+        self.end_datetime.setDisplayFormat("yyyy-MM-dd HH:mm:ss")
+        self.end_datetime.setCalendarPopup(True)
+        self.end_datetime.dateTimeChanged.connect(lambda qdt: self.set_time_axis_range((None, qdt)))
+        end_dt_row = SettingsRowItem(self, "End Time", self.end_datetime)
+        main_layout.addLayout(end_dt_row)
 
         appearance_label = SettingsTitle(self, "Appearance")
         main_layout.addWidget(appearance_label)
@@ -80,7 +101,9 @@ class PlotSettingsModal(QWidget):
 
     @property
     def auto_scroll_interval(self):
-        return self.as_interval_spinbox.value()
+        interval = self.as_interval_spinbox.value()
+        interval *= 1000  # Convert to milliseconds
+        return interval
 
     @property
     def x_grid_visible(self):
@@ -103,6 +126,67 @@ class PlotSettingsModal(QWidget):
         font.setPixelSize(size)
         x_axis = self.plot.getAxis("bottom")
         x_axis.setStyle(tickFont=font)
+
+    @Slot(object)
+    def set_time_axis_range(self, raw_range: tuple[QDateTime, QDateTime] = (None, None)) -> None:
+        """PyQT Slot to set the plot's X-Axis range. This slot should be
+        triggered on QDateTimeEdit value change.
+
+        Parameters
+        ----------
+        raw_range : tuple[QDateTime, QDateTime], optional
+            Takes in a tuple of 2 values, where one is a QDateTime and
+            the other is None. The positioning changes either the plot's
+            min or max range value. By default (None, None)
+        """
+        # Disable Autoscroll if enabled
+        # self.ui.cursor_scale_btn.click()
+
+        proc_range = [None, None]
+        for ind, val in enumerate(raw_range):
+            # Values that are QDateTime are converted to a float timestamp
+            if isinstance(val, QDateTime):
+                proc_range[ind] = val.toSecsSinceEpoch()
+            # Values that are None use the existing range value
+            elif not val:
+                proc_range[ind] = self.plot.getXAxis().range[ind]
+        proc_range.sort()
+
+        logger.debug(f"Setting plot's X-Axis range to {proc_range}")
+        self.plot.plotItem.vb.blockSignals(True)
+        self.plot.plotItem.setXRange(*proc_range, padding=0)
+        self.plot.plotItem.vb.blockSignals(False)
+
+    @Slot(object, object)
+    def set_axis_datetimes(self, _: ViewBox = None, time_range: tuple[float, float] = None) -> None:
+        """Slot used to update the QDateTimeEdits on the Axis tab. This
+        slot is called when the plot's X-Axis range changes values.
+
+        Parameters
+        ----------
+        _ : ViewBox, optional
+            The ViewBox on which the range is changing. This is unused
+        time_range : Tuple[float, float], optional
+            The new range values for the QDateTimeEdits, by default None
+        """
+        if not time_range:
+            time_range = self.plot.getXAxis().range
+        if min(time_range) <= 0:
+            return
+
+        time_range = [datetime.fromtimestamp(f) for f in time_range]
+
+        edits = (self.start_datetime, self.end_datetime)
+        for ind, qdt in enumerate(edits):
+            if qdt.hasFocus():
+                continue
+            qdt.blockSignals(True)
+            qdt.setDateTime(QDateTime(time_range[ind]))
+            qdt.blockSignals(False)
+
+    @Slot(int)
+    def show_y_grid(self, visible: int):
+        self.plot.setShowYGrid(bool(visible), self.gridline_opacity)
 
     @Slot(int)
     def show_x_grid(self, visible: int):
