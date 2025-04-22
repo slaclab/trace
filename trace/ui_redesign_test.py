@@ -346,6 +346,7 @@ class ControlPanel(QWidget):
 
         self.plot.addAxis(plot_data_item=None, name=name, orientation="left", label=name)
         new_axis = self.plot._axes[-1]
+        new_axis.setLabel(name, color="black")
 
         axis_item = AxisItem(new_axis)
         self.axis_list.insertWidget(self.axis_list.count() - 1, axis_item)
