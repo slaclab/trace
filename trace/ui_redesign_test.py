@@ -10,9 +10,7 @@ from qtpy.QtCore import Qt, Slot, QSize, Signal
 from qtpy.QtWidgets import (
     QLabel,
     QWidget,
-    QLineEdit,
     QSplitter,
-    QTreeView,
     QFileDialog,
     QHBoxLayout,
     QPushButton,
@@ -28,11 +26,11 @@ from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 
 from config import logger, datetime_pv
-from mixins import FileIOMixin, AxisTableMixin, PlotConfigMixin, TracesTableMixin
-from widgets import DataInsightTool, PlotSettingsModal
+from mixins import FileIOMixin, PlotConfigMixin
+from widgets import ControlPanel, DataInsightTool, PlotSettingsModal
 
 
-class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotConfigMixin):
+class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
     gridline_opacity_change = Signal(int)
 
     def __init__(self, parent=None, args=None, macros=None) -> None:
@@ -58,12 +56,13 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
 
         # Create the plotting and control widgets
         plot_side_widget = self.build_plot_side(self)
-        control_side_widget = self.build_control_side(self)
+        control_panel = ControlPanel()
+        control_panel.plot = self.plot
 
         # Create main splitter
         main_splitter = QSplitter(self)
         main_splitter.addWidget(plot_side_widget)
-        main_splitter.addWidget(control_side_widget)
+        main_splitter.addWidget(control_panel)
         main_splitter.setSizes([1, 300])
         main_splitter.setCollapsible(0, False)
         main_splitter.setStretchFactor(0, 1)
@@ -88,7 +87,6 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
             optimized_data_bins=5000,
             cache_data=False,
             show_all=False,
-            show_extension_lines=True,
         )
         multi_axis_plot = self.plot.plotItem
         multi_axis_plot.vb.menu = None
@@ -158,29 +156,6 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.timespan_buttons.buttonToggled.connect(self.set_plot_timerange)
 
         return timespan_button_widget
-
-    def build_control_side(self, parent):
-        # Create right layout
-        control_side_widget = QWidget(parent)
-        control_side_layout = QVBoxLayout()
-        control_side_widget.setLayout(control_side_layout)
-
-        # Create pv plotter layout
-        pv_plotter_layout = QHBoxLayout()
-        control_side_layout.addLayout(pv_plotter_layout)
-        pv_line_edit = QLineEdit(control_side_widget)
-        pv_line_edit.setPlaceholderText("Enter PV")
-        pv_plotter_layout.addWidget(pv_line_edit)
-        pv_plot_button = QPushButton("Plot", control_side_widget)
-        pv_plotter_layout.addWidget(pv_plot_button)
-
-        # Create axis & curve view
-        axis_view = QTreeView(control_side_widget)
-        control_side_layout.addWidget(axis_view)
-        new_axis_button = QPushButton("New Axis", control_side_widget)
-        control_side_layout.addWidget(new_axis_button)
-
-        return control_side_widget
 
     def build_footer(self, parent: QWidget):
         label_font = QFont()
