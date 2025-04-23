@@ -27,7 +27,7 @@ class PlotSettingsModal(QWidget):
 
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot):
         super().__init__(parent)
-        self.setWindowFlag(Qt.Tool)
+        self.setWindowFlag(Qt.Popup)
 
         self.plot = plot
         main_layout = QVBoxLayout()
