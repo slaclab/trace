@@ -1,5 +1,6 @@
 import qtawesome as qta
 from qtpy import QtCore, QtWidgets
+from toggle import ToggleSwitch
 from qtpy.QtGui import QCloseEvent
 
 from config import logger
@@ -8,6 +9,7 @@ from widgets.table_widgets import ColorButton
 from widgets.archive_search import ArchiveSearchWidget
 
 from toggle import ToggleSwitch
+
 
 class ControlPanel(QtWidgets.QWidget):
     curve_list_changed = QtCore.Signal()

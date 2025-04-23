@@ -5,7 +5,7 @@ from getpass import getuser
 from datetime import datetime
 
 import qtawesome as qta
-from qtpy.QtGui import QFont, QPalette, QColor
+from qtpy.QtGui import QFont, QColor, QPalette
 from qtpy.QtCore import Qt, Slot, QSize, Signal
 from qtpy.QtWidgets import (
     QLabel,
@@ -234,9 +234,9 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         app.setPalette(palette)
 
         app.setStyle("Fusion")
-        
+
         stylesheet_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "trace_light.qss")
-    
+
         if os.path.exists(stylesheet_path):
             with open(stylesheet_path, "r") as f:
                 app.setStyleSheet(f.read())

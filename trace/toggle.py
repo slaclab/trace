@@ -1,22 +1,23 @@
-from qtpy.QtCore import Qt, QRect, QPropertyAnimation, Property
+from typing import Any, Optional
+
 from qtpy.QtGui import QColor, QPainter
+from qtpy.QtCore import Qt, QRect, Property, QPropertyAnimation
 from qtpy.QtWidgets import QCheckBox
-from typing import Optional, Any
 
 
 class ToggleSwitch(QCheckBox):
     """
     A custom toggle switch widget that looks like a modern mobile switch.
-    
+
     This widget extends QCheckBox to create a toggle switch with animated
     transition between on and off states. The switch consists of a rounded
     rectangle track and a circular knob that moves horizontally.
-    
+
     Parameters
     ----------
     parent : QWidget, optional
         The parent widget.
-        
+
     Attributes
     ----------
     TRACK_OFF : QColor
@@ -28,16 +29,16 @@ class ToggleSwitch(QCheckBox):
     MARGIN : int
         Margin between the knob and the track edge in pixels.
     """
-    
+
     TRACK_OFF = QColor("#454545")
     TRACK_ON = QColor("#3a76d8")
     DIAMETER = 22
     MARGIN = 2
-    
+
     def __init__(self, parent: Optional[Any] = None) -> None:
         """
         Initialize the toggle switch widget.
-        
+
         Parameters
         ----------
         parent : QWidget, optional
@@ -49,22 +50,24 @@ class ToggleSwitch(QCheckBox):
         self._x = self.MARGIN  # Start with knob on the left (off position)
         self._anim = QPropertyAnimation(self, b"offset", self)
         self._anim.setDuration(120)
-    
+
+        self.stateChanged.connect(self.updateTogglePosition)
+
     def getOffset(self) -> int:
         """
         Get the current horizontal offset of the knob.
-        
+
         Returns
         -------
         int
             The current x-coordinate of the knob.
         """
         return self._x
-    
+
     def setOffset(self, x: int) -> None:
         """
         Set the horizontal offset of the knob and update the widget.
-        
+
         Parameters
         ----------
         x : int
@@ -72,29 +75,28 @@ class ToggleSwitch(QCheckBox):
         """
         self._x = x
         self.update()
-    
+
     offset = Property(int, fget=getOffset, fset=setOffset)
-    
+
     def nextCheckState(self) -> None:
         """
         Handle the toggle state change and animate the knob movement.
-        
+
         This method is called when the checkbox state changes and
         manages the animation of the knob from one position to another.
         """
         super().nextCheckState()
         start = self._x
-        end = (self.width() - self.DIAMETER - self.MARGIN if self.isChecked()
-              else self.MARGIN)
+        end = self.width() - self.DIAMETER - self.MARGIN if self.isChecked() else self.MARGIN
         self._anim.stop()
         self._anim.setStartValue(start)
         self._anim.setEndValue(end)
         self._anim.start()
-    
+
     def paintEvent(self, _: Any) -> None:
         """
         Paint the toggle switch with the appropriate colors and position.
-        
+
         Parameters
         ----------
         _ : QPaintEvent
@@ -102,31 +104,30 @@ class ToggleSwitch(QCheckBox):
         """
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-        
+
         # Draw the track
         track_col = self.TRACK_ON if self.isChecked() else self.TRACK_OFF
         p.setPen(Qt.NoPen)
         p.setBrush(track_col)
-        p.drawRoundedRect(self.rect(), self.height()/2, self.height()/2)
-        
+        p.drawRoundedRect(self.rect(), self.height() / 2, self.height() / 2)
+
         # Draw the knob
-        knob_rect = QRect(self._x, self.MARGIN,
-                         self.DIAMETER, self.DIAMETER)
+        knob_rect = QRect(self._x, self.MARGIN, self.DIAMETER, self.DIAMETER)
         p.setBrush(Qt.white)
         p.drawEllipse(knob_rect)
-    
+
     def hitButton(self, pos: Any) -> bool:
         """
         Determine if the given position is on the button.
-        
+
         This is overridden to make the entire widget clickable, not just
         the standard checkbox indicator area.
-        
+
         Parameters
         ----------
         pos : QPoint
             The position to test.
-            
+
         Returns
         -------
         bool
@@ -134,3 +135,17 @@ class ToggleSwitch(QCheckBox):
         """
         return self.contentsRect().contains(pos)
 
+    def updateTogglePosition(self, state: int) -> None:
+        """
+        Update the toggle position when the state changes programmatically.
+
+        Parameters
+        ----------
+        state : int
+            The new state (Qt.Checked or Qt.Unchecked)
+        """
+        end = self.width() - self.DIAMETER - self.MARGIN if state == Qt.Checked else self.MARGIN
+        self._anim.stop()
+        self._anim.setStartValue(self._x)
+        self._anim.setEndValue(end)
+        self._anim.start()

@@ -1,19 +1,19 @@
 from datetime import datetime
 
 from pyqtgraph import ViewBox
+from toggle import ToggleSwitch
 from qtpy.QtGui import QFont
 from qtpy.QtCore import Qt, Slot, Signal, QDateTime
 from qtpy.QtWidgets import (
     QSlider,
     QWidget,
     QSpinBox,
-    QCheckBox,
     QLineEdit,
     QSizePolicy,
     QVBoxLayout,
     QDateTimeEdit,
 )
-from toggle import ToggleSwitch
+
 from pydm.widgets import PyDMArchiverTimePlot
 
 from config import logger
