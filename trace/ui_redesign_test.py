@@ -108,6 +108,7 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         self.plot_settings = PlotSettingsModal(self.settings_button, self.plot)
         self.plot_settings.auto_scroll_interval_change.connect(self.set_auto_scroll_interval)
         self.plot_settings.grid_alpha_change.connect(self.gridline_opacity_change.emit)
+        self.plot_settings.disable_autoscroll.connect(self.disable_auto_scroll_button.click)
         self.settings_button.clicked.connect(self.plot_settings.show)
 
         return plot_side_widget

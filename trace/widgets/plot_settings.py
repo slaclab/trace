@@ -23,10 +23,11 @@ from widgets import ColorButton, SettingsTitle, SettingsRowItem
 class PlotSettingsModal(QWidget):
     auto_scroll_interval_change = Signal(int)
     grid_alpha_change = Signal(int)
+    disable_autoscroll = Signal()
 
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot):
         super().__init__(parent)
-        self.setWindowFlag(Qt.Popup)
+        self.setWindowFlag(Qt.Tool)
 
         self.plot = plot
         main_layout = QVBoxLayout()
@@ -99,6 +100,10 @@ class PlotSettingsModal(QWidget):
         grid_opacity_row = SettingsRowItem(self, "  Gridline Opacity", self.grid_opacity_slider)
         main_layout.addLayout(grid_opacity_row)
 
+        plot_viewbox = self.plot.plotItem.vb
+        plot_viewbox.sigXRangeChanged.connect(self.set_axis_datetimes)
+        plot_viewbox.sigRangeChangedManually.connect(lambda *_: self.set_axis_datetimes())
+
     @property
     def auto_scroll_interval(self):
         interval = self.as_interval_spinbox.value()
@@ -141,6 +146,7 @@ class PlotSettingsModal(QWidget):
         """
         # Disable Autoscroll if enabled
         # self.ui.cursor_scale_btn.click()
+        self.disable_autoscroll.emit()
 
         proc_range = [None, None]
         for ind, val in enumerate(raw_range):
@@ -183,10 +189,6 @@ class PlotSettingsModal(QWidget):
             qdt.blockSignals(True)
             qdt.setDateTime(QDateTime(time_range[ind]))
             qdt.blockSignals(False)
-
-    @Slot(int)
-    def show_y_grid(self, visible: int):
-        self.plot.setShowYGrid(bool(visible), self.gridline_opacity)
 
     @Slot(int)
     def show_x_grid(self, visible: int):
