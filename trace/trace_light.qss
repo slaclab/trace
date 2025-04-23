@@ -3,7 +3,7 @@
 /* Global styles */
 QMainWindow, QDialog, QWidget {
     background-color: #f0f0f0;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: Arial, sans-serif;
     font-size: 12px;
     color: #333333;
 }
@@ -62,6 +62,30 @@ QPushButton:disabled, PyDMPushButton:disabled {
     border: 1px solid #dddddd;
 }
 
+/* Icon buttons - add this to your global stylesheet */
+QPushButton[flat="true"] {
+    background-color: transparent;
+    border: none;
+}
+
+QPushButton[flat="true"]::icon {
+    color: #444444 !important; /* Force dark gray with !important */
+}
+
+/* To prevent any inheritance from other button styles */
+QPushButton[flat="true"]:hover {
+    background-color: transparent;
+}
+
+QPushButton[flat="true"]:pressed {
+    background-color: rgba(200, 200, 200, 30); /* Very slight visible feedback */
+}
+
+/* This might be needed to override any other coloring */
+QPushButton QIcon {
+    color: inherit;
+}
+
 /* Time range buttons group */
 QPushButton[timeRange=true] {
     background-color: #e7e7e7;
@@ -89,6 +113,7 @@ QPushButton#plotButton:hover {
 QPushButton#plotButton:pressed {
     background-color: #3a76d8;
 }
+
 
 /* Line edits and input fields */
 QLineEdit, PyDMLineEdit {
@@ -137,24 +162,35 @@ PyDMLabel[pvName=true] {
     font-family: "Consolas", "Courier New", monospace;
 }
 
-/* Checkboxes */
+/* Checkbox styling */
 QCheckBox {
-    spacing: 6px;
+    spacing: 5px;
 }
 
 QCheckBox::indicator {
-    width: 16px;
-    height: 16px;
+    width: 22px;
+    height: 22px;
+    border: 1px solid #cccccc;
+    border-radius: 3px;
+    background-color: #f8f8f8;
 }
 
 QCheckBox::indicator:unchecked {
-    border: 1px solid #cccccc;
-    background-color: white;
+    background-color: #f8f8f8;
 }
 
 QCheckBox::indicator:checked {
-    border: 1px solid #4a86e8;
-    background-color: #4a86e8;
+    background-color: #f8f8f8;
+    image: url(check.svg);  /* You'll need to create this SVG file */
+}
+
+QCheckBox::indicator:hover {
+    border: 1px solid #bbbbbb;
+}
+
+QCheckBox::indicator:disabled {
+    border: 1px solid #e0e0e0;
+    background-color: #f5f5f5;
 }
 
 /* Sliders */
@@ -294,19 +330,15 @@ QSpinBox::down-button {
 }
 
 QSpinBox::up-arrow {
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-bottom: 6px solid #000;
+    image: url("up-arrow.svg");
+    width: 12px;
+    height: 12px;
     margin-right: 3px;
 }
 
 QSpinBox::down-arrow {
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 6px solid #000;
+    image: url("down-arrow.svg");
+    width: 12px;
+    height: 12px;
     margin-right: 3px;
 }

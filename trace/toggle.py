@@ -30,7 +30,7 @@ class ToggleSwitch(QCheckBox):
     """
     
     TRACK_OFF = QColor("#454545")
-    TRACK_ON = QColor("#4cd964")
+    TRACK_ON = QColor("#3a76d8")
     DIAMETER = 22
     MARGIN = 2
     

@@ -5,7 +5,7 @@ from getpass import getuser
 from datetime import datetime
 
 import qtawesome as qta
-from qtpy.QtGui import QFont
+from qtpy.QtGui import QFont, QPalette, QColor
 from qtpy.QtCore import Qt, Slot, QSize, Signal
 from qtpy.QtWidgets import (
     QLabel,
@@ -103,7 +103,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         self.data_insight_tool.plot = self.plot
 
         self.settings_button = QPushButton(self.plot)
-        self.settings_button.setIcon(qta.icon("msc.settings-gear"))
+        self.settings_button.setIcon(qta.icon("msc.settings-gear", color="#444444"))
         self.settings_button.setFlat(True)
 
         self.plot_settings = PlotSettingsModal(self.settings_button, self.plot)
@@ -214,6 +214,26 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         if not app.main_window:
             return
 
+        # Create a custom palette
+        palette = QPalette()
+
+        # Set the color roles
+        palette.setColor(QPalette.Window, QColor("#f0f0f0"))  # Background
+        palette.setColor(QPalette.WindowText, QColor("#333333"))  # Text
+        palette.setColor(QPalette.Base, QColor("#ffffff"))  # Input field background
+        palette.setColor(QPalette.AlternateBase, QColor("#f7f7f7"))  # Alternate background
+        palette.setColor(QPalette.ToolTipBase, QColor("#ffffff"))  # Tooltip background
+        palette.setColor(QPalette.ToolTipText, QColor("#333333"))  # Tooltip text
+        palette.setColor(QPalette.Text, QColor("#333333"))  # Input field text
+        palette.setColor(QPalette.Button, QColor("#e7e7e7"))  # Button background
+        palette.setColor(QPalette.ButtonText, QColor("#333333"))  # Button text
+        palette.setColor(QPalette.BrightText, QColor("#000000"))  # Bright text
+        palette.setColor(QPalette.Highlight, QColor("#4a86e8"))  # Selection background
+        palette.setColor(QPalette.HighlightedText, QColor("#ffffff"))  # Selection text
+
+        app.setPalette(palette)
+
+        app.setStyle("Fusion")
         
         stylesheet_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "trace_light.qss")
     
@@ -222,7 +242,6 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
                 app.setStyleSheet(f.read())
         else:
             print(f"Warning: Stylesheet not found at {stylesheet_path}")
-        
 
         # Hide navigation bar by default (can be shown in menu bar)
         app.main_window.toggle_nav_bar(False)
