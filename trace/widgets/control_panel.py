@@ -36,6 +36,8 @@ class ControlPanel(QtWidgets.QWidget):
         new_axis_button.clicked.connect(self.add_axis)
         self.layout().addWidget(new_axis_button)
 
+        self.archive_search = ArchiveSearchWidget()
+
     def add_curve_from_line_edit(self):
         pv = self.pv_line_edit.text()
         self.add_curve(pv)
@@ -56,7 +58,6 @@ class ControlPanel(QtWidgets.QWidget):
 
     def search_pv(self):
         if not hasattr(self, "archive_search") or not self.archive_search.isVisible():
-            self.archive_search = ArchiveSearchWidget()
             self.archive_search.insert_button.clicked.connect(
                 lambda: self.add_curves(self.archive_search.selectedPVs())
             )
@@ -272,7 +273,7 @@ class CurveItem(QtWidgets.QWidget):
         self.label.returnPressed.connect(self.label.clearFocus)
         pv_settings_layout.addWidget(self.label)
         self.pv_settings_button = QtWidgets.QPushButton()
-        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear", color="#444444"))
+        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))
         self.pv_settings_button.setFlat(True)
         self.pv_settings_modal = None
         self.pv_settings_button.clicked.connect(self.show_settings_modal)
