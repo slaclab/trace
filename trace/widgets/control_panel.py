@@ -41,7 +41,6 @@ class ControlPanel(QtWidgets.QWidget):
         new_axis_button.clicked.connect(self.add_axis)
         self.layout().addWidget(new_axis_button)
 
-        self.archive_search = ArchiveSearchWidget()
 
     def add_curve_from_line_edit(self):
         pv = self.pv_line_edit.text()
@@ -63,6 +62,7 @@ class ControlPanel(QtWidgets.QWidget):
 
     def search_pv(self):
         if not hasattr(self, "archive_search") or not self.archive_search.isVisible():
+            self.archive_search = ArchiveSearchWidget()
             self.archive_search.insert_button.clicked.connect(
                 lambda: self.add_curves(self.archive_search.selectedPVs())
             )
