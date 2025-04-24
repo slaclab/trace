@@ -32,13 +32,24 @@ class ControlPanel(QtWidgets.QWidget):
 
         # Create axis & curve view
         self.axis_list = QtWidgets.QVBoxLayout()
+        frame = QtWidgets.QFrame()
+        frame.setLayout(self.axis_list)
+        scrollarea = QtWidgets.QScrollArea()
+        scrollarea.setWidgetResizable(True)
+        scrollarea.setWidget(frame)
+        self.layout().addWidget(scrollarea)
         self.axis_list.addStretch()
-        self.layout().addLayout(self.axis_list)
+
         new_axis_button = QtWidgets.QPushButton("New Axis")
         new_axis_button.clicked.connect(self.add_axis)
         self.layout().addWidget(new_axis_button)
 
         self.archive_search = ArchiveSearchWidget()
+
+    def minimumSizeHint(self):
+        inner_size = self.axis_list.minimumSize()
+        buffer = self.pv_line_edit.font().pointSize() * 3
+        return QtCore.QSize(inner_size.width() + buffer, inner_size.height())
 
     def add_curve_from_line_edit(self):
         pv = self.pv_line_edit.text()
@@ -88,13 +99,14 @@ class ControlPanel(QtWidgets.QWidget):
         self.axis_list.insertWidget(self.axis_list.count() - 1, axis_item)
 
         logger.debug(f"Added axis {new_axis.name} to plot")
+        self.updateGeometry()
 
     @QtCore.Slot()
     def add_curve(self, pv: str = None):
         if pv is None and self.sender():
             pv = self.sender().text()
 
-        if self.axis_list.count() == 1:  # the header makes count >= 1
+        if self.axis_list.count() == 1:  # the stretch makes count >= 1
             self.add_axis()
         last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
         last_axis.add_curve(pv)
@@ -154,11 +166,13 @@ class AxisItem(QtWidgets.QWidget):
         self.min_range_line_edit = QtWidgets.QLineEdit()
         self.min_range_line_edit.editingFinished.connect(self.set_min_range)
         self.min_range_line_edit.editingFinished.connect(self.disable_auto_range)
+        self.min_range_line_edit.setMinimumWidth(self.min_range_line_edit.font().pointSize() * 8)
         self.bottom_settings_layout.addWidget(self.min_range_line_edit)
         self.bottom_settings_layout.addWidget(QtWidgets.QLabel(","))
         self.max_range_line_edit = QtWidgets.QLineEdit()
         self.max_range_line_edit.editingFinished.connect(self.set_max_range)
         self.max_range_line_edit.editingFinished.connect(self.disable_auto_range)
+        self.max_range_line_edit.setMinimumWidth(self.max_range_line_edit.font().pointSize() * 8)
         self.bottom_settings_layout.addWidget(self.max_range_line_edit)
         self.source.sigYRangeChanged.connect(self.handle_range_change)
 
@@ -167,10 +181,15 @@ class AxisItem(QtWidgets.QWidget):
         self.active_toggle.stateChanged.connect(self.set_active)
         self.header_layout.addWidget(self.active_toggle)
 
+    @property
+    def plot(self):
+        return self.parent().parent().parent().parent().plot
+
     def add_curve(self, pv):
-        index = len(self.parent().plot._curves)
+        plot = self.plot
+        index = len(plot._curves)
         color = ColorButton.index_color(index)
-        self.parent().plot.addYChannel(
+        plot.addYChannel(
             y_channel=pv,
             name=pv,
             color=color,
@@ -179,7 +198,7 @@ class AxisItem(QtWidgets.QWidget):
         )
         self.curves_list_changed.emit()
 
-        plot_curve_item = self.parent().plot._curves[-1]
+        plot_curve_item = plot._curves[-1]
         curve_item = CurveItem(plot_curve_item)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
         self.layout().addWidget(curve_item)
@@ -241,7 +260,7 @@ class AxisItem(QtWidgets.QWidget):
     @QtCore.Slot()
     def show_settings_modal(self):
         if self.settings_modal is None:
-            self.settings_modal = AxisSettingsModal(self.settings_button, self.parent().plot, self.source)
+            self.settings_modal = AxisSettingsModal(self.settings_button, self.plot, self.source)
         self.settings_modal.show()
 
     def close(self) -> bool:
@@ -249,8 +268,8 @@ class AxisItem(QtWidgets.QWidget):
             self.layout().itemAt(1).widget().close()
         self.source.sigYRangeChanged.disconnect(self.handle_range_change)
         self.source.linkedView().sigRangeChangedManually.disconnect(self.disable_auto_range)
-        index = self.parent().plot._axes.index(self.source)
-        self.parent().plot.removeAxisAtIndex(index)
+        index = self.plot._axes.index(self.source)
+        self.plot.removeAxisAtIndex(index)
         self.setParent(None)
         self.deleteLater()
         return super().close()
@@ -303,6 +322,10 @@ class CurveItem(QtWidgets.QWidget):
         data_type_layout.addWidget(self.archive_toggle)
         data_type_layout.addStretch()
 
+    @property
+    def plot(self):
+        return self.parent().plot
+
     def set_active(self, state: QtCore.Qt.CheckState):
         if state == QtCore.Qt.Unchecked:
             self.source.hide()
@@ -318,9 +341,7 @@ class CurveItem(QtWidgets.QWidget):
     @QtCore.Slot()
     def show_settings_modal(self):
         if self.pv_settings_modal is None:
-            self.pv_settings_modal = CurveSettingsModal(
-                self.pv_settings_button, self.parent().parent().plot, self.source
-            )
+            self.pv_settings_modal = CurveSettingsModal(self.pv_settings_button, self.plot, self.source)
         self.pv_settings_modal.show()
 
     @QtCore.Slot()
@@ -330,7 +351,7 @@ class CurveItem(QtWidgets.QWidget):
         self.source.address = pv
 
     def close(self) -> bool:
-        self.parent().parent().plot.removeCurve(self.source)
+        self.plot.removeCurve(self.source)
         self.setParent(None)
         self.deleteLater()
         self.curve_deleted.emit()
