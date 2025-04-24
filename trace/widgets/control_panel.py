@@ -8,6 +8,8 @@ from widgets.table_widgets import ColorButton
 
 
 class ControlPanel(QtWidgets.QWidget):
+    curve_list_changed = QtCore.Signal()
+
     def __init__(self):
         super().__init__()
         self.setLayout(QtWidgets.QVBoxLayout())
@@ -61,6 +63,7 @@ class ControlPanel(QtWidgets.QWidget):
         new_axis.setLabel(name, color="black")
 
         axis_item = AxisItem(new_axis)
+        axis_item.curves_list_changed.connect(self.curve_list_changed.emit)
         self.axis_list.insertWidget(self.axis_list.count() - 1, axis_item)
 
         logger.debug(f"Added axis {new_axis.name} to plot")
@@ -78,6 +81,8 @@ class ControlPanel(QtWidgets.QWidget):
 
 
 class AxisItem(QtWidgets.QWidget):
+    curves_list_changed = QtCore.Signal()
+
     def __init__(self, plot_axis_item):
         super().__init__()
         self.source = plot_axis_item
@@ -147,9 +152,11 @@ class AxisItem(QtWidgets.QWidget):
             useArchiveData=True,
             yAxisName=self.source.name,
         )
+        self.curves_list_changed.emit()
 
         plot_curve_item = self.parent().plot._curves[-1]
         curve_item = CurveItem(plot_curve_item)
+        curve_item.curve_deleted.connect(self.curves_list_changed.emit)
         self.layout().addWidget(curve_item)
         if not self._expanded:
             self.toggle_expand()
@@ -225,6 +232,8 @@ class AxisItem(QtWidgets.QWidget):
 
 
 class CurveItem(QtWidgets.QWidget):
+    curve_deleted = QtCore.Signal()
+
     def __init__(self, plot_curve_item):
         super().__init__()
         self.source = plot_curve_item
@@ -299,4 +308,5 @@ class CurveItem(QtWidgets.QWidget):
         self.parent().parent().plot.removeCurve(self.source)
         self.setParent(None)
         self.deleteLater()
+        self.curve_deleted.emit()
         return super().close()

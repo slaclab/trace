@@ -64,6 +64,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         plot_side_widget = self.build_plot_side(self)
         control_panel = ControlPanel()
         control_panel.plot = self.plot
+        control_panel.curve_list_changed.connect(self.data_insight_tool.update_pv_select_box)
 
         # Create main splitter
         main_splitter = QSplitter(self)
