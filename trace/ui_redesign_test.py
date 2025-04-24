@@ -99,6 +99,8 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         multi_axis_plot.sigXRangeChangedManually.connect(self.disable_auto_scroll_button.click)
         plot_side_layout.addWidget(self.plot)
 
+        self.data_insight_tool.plot = self.plot
+
         self.settings_button = QPushButton(self.plot)
         self.settings_button.setIcon(qta.icon("msc.settings-gear"))
         self.settings_button.setFlat(True)
@@ -128,7 +130,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         timespan_buttons = self.build_timespan_buttons(toolbar_widget)
         tool_layout.addWidget(timespan_buttons)
 
-        self.data_insight_tool = DataInsightTool(self, self.plot)
+        self.data_insight_tool = DataInsightTool(self)
         data_insight_tool_button = QPushButton("Data Insight Tool", toolbar_widget)
         data_insight_tool_button.clicked.connect(self.data_insight_tool.show)
         tool_layout.addWidget(data_insight_tool_button)

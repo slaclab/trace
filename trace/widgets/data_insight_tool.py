@@ -295,13 +295,11 @@ class DataInsightTool(QWidget):
     to export the raw data from this tool.
     """
 
-    def __init__(self, parent: QObject, plot: PyDMArchiverTimePlot) -> None:
+    def __init__(self, parent: QObject, plot: PyDMArchiverTimePlot = None) -> None:
         super().__init__(parent=parent)
         self.setWindowFlag(Qt.Window)
         self.resize(600, 600)
         self.setWindowTitle("Data Insight Tool")
-
-        self.plot = plot
 
         self.layout_init()
 
@@ -310,6 +308,18 @@ class DataInsightTool(QWidget):
         self.pv_select_box.currentIndexChanged.connect(self.get_data)
         self.refresh_button.clicked.connect(self.get_data)
 
+        if isinstance(plot, PyDMArchiverTimePlot):
+            self.plot = plot
+
+    @property
+    def plot(self) -> PyDMArchiverTimePlot:
+        """Return the plot associated with this widget"""
+        return self._plot
+
+    @plot.setter
+    def plot(self, plot: PyDMArchiverTimePlot) -> None:
+        """Set the plot associated with this widget"""
+        self._plot = plot
         self.update_pv_select_box()
         if self.pv_select_box.count() > 0:
             self.get_data(0)
@@ -380,7 +390,11 @@ class DataInsightTool(QWidget):
         when the plot is updated.
         """
         self.pv_select_box.clear()
-        curve_names = [c.name for c in self.plot.curves() if isinstance(c, ArchivePlotCurveItem)]
+        # curve_names = [c.address for c in self.plot.curves() if isinstance(c, ArchivePlotCurveItem)]
+        curve_names = []
+        for curve in self.plot.curves():
+            if isinstance(curve, ArchivePlotCurveItem):
+                curve_names.append(curve.address)
         self.pv_select_box.addItems(curve_names)
 
     @Slot()
