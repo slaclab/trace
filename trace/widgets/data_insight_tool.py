@@ -390,11 +390,7 @@ class DataInsightTool(QWidget):
         when the plot is updated.
         """
         self.pv_select_box.clear()
-        # curve_names = [c.address for c in self.plot.curves() if isinstance(c, ArchivePlotCurveItem)]
-        curve_names = []
-        for curve in self.plot.curves():
-            if isinstance(curve, ArchivePlotCurveItem):
-                curve_names.append(curve.address)
+        curve_names = [c.address for c in self.plot._curves if isinstance(c, ArchivePlotCurveItem)]
         self.pv_select_box.addItems(curve_names)
 
     @Slot()
