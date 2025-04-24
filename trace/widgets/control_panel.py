@@ -213,10 +213,10 @@ class AxisItem(QtWidgets.QWidget):
         self.settings_modal.show()
 
     def close(self) -> bool:
+        while self.layout().count() > 1:
+            self.layout().itemAt(1).widget().close()
         self.source.sigYRangeChanged.disconnect(self.handle_range_change)
         self.source.linkedView().sigRangeChangedManually.disconnect(self.disable_auto_range)
-        for i in range(1, self.layout().count()):
-            self.layout().itemAt(i).widget().close()
         index = self.parent().plot._axes.index(self.source)
         self.parent().plot.removeAxisAtIndex(index)
         self.setParent(None)
