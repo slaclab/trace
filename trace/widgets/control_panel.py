@@ -7,6 +7,7 @@ from widgets import AxisSettingsModal, CurveSettingsModal
 from widgets.table_widgets import ColorButton
 from widgets.archive_search import ArchiveSearchWidget
 
+
 class ControlPanel(QtWidgets.QWidget):
     curve_list_changed = QtCore.Signal()
 
@@ -70,14 +71,9 @@ class ControlPanel(QtWidgets.QWidget):
 
     def search_pv(self):
         if not hasattr(self, "archive_search") or not self.archive_search.isVisible():
-<<<<<<< HEAD
             self.archive_search.insert_button.clicked.connect(
                 lambda: self.add_curves(self.archive_search.selectedPVs())
             )
-=======
-            self.archive_search = ArchiveSearchWidget()
-            self.archive_search.insert_button.clicked.connect(lambda: self.add_curves(self.archive_search.selectedPVs()))
->>>>>>> c1cd79e (added in search pv window + search pv button)
             self.archive_search.show()
         else:
             self.archive_search.raise_()
@@ -109,13 +105,8 @@ class ControlPanel(QtWidgets.QWidget):
     def add_curve(self, pv: str = None):
         if pv is None and self.sender():
             pv = self.sender().text()
-<<<<<<< HEAD
 
         if self.axis_list.count() == 1:  # the stretch makes count >= 1
-=======
-    
-        if self.axis_list.count() == 1:  # the header makes count >= 1
->>>>>>> c1cd79e (added in search pv window + search pv button)
             self.add_axis()
         last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
         last_axis.add_curve(pv)
