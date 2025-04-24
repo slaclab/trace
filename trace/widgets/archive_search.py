@@ -175,11 +175,9 @@ class ArchiveSearchWidget(QWidget):
         self.layout.addWidget(self.loading_label)
         self.layout.addWidget(self.results_view)
         self.insert_button = QPushButton("Add PVs")
-        #self.results_view.doubleClicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
+        # self.results_view.doubleClicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
         self.layout.addWidget(self.insert_button)
         self.setLayout(self.layout)
-
-
 
     def selectedPVs(self) -> list[str]:
         """Figure out based on which indexes were selected, the list of PVs (by string name)
