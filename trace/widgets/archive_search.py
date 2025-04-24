@@ -123,7 +123,7 @@ class ArchiveSearchWidget(QWidget):
         The parent item of this widget
     """
 
-    append_PVs_requested = Signal(str)
+    append_PVs_requested = Signal(list)
 
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent=parent)
@@ -175,21 +175,21 @@ class ArchiveSearchWidget(QWidget):
         self.layout.addWidget(self.loading_label)
         self.layout.addWidget(self.results_view)
         self.insert_button = QPushButton("Add PVs")
-        self.insert_button.clicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
-        self.results_view.doubleClicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
+        #self.results_view.doubleClicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
         self.layout.addWidget(self.insert_button)
         self.setLayout(self.layout)
 
-    def selectedPVs(self) -> str:
+
+
+    def selectedPVs(self) -> list[str]:
         """Figure out based on which indexes were selected, the list of PVs (by string name)
         The user was hoping to insert into the table. Concatenate them into string form i.e.
         <pv1>, <pv2>, <pv3>"""
         indices = self.results_view.selectedIndexes()
-        pv_list = ""
+        pv_list = []
         for index in indices:
-            pv_name = self.results_table_model.results_list[index.row()]
-            pv_list += pv_name + ", "
-        return pv_list[:-2]
+            pv_list.append(self.results_table_model.results_list[index.row()])
+        return pv_list
 
     def startDragAction(self, supported_actions) -> None:
         """

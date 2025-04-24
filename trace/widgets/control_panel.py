@@ -5,7 +5,7 @@ from qtpy.QtGui import QCloseEvent
 from config import logger
 from widgets import AxisSettingsModal, CurveSettingsModal
 from widgets.table_widgets import ColorButton
-
+from widgets.archive_search import ArchiveSearchWidget
 
 class ControlPanel(QtWidgets.QWidget):
     def __init__(self):
@@ -15,6 +15,10 @@ class ControlPanel(QtWidgets.QWidget):
         # Create pv plotter layout
         pv_plotter_layout = QtWidgets.QHBoxLayout()
         self.layout().addLayout(pv_plotter_layout)
+        self.search_button = QtWidgets.QPushButton("Search PV")
+        self.search_button.clicked.connect(self.search_pv)
+        pv_plotter_layout.addWidget(self.search_button)
+
         self.pv_line_edit = QtWidgets.QLineEdit()
         self.pv_line_edit.setPlaceholderText("Enter PV")
         self.pv_line_edit.returnPressed.connect(self.add_curve_from_line_edit)
@@ -49,6 +53,19 @@ class ControlPanel(QtWidgets.QWidget):
     def plot(self, plot):
         self._plot = plot
 
+    def search_pv(self):
+        if not hasattr(self, "archive_search") or not self.archive_search.isVisible():
+            self.archive_search = ArchiveSearchWidget()
+            self.archive_search.insert_button.clicked.connect(lambda: self.add_curves(self.archive_search.selectedPVs()))
+            self.archive_search.show()
+        else:
+            self.archive_search.raise_()
+            self.archive_search.activateWindow()
+
+    def add_curves(self, pvs: list[str]) -> None:
+        for pv in pvs:
+            self.add_curve(pv)
+
     def add_axis(self, name: str = ""):
         logger.debug("Adding new empty axis to the plot")
         if not name:
@@ -65,7 +82,11 @@ class ControlPanel(QtWidgets.QWidget):
 
         logger.debug(f"Added axis {new_axis.name} to plot")
 
-    def add_curve(self, pv):
+    @QtCore.Slot()
+    def add_curve(self, pv: str = None):
+        if pv is None and self.sender():
+            pv = self.sender().text()
+    
         if self.axis_list.count() == 1:  # the header makes count >= 1
             self.add_axis()
         last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
@@ -248,7 +269,7 @@ class CurveItem(QtWidgets.QWidget):
         self.label.returnPressed.connect(self.label.clearFocus)
         pv_settings_layout.addWidget(self.label)
         self.pv_settings_button = QtWidgets.QPushButton()
-        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))
+        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear", color="#444444"))
         self.pv_settings_button.setFlat(True)
         self.pv_settings_modal = None
         self.pv_settings_button.clicked.connect(self.show_settings_modal)
