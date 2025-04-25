@@ -360,11 +360,12 @@ class DataInsightTool(QWidget):
 
     def set_meta_data(self) -> None:
         """Populate the meta_data_label with the curve's unit (if any) and description."""
-        meta_str = ""
+        meta_labels = []
         if self.data_vis_model.unit:
-            meta_str = self.data_vis_model.unit + ", "
-        meta_str += self.data_vis_model.description
-        self.meta_data_label.setText(meta_str)
+            meta_labels.append(str(self.data_vis_model.unit))
+        if self.data_vis_model.description:
+            meta_labels.append(str(self.data_vis_model.description))
+        self.meta_data_label.setText(", ".join(meta_labels))
 
     def combobox_to_curve(self, combobox_ind: int) -> ArchivePlotCurveItem:
         """Convert an index for the pv_select_box combobox to the corresponding
