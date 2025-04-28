@@ -70,7 +70,6 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         main_splitter = QSplitter(self)
         main_splitter.addWidget(plot_side_widget)
         main_splitter.addWidget(control_panel)
-        main_splitter.setSizes([1, 300])
         main_splitter.setCollapsible(0, False)
         main_splitter.setStretchFactor(0, 1)
         main_layout.addWidget(main_splitter)
