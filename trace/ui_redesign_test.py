@@ -1,8 +1,10 @@
 import os
 import subprocess
+import requests
 from socket import gethostname
 from getpass import getuser
 from datetime import datetime
+from dotenv import dotenv_values
 
 import qtawesome as qta
 from qtpy.QtGui import QFont
@@ -37,6 +39,9 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
 
     def __init__(self, parent=None, args=None, macros=None) -> None:
         super(TraceDisplay, self).__init__(parent=parent, args=args, macros=macros, ui_filename=None)
+        self.env = dotenv_values()
+        self.ELOG_API_URL = self.env["ELOG_API_URL"]
+        self.ELOG_API_KEY = self.env["SWAPPS_TRACE_ELOG_API_KEY"]
         self.build_ui()
         self.configure_app()
         self.resize(1000, 600)
@@ -123,7 +128,9 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         save_image_button = QPushButton("Save Image", toolbar_widget)
         save_image_button.clicked.connect(self.save_plot_image)
         tool_layout.addWidget(save_image_button)
-
+        elog_button = QPushButton("Send to Elog", toolbar_widget)
+        elog_button.clicked.connect(self.elog_button_clicked)
+        tool_layout.addWidget(elog_button)
         tool_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         tool_layout.addSpacerItem(tool_spacer)
 
@@ -240,6 +247,12 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
                 logger.info(f"Saved image file to: {file_path}")
             except Exception as e:
                 logger.error(f"Failed to save image: {e}")
+
+    @Slot()
+    def elog_button_clicked(self) -> None:
+        print(self.env)
+        r = requests.get(f"{self.ELOG_API_URL}/v1/users/me", headers={"x-vouch-idp-accesstoken": self.ELOG_API_KEY})
+        print(r.json())
 
     @Slot()
     def fetch_archive(self) -> None:
