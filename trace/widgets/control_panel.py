@@ -1,13 +1,14 @@
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
-
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
-
+from qtpy.QtGui import QCloseEvent
+import re
 from config import logger
 from widgets import AxisSettingsModal, CurveSettingsModal
 from widgets.table_widgets import ColorButton
 from widgets.archive_search import ArchiveSearchWidget
-
+from widgets.formula_dialog import FormulaDialog
+from pydm.widgets.archiver_time_plot import FormulaCurveItem
 
 class ControlPanel(QtWidgets.QWidget):
     curve_list_changed = QtCore.Signal()
@@ -17,12 +18,23 @@ class ControlPanel(QtWidgets.QWidget):
         self.setLayout(QtWidgets.QVBoxLayout())
         self.setStyleSheet("background-color: white;")
 
+        self._curve_dict = {}
+        self._next_var_number = 1
+
         # Create pv plotter layout
         pv_plotter_layout = QtWidgets.QHBoxLayout()
         self.layout().addLayout(pv_plotter_layout)
-        self.search_button = QtWidgets.QPushButton("Search PV")
+        self.search_button = QtWidgets.QPushButton()
+        self.search_button.setIcon(qta.icon("fa5s.search"))
+        self.search_button.setFlat(True)
         self.search_button.clicked.connect(self.search_pv)
         pv_plotter_layout.addWidget(self.search_button)
+
+        self.calc_button = QtWidgets.QPushButton()
+        self.calc_button.setIcon(qta.icon("fa6s.calculator"))
+        self.calc_button.setFlat(True)
+        self.calc_button.clicked.connect(self.add_formula)
+        pv_plotter_layout.addWidget(self.calc_button)
 
         self.pv_line_edit = QtWidgets.QLineEdit()
         self.pv_line_edit.setPlaceholderText("Enter PV")
@@ -48,11 +60,15 @@ class ControlPanel(QtWidgets.QWidget):
 
         self.archive_search = ArchiveSearchWidget()
 
+        self.formula_dialog = FormulaDialog(self)
+        self.formula_dialog.formula_accepted.connect(self.handle_formula_accepted)
+        self.curve_list_changed.connect(self.formula_dialog.curve_model.refresh)
+
     def minimumSizeHint(self):
         inner_size = self.axis_list.minimumSize()
         buffer = self.pv_line_edit.font().pointSize() * 3
         return QtCore.QSize(inner_size.width() + buffer, inner_size.height())
-
+        
     def add_curve_from_line_edit(self):
         pv = self.pv_line_edit.text()
         self.add_curve(pv)
@@ -81,6 +97,32 @@ class ControlPanel(QtWidgets.QWidget):
             self.archive_search.raise_()
             self.archive_search.activateWindow()
 
+    def add_formula(self):
+        if not hasattr(self, "formula_dialog") or not self.formula_dialog.isVisible():
+            self.formula_dialog.show()
+        else:
+            self.formula_dialog.raise_()
+            self.formula_dialog.activateWindow()
+
+    @QtCore.Slot(str)
+    def handle_formula_accepted(self, formula: str) -> None:
+        """Handle the formula accepted from the formula dialog."""
+        # Parse the formula and create a new curve based on it
+        if self.plot:
+            # Add formula curve
+            if self.axis_list.count() > 1:
+                last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
+                last_axis.add_curve(formula)
+                
+                # Store the formula curve in the dictionary
+                new_curve_index = len(self.plot._curves) - 1
+                new_curve = self.plot._curves[new_curve_index]
+                key = self._generate_pv_key()
+                self._curve_dict[key] = new_curve
+                
+                # Signal that the curve list has changed
+                self.curve_list_changed.emit()
+
     def add_curves(self, pvs: list[str]) -> None:
         for pv in pvs:
             self.add_curve(pv)
@@ -103,6 +145,17 @@ class ControlPanel(QtWidgets.QWidget):
         logger.debug(f"Added axis {new_axis.name} to plot")
         self.updateGeometry()
 
+    @property
+    def curve_dict(self):
+        """Return dictionary of curves with PV keys"""
+        return self._curve_dict
+        
+    def _generate_pv_key(self):
+        """Generate a unique PV key (PV1, PV2, etc.)"""
+        key = f"PV{self._next_var_number}"
+        self._next_var_number += 1
+        return key
+    
     @QtCore.Slot()
     def add_curve(self, pv: str = None):
         if pv is None and self.sender():
@@ -111,13 +164,80 @@ class ControlPanel(QtWidgets.QWidget):
         if self.axis_list.count() == 1:  # the stretch makes count >= 1
             self.add_axis()
         last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
-        last_axis.add_curve(pv)
+        
+        # Check if this is a formula curve
+        if pv.startswith("f://"):
+            last_axis.add_formula_curve(pv)
+        else:
+            last_axis.add_curve(pv)
+        
+        # Get the newly added curve and add it to the dictionary
+        new_curve_index = len(self.plot._curves) - 1
+        new_curve = self.plot._curves[new_curve_index]
+        key = self._generate_pv_key()
+        self._curve_dict[key] = new_curve
+        
+        # Signal that the curve list has changed
+        self.curve_list_changed.emit()
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
         for axis_item in range(self.axis_list.count()):
             axis_item.close()
         super().closeEvent(a0)
 
+    def recursionCheck(self, target: str, rowHeaders: dict) -> bool:
+        """Internal method that uses DFS to confirm there are not cyclical formula dependencies
+
+        We are handling base case in the loop
+        We are running this every single time formulaToPVDict is called,
+        so our target is the only fail check
+
+        Parameters
+        --------------
+        target: str
+            The row header that initially called this check. If we find it, there is a cyclical dependency
+
+        rowHeaders: dict()
+            This contains rowHeader -> BasePlotCurveItem so we can find all of our dependencies
+                From this we know which Formula we then have to traverse to confirm we are good
+        """
+
+        for rowHeader, curve in rowHeaders.items():
+            if rowHeader == target:
+                # We hit a dependency that is our target, fail
+                return False
+            if isinstance(curve, FormulaCurveItem):
+                # If this dependency is a Formula, check its children
+                if not self.recursionCheck(target, curve.pvs):
+                    # One of the descendants is target, propagate upward
+                    return False
+        # If we are here, then none of the children failed
+        return True
+
+    def formulaToPVDict(self, rowName: str, formula: str) -> dict:
+        """Take in a formula and return a dictionary with keys of row headers and values of the BasePlotCurveItems"""
+        pvs = re.findall("{(.+?)}", formula)
+        pvdict = dict()
+        for pv in pvs:
+            # Check if all of the requested rows actually exist
+            if pv not in self._row_names:
+                raise ValueError(f"{pv} is an invalid variable name")
+            elif pv == rowName:
+                raise ValueError(f"{pv} is recursive")
+
+            # If the PV is good, add it to the dictionary of used PVs
+            rindex = self._row_names.index(pv)
+            pvdict[pv] = self._plot._curves[rindex]
+
+        if not self.recursionCheck(rowName, pvdict):
+            raise ValueError("There was a recursive dependency somewhere")
+        if not pvdict:
+            try:
+                eval(formula[4:])
+            except SyntaxError:
+                raise SyntaxError("Invalid Input")
+        return pvdict
+    
 
 class AxisItem(QtWidgets.QWidget):
     curves_list_changed = QtCore.Signal()
@@ -212,6 +332,31 @@ class AxisItem(QtWidgets.QWidget):
         if not self._expanded:
             self.toggle_expand()
 
+    def add_formula_curve(self, formula):
+        # Add the formula curve to the plot
+        index = len(self.parent().plot._curves)
+        color = ColorButton.index_color(index)
+        
+        # Use the existing FormulaCurveItem handling from your plot
+        self.parent().plot.addFormulaChannel(
+            formula=formula, 
+            name=formula, 
+            pvs=self.curve_dict, 
+            color=color, 
+            useArchiveData=True, 
+            yAxisName=self.source.name
+        )
+
+        # Get the newly created curve
+        plot_curve_item = self.parent().plot._curves[-1]
+        curve_item = CurveItem(plot_curve_item)
+        curve_item.curve_deleted.connect(self.curves_list_changed.emit)
+        self.layout().addWidget(curve_item)
+        if not self._expanded:
+            self.toggle_expand()
+            
+        self.curves_list_changed.emit()
+        
     def toggle_expand(self):
         if self._expanded:
             for index in range(1, self.layout().count()):
