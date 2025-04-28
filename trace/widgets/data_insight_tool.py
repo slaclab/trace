@@ -153,6 +153,9 @@ class DataVisualizationModel(QAbstractTableModel):
         self.address = curve_item.address if curve_item.address else ""
         self.unit = curve_item.units
 
+        # Set the meta data label of the DataInsightTool
+        self.set_description("Loading...")
+
         # Create a new CAGetThread to get the description of the curve
         if isinstance(self.caget_thread, CAGetThread) and self.caget_thread.isRunning():
             self.caget_thread.quit()
