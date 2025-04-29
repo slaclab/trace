@@ -8,6 +8,7 @@ from widgets import AxisSettingsModal, CurveSettingsModal
 from widgets.table_widgets import ColorButton
 from widgets.archive_search import ArchiveSearchWidget
 from widgets.formula_dialog import FormulaDialog
+
 from pydm.widgets.archiver_time_plot import FormulaCurveItem
 
 class ControlPanel(QtWidgets.QWidget):
@@ -106,22 +107,9 @@ class ControlPanel(QtWidgets.QWidget):
 
     @QtCore.Slot(str)
     def handle_formula_accepted(self, formula: str) -> None:
-        """Handle the formula accepted from the formula dialog."""
-        # Parse the formula and create a new curve based on it
-        if self.plot:
-            # Add formula curve
-            if self.axis_list.count() > 1:
-                last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
-                last_axis.add_curve(formula)
-                
-                # Store the formula curve in the dictionary
-                new_curve_index = len(self.plot._curves) - 1
-                new_curve = self.plot._curves[new_curve_index]
-                key = self._generate_pv_key()
-                self._curve_dict[key] = new_curve
-                
-                # Signal that the curve list has changed
-                self.curve_list_changed.emit()
+        """Handle the formula accepted from the formula dialog.""" 
+        self.add_curve(formula)
+        self.curve_list_changed.emit()
 
     def add_curves(self, pvs: list[str]) -> None:
         for pv in pvs:
@@ -333,29 +321,38 @@ class AxisItem(QtWidgets.QWidget):
             self.toggle_expand()
 
     def add_formula_curve(self, formula):
-        # Add the formula curve to the plot
-        index = len(self.parent().plot._curves)
+        control_panel = self.parent()
+        plot = control_panel.plot
+
+        index = len(plot._curves)
         color = ColorButton.index_color(index)
         
-        # Use the existing FormulaCurveItem handling from your plot
-        self.parent().plot.addFormulaChannel(
-            formula=formula, 
-            name=formula, 
-            pvs=self.curve_dict, 
-            color=color, 
-            useArchiveData=True, 
+        var_names = re.findall(r"{(.+?)}", formula)
+        var_dict = {}
+            
+        for var_name in var_names:
+            if var_name not in control_panel.curve_dict:
+                raise ValueError(f"{var_name} is an invalid variable name")
+            var_dict[var_name] = control_panel.curve_dict[var_name]
+        
+        print(var_dict)
+
+        plot.addFormulaChannel(
+            formula=formula,
+            name=formula,
+            pvs=var_dict,
+            color=color,
+            useArchiveData=True,
             yAxisName=self.source.name
         )
-
-        # Get the newly created curve
+        self.curves_list_changed.emit()
+        
         plot_curve_item = self.parent().plot._curves[-1]
         curve_item = CurveItem(plot_curve_item)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
         self.layout().addWidget(curve_item)
         if not self._expanded:
             self.toggle_expand()
-            
-        self.curves_list_changed.emit()
         
     def toggle_expand(self):
         if self._expanded:

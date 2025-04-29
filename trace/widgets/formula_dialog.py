@@ -121,34 +121,12 @@ class FormulaDialog(QDialog):
             if key:
                 current_text = self.field.text()
                 cursor_pos = self.field.cursorPosition()
+                # Add the variable with curly braces
                 new_text = current_text[:cursor_pos] + '{' + key + '}' + current_text[cursor_pos:]
                 self.field.setText(new_text)
-                self.field.setCursorPosition(cursor_pos + len(key + 2))
-
-    def add_formula_curve(self, formula):
-        # Add the formula curve to the plot
-        index = len(self.parent().plot._curves)
-        color = ColorButton.index_color(index)
-        
-        # Use the existing FormulaCurveItem handling from your plot
-        self.parent().plot.addFormulaChannel(
-            formula=formula,
-            name=formula,
-            color=color,
-            yAxisName=self.source.name
-        )
-        
-        # Get the newly created curve
-        plot_curve_item = self.parent().plot._curves[-1]
-        curve_item = CurveItem(plot_curve_item)
-        curve_item.curve_deleted.connect(self.curves_list_changed.emit)
-        self.layout().addWidget(curve_item)
-        
-        if not self._expanded:
-            self.toggle_expand()
-            
-        self.curves_list_changed.emit()
-
+                # Move cursor after the inserted variable (key length + 2 characters for braces)
+                self.field.setCursorPosition(cursor_pos + len(key) + 2)
+    
 class CurveModel(QAbstractTableModel):
     def __init__(self, control_panel):
         super().__init__()
