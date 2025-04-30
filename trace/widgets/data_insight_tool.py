@@ -72,11 +72,9 @@ class CAGetThread(QThread):
             return
         self.result_ready.emit(value)
 
-    def quit(self) -> None:
-        """Override the quit method to set the stop flag"""
+    def stop(self) -> None:
+        """Set the stop flag"""
         self.stop_flag = True
-        super().quit()
-        self.deleteLater()
 
 
 class DataVisualizationModel(QAbstractTableModel):
@@ -159,7 +157,7 @@ class DataVisualizationModel(QAbstractTableModel):
 
         # Create a new CAGetThread to get the description of the curve
         if isinstance(self.caget_thread, CAGetThread) and self.caget_thread.isRunning():
-            self.caget_thread.quit()
+            self.caget_thread.stop()
         self.caget_thread = CAGetThread(self, self.address + ".DESC")
         self.caget_thread.result_ready.connect(self.set_description)
         self.caget_thread.start()
@@ -444,7 +442,9 @@ class DataInsightTool(QWidget):
         """Populate the pv_select_box with all curves in the plot. This is called
         when the plot is updated.
         """
+        self.pv_select_box.blockSignals(True)
         self.pv_select_box.clear()
+        self.pv_select_box.blockSignals(False)
         curve_names = [c.address for c in self.plot._curves if isinstance(c, ArchivePlotCurveItem)]
         self.pv_select_box.addItems(curve_names)
 
