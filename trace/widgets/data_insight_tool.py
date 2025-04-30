@@ -60,8 +60,8 @@ class CAGetThread(QThread):
 
     result_ready = Signal(object)
 
-    def __init__(self, address: str) -> None:
-        super().__init__()
+    def __init__(self, parent: QObject = None, address: str = "") -> None:
+        super().__init__(parent=parent)
         self.address = address
         self.stop_flag = False
 
@@ -76,6 +76,7 @@ class CAGetThread(QThread):
         """Override the quit method to set the stop flag"""
         self.stop_flag = True
         super().quit()
+        self.deleteLater()
 
 
 class DataVisualizationModel(QAbstractTableModel):
@@ -159,7 +160,7 @@ class DataVisualizationModel(QAbstractTableModel):
         # Create a new CAGetThread to get the description of the curve
         if isinstance(self.caget_thread, CAGetThread) and self.caget_thread.isRunning():
             self.caget_thread.quit()
-        self.caget_thread = CAGetThread(self.address + ".DESC")
+        self.caget_thread = CAGetThread(self, self.address + ".DESC")
         self.caget_thread.result_ready.connect(self.set_description)
         self.caget_thread.start()
 
