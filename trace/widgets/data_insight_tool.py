@@ -254,8 +254,11 @@ class DataVisualizationModel(QAbstractTableModel):
         self.reply_recieved.emit()
         if reply.error() == QNetworkReply.NoError:
             bytes_str = reply.readAll()
-            data_dict = json.loads(str(bytes_str, "utf-8"))
-            self.set_archive_data(data_dict)
+            try:
+                data_dict = json.loads(str(bytes_str, "utf-8"))
+                self.set_archive_data(data_dict)
+            except json.JSONDecodeError:
+                logger.warning("Data Insight Tool: No data received from archiver")
         else:
             logger.debug(
                 f"Request for data from archiver failed, request url: {reply.url()} retrieved header: "
