@@ -13,10 +13,20 @@ logger = getLogger("")
 
 datetime_pv = loaded_json["datetime_pv"]
 
+# Set default save file directory
+# If the directory does not exist, set it to the home directory
 save_file_dir = Path(os.path.expandvars(loaded_json["save_file_dir"]))
 if not save_file_dir.is_dir():
     logger.warning(f"Config file's save_file_dir path does not exist: {save_file_dir}")
     save_file_dir = Path.home()
     logger.warning(f"Setting save_file_dir to home: {save_file_dir}")
 
+# Set default color palette
 color_palette = [QColor(hex_code) for hex_code in loaded_json["colors"]]
+
+# Set the default thread count for numexpr
+# 8 is determined to be a safe default for most systems according to numxerpr documentation
+numexpr_threads = os.environ.get("NUMEXPR_MAX_THREADS", None)
+if numexpr_threads is None:
+    os.environ["NUMEXPR_MAX_THREADS"] = "8"
+    logger.debug("NUMEXPR_MAX_THREADS not set, defaulting to 8")
