@@ -188,8 +188,11 @@ class DataVisualizationModel(QAbstractTableModel):
         x_range : Iterable[int]
             The time range to collect and store data between
         """
-        data_n = curve_item.getBufferSize()
-        data = curve_item.data_buffer[:, :data_n]
+        data_n = curve_item.points_accumulated
+        if data_n == 0:
+            return
+
+        data = curve_item.data_buffer[:, -data_n:]
         indices = np.where((x_range[0] <= data[0]) & (data[0] <= x_range[1]))[0]
 
         convert_data = {"Datetime": [], "Value": [], "Severity": []}
