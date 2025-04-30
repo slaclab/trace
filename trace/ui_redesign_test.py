@@ -1,4 +1,6 @@
+import json
 import os
+import io
 import subprocess
 import requests
 from socket import gethostname
@@ -7,8 +9,8 @@ from datetime import datetime
 from dotenv import dotenv_values
 
 import qtawesome as qta
-from qtpy.QtGui import QFont
-from qtpy.QtCore import Qt, Slot, QSize, Signal
+from qtpy.QtGui import QFont, QImage
+from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice
 from qtpy.QtWidgets import (
     QLabel,
     QWidget,
@@ -21,6 +23,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QApplication,
     QButtonGroup,
+    QMessageBox,
 )
 from pyqtgraph.exporters import ImageExporter
 
@@ -250,9 +253,53 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
 
     @Slot()
     def elog_button_clicked(self) -> None:
-        print(self.env)
-        r = requests.get(f"{self.ELOG_API_URL}/v1/users/me", headers={"x-vouch-idp-accesstoken": self.ELOG_API_KEY})
-        print(r.json())
+        """Takes a snapshot of the plot and posts it to the Elog API."""
+        post_url = f"{self.ELOG_API_URL}/v2/entries"
+
+        # Use ImageExporter to take a snapshot of the plot
+        exporter = ImageExporter(self.plot.plotItem)
+        img: QImage = exporter.export(toBytes=True)
+        # Convert Qimage to bytes
+        buffer = QBuffer()
+        buffer.open(QIODevice.ReadWrite)
+        img.save(buffer, "PNG")
+        image_bytes = buffer.data()
+
+        entry_data = {
+            "logbooks": ["mcc"],
+            "title": "this entry made from trace",
+            "text": "",
+        }
+        entry_json = json.dumps(entry_data).encode("utf-8")
+
+        # Post the request to the Elog API
+        r = requests.post(
+            post_url,
+            headers={"x-vouch-idp-accesstoken": self.ELOG_API_KEY},
+            files={
+                "entry": ("entry.json", entry_json, "application/json"),
+                "files": ("trace_plot.png", image_bytes, "image/png"),
+            },
+        )
+
+        # Check if the request was successful
+        if r.status_code == 201:
+            success_dialog = QMessageBox()
+            success_dialog.setIcon(QMessageBox.Information)
+            success_dialog.setWindowTitle("Elog Entry Posted")
+            success_dialog.setText("Elog entry posted successfully!")
+            success_dialog.setStandardButtons(QMessageBox.Ok)
+            success_dialog.exec_()
+        else:
+            error_dialog = QMessageBox()
+            error_dialog.setIcon(QMessageBox.Warning)
+            error_dialog.setWindowTitle("Connection Error")
+            error_dialog.setText("Failed to connect to the Elog API.")
+            error_dialog.setInformativeText(
+                f"No entry was posted. If this issue persists, please report it in the #elog-general Slack channel. \n\nError Code: {r} \n {r.json()}"
+            )
+            error_dialog.setStandardButtons(QMessageBox.Ok)
+            error_dialog.exec_()
 
     @Slot()
     def fetch_archive(self) -> None:
