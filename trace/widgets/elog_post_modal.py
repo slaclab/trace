@@ -7,6 +7,7 @@ from qtpy.QtWidgets import (
     QMessageBox,
     QVBoxLayout,
     QDialogButtonBox,
+    QSizePolicy,
 )
 from services.elog_client import get_logbooks
 
@@ -14,7 +15,10 @@ from widgets.settings_components import SettingsTitle, SettingsRowItem
 
 
 class ElogPostModal(QDialog):
-    def __init__(self, parent: QWidget = None):
+    def __init__(
+        self,
+        parent: QWidget = None,
+    ):
         super().__init__(parent)
 
         self.setModal(True)
@@ -26,6 +30,8 @@ class ElogPostModal(QDialog):
         main_layout.addWidget(modal_label)
 
         self.title_edit = QLineEdit(self)
+        self.title_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.title_edit.setMinimumWidth(250)
         title_row = SettingsRowItem(self, "Title", self.title_edit)
         main_layout.addLayout(title_row)
 
