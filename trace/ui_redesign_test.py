@@ -57,6 +57,14 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
     def minimumSizeHint(self):
         return QSize(700, 350)
 
+    def file_menu_items(self) -> dict:
+        """Add export & import functionality to File menu"""
+        return {
+            "save": (self.export_save_file, "Ctrl+S"),
+            "save_as": (self.export_save_file, "Ctrl+Shift+S"),
+            "load": (self.import_save_file, "Ctrl+L"),
+        }
+
     def build_ui(self) -> None:
         # Set window title
         self.setWindowTitle("Trace")
