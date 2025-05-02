@@ -1,8 +1,8 @@
-import json
-import requests
-
-from dotenv import load_dotenv
 import os
+import json
+
+import requests
+from dotenv import load_dotenv
 
 load_dotenv()
 ELOG_API_URL = os.getenv("SWAPPS_TRACE_ELOG_API_URL")
@@ -52,6 +52,24 @@ def post_entry(title: str, body: str, logbooks: list[str], image_bytes) -> tuple
         )
         response.raise_for_status()
         return response.status_code, response.json()
+    except requests.exceptions.RequestException as e:
+        print(e)
+        return response.status_code, e
+
+
+def get_logbooks() -> tuple[int, list[str] | Exception]:
+    """
+    Fetches the list of logbooks from the ELOG API.
+
+    :return: A tuple containing the status code and a list of logbook names or an exception.
+    """
+    url = f"{ELOG_API_URL}/v1/logbooks"
+    headers = {"x-vouch-idp-accesstoken": ELOG_API_KEY}
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.status_code, [logbook["name"] for logbook in response.json()["payload"]]
     except requests.exceptions.RequestException as e:
         print(e)
         return response.status_code, e

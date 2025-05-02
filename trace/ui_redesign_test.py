@@ -23,13 +23,13 @@ from qtpy.QtWidgets import (
     QButtonGroup,
 )
 from pyqtgraph.exporters import ImageExporter
+from services.elog_client import get_user, post_entry
 
 from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 
 from config import logger, datetime_pv
 from mixins import FileIOMixin, PlotConfigMixin
-from services.elog_client import get_user, post_entry
 from widgets import ControlPanel, DataInsightTool, PlotSettingsModal
 from widgets.elog_post_modal import ElogPostModal
 
@@ -249,7 +249,9 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
 
     @Slot()
     def elog_button_clicked(self) -> bool:
-        """Takes a snapshot of the plot and posts it to the Elog API."""
+        """Takes a snapshot of the plot and posts it to the Elog API.
+
+        :return: True if the post was successful, False otherwise."""
         # Test if API is reachable
         status_code, _ = get_user()
         if status_code != 200:
@@ -258,7 +260,8 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
             error_dialog.setWindowTitle("Connection Error")
             error_dialog.setText("Failed to connect to the Elog API.")
             error_dialog.setInformativeText(
-                f"No entry was posted. If this issue persists, please report it in the #elog-general Slack channel. \n\nError Code: {status_code}"
+                f"""No entry was posted. If this issue persists, please report it in the
+                #elog-general Slack channel. \n\nError Code: {status_code}"""
             )
             error_dialog.setStandardButtons(QMessageBox.Ok)
             error_dialog.exec_()
@@ -274,8 +277,8 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         img.save(buffer, "PNG")
         image_bytes = buffer.data()
         # Get entry info from user
-        dialog = ElogPostModal(self)
-        if dialog.exec_() == QDialog.Accepted:
+        dialog = ElogPostModal.maybe_create(self)
+        if dialog is not None and dialog.exec_() == QDialog.Accepted:
             title, body, logbooks = dialog.get_inputs()
         else:
             return False
@@ -291,16 +294,19 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
             success_dialog.setText("Elog entry posted successfully!")
             success_dialog.setStandardButtons(QMessageBox.Ok)
             success_dialog.exec_()
+            return True
         else:
             error_dialog = QMessageBox()
             error_dialog.setIcon(QMessageBox.Warning)
             error_dialog.setWindowTitle("Connection Error")
             error_dialog.setText("Failed to connect to the Elog API.")
             error_dialog.setInformativeText(
-                f"No entry was posted. If this issue persists, please report it in the #elog-general Slack channel. \n\nError Code: {status_code}"
+                f"No entry was posted. If this issue persists, please report it in the \
+                #elog-general Slack channel. \n\nError Code: {status_code}"
             )
             error_dialog.setStandardButtons(QMessageBox.Ok)
             error_dialog.exec_()
+            return False
 
     @Slot()
     def fetch_archive(self) -> None:

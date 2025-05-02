@@ -1,4 +1,3 @@
-from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QDialog,
     QWidget,
@@ -7,9 +6,9 @@ from qtpy.QtWidgets import (
     QListWidget,
     QMessageBox,
     QVBoxLayout,
-    QListWidgetItem,
     QDialogButtonBox,
 )
+from services.elog_client import get_logbooks
 
 from widgets.settings_components import SettingsTitle, SettingsRowItem
 
@@ -17,6 +16,7 @@ from widgets.settings_components import SettingsTitle, SettingsRowItem
 class ElogPostModal(QDialog):
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
+
         self.setModal(True)
 
         main_layout = QVBoxLayout()
@@ -47,4 +47,25 @@ class ElogPostModal(QDialog):
         main_layout.addWidget(buttons)
 
     def get_inputs(self):
-        return self.title_edit.text(), self.body_edit.toPlainText(), self.logbook_list.selectedItems()
+        title = self.title_edit.text().strip()
+        body = self.body_edit.toPlainText().strip()
+        logbooks = [item.text() for item in self.logbook_list.selectedItems()]
+        return title, body, logbooks
+
+    @classmethod
+    def maybe_create(cls, parent: QWidget = None) -> "ElogPostModal | None":
+        """
+        Creates and shows the ElogPostModal dialog if the logbook list can be populated.
+        """
+        status_code, logbooks = get_logbooks()
+        if status_code != 200:
+            QMessageBox.critical(
+                parent,
+                "Elog Access Error",
+                f"Unable to fetch logbooks. \n\nError code: {status_code}",
+            )
+            return None
+
+        modal = cls(parent)
+        modal.logbook_list.addItems(logbooks)
+        return modal
