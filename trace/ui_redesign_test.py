@@ -5,12 +5,14 @@ from getpass import getuser
 from datetime import datetime
 
 import qtawesome as qta
-from qtpy.QtGui import QFont, QImage
+from qtpy.QtGui import QFont, QImage, QKeySequence
 from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice
 from qtpy.QtWidgets import (
+    QMenu,
     QLabel,
     QDialog,
     QWidget,
+    QMenuBar,
     QSplitter,
     QFileDialog,
     QHBoxLayout,
@@ -234,6 +236,37 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         # Hide status bar by default (can be shown in menu bar)
         app.main_window.toggle_status_bar(False)
         app.main_window.ui.actionShow_Status_Bar.setChecked(False)
+
+        open_file_action = app.main_window.ui.actionOpen_File
+        open_file_action.setText("Open PyDM File...")
+        open_file_action.setShortcut(QKeySequence())
+
+        menu_bar: QMenuBar = app.main_window.ui.menubar
+        menu = QMenu("Trace", menu_bar)
+        save = menu.addAction("Save", self.export_save_file)
+        save.setShortcut(QKeySequence("Ctrl+S"))
+        save_as = menu.addAction("Save As...", self.export_save_file)
+        save_as.setShortcut(QKeySequence("Ctrl+Shift+S"))
+        load = menu.addAction("Open Trace Config...", self.import_save_file)
+        load.setShortcut(QKeySequence("Ctrl+O"))
+
+        menu.addSeparator()
+
+        save_image = menu.addAction("Save Plot Image...", self.save_plot_image)
+        save_image.setShortcut(QKeySequence("Ctrl+I"))
+        save_elog = menu.addAction("Save ELOG Entry...")  # , self.save_elog_entry)
+        save_elog.setShortcut(QKeySequence("Ctrl+E"))
+        save_elog.setEnabled(False)
+
+        menu.addSeparator()
+        fetch_archive = menu.addAction("Fetch Archive Data", self.fetch_archive)
+        fetch_archive.setShortcut(QKeySequence("Ctrl+F"))
+
+        dit_action = menu.addAction("Data Insight Tool...", self.data_insight_tool.show)
+        dit_action.setShortcut(QKeySequence("Ctrl+D"))
+
+        first_menu = app.main_window.ui.menuFile.menuAction()
+        menu_bar.insertMenu(first_menu, menu)
 
     @Slot()
     def save_plot_image(self) -> None:
