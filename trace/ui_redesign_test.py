@@ -277,7 +277,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         img.save(buffer, "PNG")
         image_bytes = buffer.data()
         # Get entry info from user
-        dialog = ElogPostModal.maybe_create(self)
+        dialog = ElogPostModal.maybe_create(self, image_bytes=image_bytes)
         if dialog is not None and dialog.exec_() == QDialog.Accepted:
             title, body, logbooks = dialog.get_inputs()
         else:

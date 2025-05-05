@@ -1,13 +1,15 @@
+from qtpy.QtGui import QPixmap
 from qtpy.QtWidgets import (
+    QLabel,
     QDialog,
     QWidget,
     QLineEdit,
     QTextEdit,
     QListWidget,
     QMessageBox,
+    QSizePolicy,
     QVBoxLayout,
     QDialogButtonBox,
-    QSizePolicy,
 )
 from services.elog_client import get_logbooks
 
@@ -18,6 +20,7 @@ class ElogPostModal(QDialog):
     def __init__(
         self,
         parent: QWidget = None,
+        image_bytes: bytes | None = None,
     ):
         super().__init__(parent)
 
@@ -29,20 +32,41 @@ class ElogPostModal(QDialog):
         modal_label = SettingsTitle(self, "New Elog Entry", size=14)
         main_layout.addWidget(modal_label)
 
+        if image_bytes is not None:
+            pixmap = QPixmap()
+            pixmap.loadFromData(image_bytes)
+            image_label = QLabel()
+            image_label.setPixmap(pixmap)
+            image_label.setScaledContents(True)
+            image_label.setFixedSize(400, 300)
+            main_layout.addWidget(image_label)
+        else:
+            print("None image")
+
         self.title_edit = QLineEdit(self)
         self.title_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.title_edit.setMinimumWidth(250)
-        title_row = SettingsRowItem(self, "Title", self.title_edit)
+        title_row = SettingsRowItem(self, "Title\n(required)", self.title_edit)
         main_layout.addLayout(title_row)
 
         self.body_edit = QTextEdit(self)
-        body_row = SettingsRowItem(self, "Body", self.body_edit)
+        body_row = SettingsRowItem(self, "Body\n(optional)", self.body_edit)
         main_layout.addLayout(body_row)
 
         self.logbook_list = QListWidget(self)
         self.logbook_list.setSelectionMode(QListWidget.MultiSelection)
         logbook_row = SettingsRowItem(self, "Logbooks", self.logbook_list)
         main_layout.addLayout(logbook_row)
+
+        self.logbook_readback = QLabel()
+        self.logbook_readback.setWordWrap(True)
+        self.logbook_readback.setMinimumWidth(250)
+        self.logbook_readback.setMaximumWidth(350)
+        logbook_readback_row = SettingsRowItem(self, "Selected Logbooks", self.logbook_readback)
+        self.logbook_list.itemSelectionChanged.connect(
+            lambda: self.logbook_readback.setText(", ".join(item.text() for item in self.logbook_list.selectedItems()))
+        )
+        main_layout.addLayout(logbook_readback_row)
 
         buttons = QDialogButtonBox()
         send_button = buttons.addButton("Send", QDialogButtonBox.AcceptRole)
@@ -52,14 +76,17 @@ class ElogPostModal(QDialog):
         send_button.clicked.connect(self.accept)
         main_layout.addWidget(buttons)
 
-    def get_inputs(self):
+    def get_inputs(self) -> tuple[str, str, list[str]]:
+        """
+        Returns the inputs from the dialog as a tuple of (title, body, logbooks).
+        """
         title = self.title_edit.text().strip()
         body = self.body_edit.toPlainText().strip()
         logbooks = [item.text() for item in self.logbook_list.selectedItems()]
         return title, body, logbooks
 
     @classmethod
-    def maybe_create(cls, parent: QWidget = None) -> "ElogPostModal | None":
+    def maybe_create(cls, parent: QWidget = None, image_bytes: bytes | None = None) -> "ElogPostModal | None":
         """
         Creates and shows the ElogPostModal dialog if the logbook list can be populated.
         """
@@ -72,6 +99,6 @@ class ElogPostModal(QDialog):
             )
             return None
 
-        modal = cls(parent)
+        modal = cls(parent, image_bytes=image_bytes)
         modal.logbook_list.addItems(logbooks)
         return modal
