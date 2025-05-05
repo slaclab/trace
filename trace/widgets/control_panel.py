@@ -301,7 +301,7 @@ class CurveItem(QtWidgets.QWidget):
         self.label.returnPressed.connect(self.label.clearFocus)
         pv_settings_layout.addWidget(self.label)
         self.pv_settings_button = QtWidgets.QPushButton()
-        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear", color="#444444"))
+        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))
         self.pv_settings_button.setFlat(True)
         self.pv_settings_modal = None
         self.pv_settings_button.clicked.connect(self.show_settings_modal)
