@@ -1,15 +1,15 @@
 from qtpy.QtGui import QPixmap
 from qtpy.QtWidgets import (
+    QLabel,
     QDialog,
     QWidget,
     QLineEdit,
     QTextEdit,
     QListWidget,
     QMessageBox,
+    QSizePolicy,
     QVBoxLayout,
     QDialogButtonBox,
-    QSizePolicy,
-    QLabel,
 )
 from services.elog_client import get_logbooks
 
@@ -71,8 +71,23 @@ class ElogPostModal(QDialog):
         cancel_button = buttons.addButton(QDialogButtonBox.Cancel)
 
         cancel_button.clicked.connect(self.reject)
-        send_button.clicked.connect(self.accept)
+        send_button.clicked.connect(self.on_submit)
         main_layout.addWidget(buttons)
+
+    def on_submit(self) -> None:
+        """
+        Handles the submission of the dialog. This method is called when the user clicks the 'Send' button.
+        It retrieves the inputs, validates, and closes the dialog.
+        """
+        title, _, logbooks = self.get_inputs()
+        if not title:
+            QMessageBox.warning(self, "Input Error", "Title is required.")
+            return
+        if not logbooks:
+            QMessageBox.warning(self, "Input Error", "At least one logbook must be selected.")
+            return
+
+        self.accept()
 
     def get_inputs(self) -> tuple[str, str, list[str]]:
         """

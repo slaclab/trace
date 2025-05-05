@@ -1,3 +1,9 @@
+"""
+elog_client.py
+
+Elog API client for posting entries and fetching user and logbook information.
+"""
+
 import os
 import json
 
