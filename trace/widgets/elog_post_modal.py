@@ -1,15 +1,15 @@
 from qtpy.QtGui import QPixmap
 from qtpy.QtWidgets import (
-    QLabel,
     QDialog,
     QWidget,
     QLineEdit,
     QTextEdit,
     QListWidget,
     QMessageBox,
-    QSizePolicy,
     QVBoxLayout,
     QDialogButtonBox,
+    QSizePolicy,
+    QLabel,
 )
 from services.elog_client import get_logbooks
 
@@ -40,8 +40,6 @@ class ElogPostModal(QDialog):
             image_label.setScaledContents(True)
             image_label.setFixedSize(400, 300)
             main_layout.addWidget(image_label)
-        else:
-            print("None image")
 
         self.title_edit = QLineEdit(self)
         self.title_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
