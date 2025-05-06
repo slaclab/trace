@@ -16,6 +16,7 @@ from qtpy.QtCore import (
     Slot,
     Signal,
     QObject,
+    QThread,
     QModelIndex,
     QAbstractTableModel,
 )
@@ -52,6 +53,30 @@ if not logger.hasHandlers():
     handler.setLevel("DEBUG")
 
 
+class CAGetThread(QThread):
+    """Thread for making a CA get request to the given address. This is used
+    to get the description of the curve.
+    """
+
+    result_ready = Signal(object)
+
+    def __init__(self, parent: QObject = None, address: str = "") -> None:
+        super().__init__(parent=parent)
+        self.address = address
+        self.stop_flag = False
+
+    def run(self) -> None:
+        value = epics.caget(self.address)
+
+        if self.stop_flag:
+            return
+        self.result_ready.emit(value)
+
+    def stop(self) -> None:
+        """Set the stop flag"""
+        self.stop_flag = True
+
+
 class DataVisualizationModel(QAbstractTableModel):
     """Table Model for fetching and storing the data for a given curve on the
     model. Gathers live data directly from the curve, but makes an HTTP request
@@ -59,6 +84,7 @@ class DataVisualizationModel(QAbstractTableModel):
     """
 
     reply_recieved = Signal()
+    description_changed = Signal()
 
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent)
@@ -67,6 +93,7 @@ class DataVisualizationModel(QAbstractTableModel):
         self.address = None
         self.unit = None
         self.description = None
+        self.caget_thread = None
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.recieve_archive_reply)
@@ -97,6 +124,18 @@ class DataVisualizationModel(QAbstractTableModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.df.columns[section]
 
+    def set_description(self, description: str) -> None:
+        """Set the description of the curve. This is called when the CAGetThread
+        emits a result_ready signal.
+
+        Parameters
+        ----------
+        description : str
+            The description of the curve
+        """
+        self.description = description
+        self.description_changed.emit()
+
     def set_all_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]) -> None:
         """Set the model's data for the given curve and the given time range.
         This function determines what kind of data should be saved and prompts
@@ -110,9 +149,18 @@ class DataVisualizationModel(QAbstractTableModel):
         x_range : Iterable[int]
             The time range to collect and store data between
         """
-        self.address = curve_item.address
+        self.address = curve_item.address if curve_item.address else ""
         self.unit = curve_item.units
-        self.description = epics.caget(curve_item.address + ".DESC")
+
+        # Set the meta data label of the DataInsightTool
+        self.set_description("Loading...")
+
+        # Create a new CAGetThread to get the description of the curve
+        if isinstance(self.caget_thread, CAGetThread) and self.caget_thread.isRunning():
+            self.caget_thread.stop()
+        self.caget_thread = CAGetThread(self, self.address + ".DESC")
+        self.caget_thread.result_ready.connect(self.set_description)
+        self.caget_thread.start()
 
         curve_range = (curve_item.min_x(), curve_item.max_x())
         left_ts = max(x_range[0], curve_range[0])
@@ -140,8 +188,11 @@ class DataVisualizationModel(QAbstractTableModel):
         x_range : Iterable[int]
             The time range to collect and store data between
         """
-        data_n = curve_item.getBufferSize()
-        data = curve_item.data_buffer[:, :data_n]
+        data_n = curve_item.points_accumulated
+        if data_n == 0:
+            return
+
+        data = curve_item.data_buffer[:, -data_n:]
         indices = np.where((x_range[0] <= data[0]) & (data[0] <= x_range[1]))[0]
 
         convert_data = {"Datetime": [], "Value": [], "Severity": []}
@@ -204,8 +255,11 @@ class DataVisualizationModel(QAbstractTableModel):
         self.reply_recieved.emit()
         if reply.error() == QNetworkReply.NoError:
             bytes_str = reply.readAll()
-            data_dict = json.loads(str(bytes_str, "utf-8"))
-            self.set_archive_data(data_dict)
+            try:
+                data_dict = json.loads(str(bytes_str, "utf-8"))
+                self.set_archive_data(data_dict)
+            except json.JSONDecodeError:
+                logger.warning("Data Insight Tool: No data received from archiver")
         else:
             logger.debug(
                 f"Request for data from archiver failed, request url: {reply.url()} retrieved header: "
@@ -304,6 +358,7 @@ class DataInsightTool(QWidget):
         self.layout_init()
 
         self.data_vis_model.reply_recieved.connect(self.loading_label.hide)
+        self.data_vis_model.description_changed.connect(self.set_meta_data)
         self.export_button.clicked.connect(self.export_data_to_file)
         self.pv_select_box.currentIndexChanged.connect(self.get_data)
         self.refresh_button.clicked.connect(self.get_data)
@@ -360,11 +415,12 @@ class DataInsightTool(QWidget):
 
     def set_meta_data(self) -> None:
         """Populate the meta_data_label with the curve's unit (if any) and description."""
-        meta_str = ""
+        meta_labels = []
         if self.data_vis_model.unit:
-            meta_str = self.data_vis_model.unit + ", "
-        meta_str += self.data_vis_model.description
-        self.meta_data_label.setText(meta_str)
+            meta_labels.append(str(self.data_vis_model.unit))
+        if self.data_vis_model.description:
+            meta_labels.append(str(self.data_vis_model.description))
+        self.meta_data_label.setText(", ".join(meta_labels))
 
     def combobox_to_curve(self, combobox_ind: int) -> ArchivePlotCurveItem:
         """Convert an index for the pv_select_box combobox to the corresponding
@@ -389,7 +445,9 @@ class DataInsightTool(QWidget):
         """Populate the pv_select_box with all curves in the plot. This is called
         when the plot is updated.
         """
+        self.pv_select_box.blockSignals(True)
         self.pv_select_box.clear()
+        self.pv_select_box.blockSignals(False)
         curve_names = [c.address for c in self.plot._curves if isinstance(c, ArchivePlotCurveItem)]
         self.pv_select_box.addItems(curve_names)
 
