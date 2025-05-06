@@ -109,8 +109,7 @@ class ControlPanel(QtWidgets.QWidget):
     def handle_formula_accepted(self, formula: str) -> None:
         """Handle the formula accepted from the formula dialog.""" 
         self.add_curve(formula)
-        self.curve_list_changed.emit()
-
+        
     def add_curves(self, pvs: list[str]) -> None:
         for pv in pvs:
             self.add_curve(pv)
@@ -153,20 +152,16 @@ class ControlPanel(QtWidgets.QWidget):
             self.add_axis()
         last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
         
-        # Check if this is a formula curve
         if pv.startswith("f://"):
             last_axis.add_formula_curve(pv)
         else:
             last_axis.add_curve(pv)
         
-        # Get the newly added curve and add it to the dictionary
         new_curve_index = len(self.plot._curves) - 1
         new_curve = self.plot._curves[new_curve_index]
         key = self._generate_pv_key()
         self._curve_dict[key] = new_curve
         
-        # Signal that the curve list has changed
-        self.curve_list_changed.emit()
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
         for axis_item in range(self.axis_list.count()):
@@ -315,7 +310,7 @@ class AxisItem(QtWidgets.QWidget):
 
         plot_curve_item = plot._curves[-1]
         curve_item = CurveItem(plot_curve_item)
-        curve_item.curve_deleted.connect(self.curves_list_changed.emit)
+        curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         self.layout().addWidget(curve_item)
         if not self._expanded:
             self.toggle_expand()
@@ -334,10 +329,8 @@ class AxisItem(QtWidgets.QWidget):
             if var_name not in control_panel.curve_dict:
                 raise ValueError(f"{var_name} is an invalid variable name")
             var_dict[var_name] = control_panel.curve_dict[var_name]
-        
-        print(var_dict)
-
-        plot.addFormulaChannel(
+            
+        formula_curve_item = plot.addFormulaChannel(
             formula=formula,
             name=formula,
             pvs=var_dict,
@@ -345,15 +338,16 @@ class AxisItem(QtWidgets.QWidget):
             useArchiveData=True,
             yAxisName=self.source.name
         )
+        formula_curve_item.redrawCurve()
         self.curves_list_changed.emit()
         
-        plot_curve_item = self.parent().plot._curves[-1]
-        curve_item = CurveItem(plot_curve_item)
+        plot._curves[-1] = formula_curve_item
+        curve_item = CurveItem(formula_curve_item)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
         self.layout().addWidget(curve_item)
         if not self._expanded:
             self.toggle_expand()
-        
+
     def toggle_expand(self):
         if self._expanded:
             for index in range(1, self.layout().count()):
@@ -382,6 +376,16 @@ class AxisItem(QtWidgets.QWidget):
     def handle_range_change(self, _, range):
         self.min_range_line_edit.setText(f"{range[0]:.3g}")
         self.max_range_line_edit.setText(f"{range[1]:.3g}")
+    
+    def handle_curve_deleted(self, curve):
+        self.curves_list_changed.emit()
+
+        control_panel = self.parent()
+
+        for key, value in list(control_panel.curve_dict.items()):
+            if value == curve:
+                del control_panel.curve_dict[key]
+                break
 
     @QtCore.Slot()
     def set_min_range(self, value: float = None):
@@ -468,7 +472,7 @@ class DragHandle(QtWidgets.QPushButton):
 
 
 class CurveItem(QtWidgets.QWidget):
-    curve_deleted = QtCore.Signal()
+    curve_deleted = QtCore.Signal(object)
 
     icon_disconnected = qta.icon("msc.debug-disconnect")
 
@@ -583,5 +587,9 @@ class CurveItem(QtWidgets.QWidget):
         self.plot.removeCurve(self.source)
         self.setParent(None)
         self.deleteLater()
-        self.curve_deleted.emit()
+        
+        if self.parent():
+            self.curve_deleted.emit(curve)
+            
         return super().close()
+

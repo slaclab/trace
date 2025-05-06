@@ -128,6 +128,8 @@ class FormulaDialog(QDialog):
                 self.field.setCursorPosition(cursor_pos + len(key) + 2)
     
 class CurveModel(QAbstractTableModel):
+    curve_deleted = Signal(object)
+
     def __init__(self, control_panel):
         super().__init__()
         self.control_panel = control_panel  
