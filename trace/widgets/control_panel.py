@@ -1,11 +1,14 @@
 import qtawesome as qta
 from qtpy import QtCore, QtWidgets
+from toggle import ToggleSwitch
 from qtpy.QtGui import QCloseEvent
 
 from config import logger
 from widgets import AxisSettingsModal, CurveSettingsModal
 from widgets.table_widgets import ColorButton
 from widgets.archive_search import ArchiveSearchWidget
+
+from toggle import ToggleSwitch
 
 
 class ControlPanel(QtWidgets.QWidget):
@@ -44,7 +47,6 @@ class ControlPanel(QtWidgets.QWidget):
         new_axis_button.clicked.connect(self.add_axis)
         self.layout().addWidget(new_axis_button)
 
-        self.archive_search = ArchiveSearchWidget()
 
     def minimumSizeHint(self):
         inner_size = self.axis_list.minimumSize()
@@ -71,6 +73,7 @@ class ControlPanel(QtWidgets.QWidget):
 
     def search_pv(self):
         if not hasattr(self, "archive_search") or not self.archive_search.isVisible():
+            self.archive_search = ArchiveSearchWidget()
             self.archive_search.insert_button.clicked.connect(
                 lambda: self.add_curves(self.archive_search.selectedPVs())
             )
@@ -176,7 +179,7 @@ class AxisItem(QtWidgets.QWidget):
         self.bottom_settings_layout.addWidget(self.max_range_line_edit)
         self.source.sigYRangeChanged.connect(self.handle_range_change)
 
-        self.active_toggle = QtWidgets.QCheckBox("Active")
+        self.active_toggle = ToggleSwitch("Active")
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
         self.active_toggle.stateChanged.connect(self.set_active)
         self.header_layout.addWidget(self.active_toggle)
@@ -283,7 +286,7 @@ class CurveItem(QtWidgets.QWidget):
         self.source = plot_curve_item
         self.setLayout(QtWidgets.QHBoxLayout())
 
-        self.active_toggle = QtWidgets.QCheckBox("Active")
+        self.active_toggle = ToggleSwitch("Active")
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
         self.active_toggle.stateChanged.connect(self.set_active)
         self.layout().addWidget(self.active_toggle)
@@ -301,7 +304,7 @@ class CurveItem(QtWidgets.QWidget):
         self.label.returnPressed.connect(self.label.clearFocus)
         pv_settings_layout.addWidget(self.label)
         self.pv_settings_button = QtWidgets.QPushButton()
-        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))
+        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear", color="#444444"))
         self.pv_settings_button.setFlat(True)
         self.pv_settings_modal = None
         self.pv_settings_button.clicked.connect(self.show_settings_modal)

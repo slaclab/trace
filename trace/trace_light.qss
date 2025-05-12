@@ -1,0 +1,344 @@
+/* PyDM Application Stylesheet */
+
+/* Global styles */
+QMainWindow, QDialog, QWidget {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #333333;
+}
+
+/* Menu Bar */
+QMenuBar {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #dcdcdc;
+    min-height: 24px;
+    padding: 2px;
+}
+
+QMenuBar::item {
+    padding: 2px 6px;
+    background: transparent;
+    border-radius: 2px;
+}
+
+QMenuBar::item:selected {
+    background-color: #e0e0e0;
+}
+
+QMenu {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+}
+
+QMenu::item {
+    padding: 2px 24px 2px 20px;
+}
+
+QMenu::item:selected {
+    background-color: #e0e0e0;
+}
+
+/* Buttons */
+QPushButton, PyDMPushButton {
+    background-color: #e7e7e7;
+    border: 1px solid #cccccc;
+    border-radius: 2px;
+    min-height: 24px;
+    padding: 2px 8px;
+}
+
+QPushButton:hover, PyDMPushButton:hover {
+    background-color: #d7d7d7;
+}
+
+QPushButton:pressed, PyDMPushButton:pressed {
+    background-color: #c7c7c7;
+}
+
+QPushButton:disabled, PyDMPushButton:disabled {
+    background-color: #f0f0f0;
+    color: #a0a0a0;
+    border: 1px solid #dddddd;
+}
+
+/* Icon buttons - add this to your global stylesheet */
+QPushButton[flat="true"] {
+    background-color: transparent;
+    border: none;
+}
+
+QPushButton[flat="true"]::icon {
+    color: #444444 !important; /* Force dark gray with !important */
+}
+
+/* To prevent any inheritance from other button styles */
+QPushButton[flat="true"]:hover {
+    background-color: transparent;
+}
+
+QPushButton[flat="true"]:pressed {
+    background-color: rgba(200, 200, 200, 30); /* Very slight visible feedback */
+}
+
+/* This might be needed to override any other coloring */
+QPushButton QIcon {
+    color: inherit;
+}
+
+/* Time range buttons group */
+QPushButton[timeRange=true] {
+    background-color: #e7e7e7;
+    min-width: 30px;
+    padding: 2px 5px;
+}
+
+QPushButton[timeRange=true]:checked {
+    background-color: #c0c0c0;
+    border: 1px solid #a0a0a0;
+}
+
+/* Plot button */
+QPushButton#plotButton {
+    background-color: #4a86e8;
+    color: white;
+    border: none;
+    min-width: 60px;
+}
+
+QPushButton#plotButton:hover {
+    background-color: #5a96f8;
+}
+
+QPushButton#plotButton:pressed {
+    background-color: #3a76d8;
+}
+
+
+/* Line edits and input fields */
+QLineEdit, PyDMLineEdit {
+    border: 1px solid #cccccc;
+    border-radius: 2px;
+    background-color: white;
+    padding: 2px 4px;
+    min-height: 22px;
+}
+
+QLineEdit:disabled, PyDMLineEdit:disabled {
+    background-color: #f5f5f5;
+    color: #a0a0a0;
+}
+
+/* Data collection sidebar */
+QGroupBox {
+    border: 1px solid #cccccc;
+    border-radius: 2px;
+    margin-top: 16px;
+    background-color: #f7f7f7;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+}
+
+/* Collapsible sections */
+QWidget[collapsible=true] {
+    border: 1px solid #cccccc;
+    border-radius: 2px;
+    background-color: #f7f7f7;
+}
+
+QLabel[sectionHeader=true] {
+    font-weight: bold;
+    padding: 4px;
+    background-color: #e7e7e7;
+}
+
+/* PV indicators */
+PyDMLabel[pvName=true] {
+    color: #0066cc;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+/* Checkbox styling */
+QCheckBox {
+    spacing: 5px;
+}
+
+QCheckBox::indicator {
+    width: 22px;
+    height: 22px;
+    border: 1px solid #cccccc;
+    border-radius: 3px;
+    background-color: #f8f8f8;
+}
+
+QCheckBox::indicator:unchecked {
+    background-color: #f8f8f8;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #f8f8f8;
+    image: url(check.svg);  /* You'll need to create this SVG file */
+}
+
+QCheckBox::indicator:hover {
+    border: 1px solid #bbbbbb;
+}
+
+QCheckBox::indicator:disabled {
+    border: 1px solid #e0e0e0;
+    background-color: #f5f5f5;
+}
+
+/* Sliders */
+QSlider::groove:horizontal {
+    border: 1px solid #cccccc;
+    height: 8px;
+    background: #f5f5f5;
+    margin: 2px 0;
+    border-radius: 4px;
+}
+
+QSlider::handle:horizontal {
+    background: #4a86e8;
+    border: 1px solid #3a76d8;
+    width: 16px;
+    margin: -5px 0;
+    border-radius: 8px;
+}
+
+/* Toggle switches */
+QSwitch, PyDMSwitch {
+    min-width: 50px;
+    min-height: 22px;
+}
+
+/* PV signal items with colored indicators */
+PyDMChannel {
+    padding: 2px;
+    border-radius: 2px;
+}
+
+PyDMChannel[connected=true] {
+    border-left: 3px solid #27ae60;
+}
+
+PyDMChannel[connected=false] {
+    border-left: 3px solid #e74c3c;
+}
+
+/* Live/Archive indicators */
+QLabel[status="live"] {
+    color: #27ae60;
+}
+
+QLabel[status="archive"] {
+    color: #f39c12;
+}
+
+/* Plot area */
+PyDMTimePlot, PyDMWaveformPlot {
+    background-color: white;
+    border: 1px solid #dcdcdc;
+}
+
+/* Plot settings panel */
+QFrame#plotSettings {
+    background-color: white;
+    border: 1px solid #cccccc;
+    border-radius: 2px;
+}
+
+QFrame#plotSettings QLabel {
+    padding-left: 4px;
+}
+
+/* Status bar */
+QStatusBar {
+    background-color: #f0f0f0;
+    color: #666666;
+    border-top: 1px solid #dcdcdc;
+}
+
+/* Tooltip */
+QToolTip {
+    background-color: #f0f0f0;
+    border: 1px solid #cccccc;
+    color: #333333;
+    padding: 2px;
+}
+
+/* Scrollbars */
+QScrollBar:vertical {
+    border: none;
+    background: #f0f0f0;
+    width: 10px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #cccccc;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background: #f0f0f0;
+    height: 10px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #cccccc;
+    min-width: 20px;
+    border-radius: 5px;
+}
+
+/* Spin Box styling */
+QSpinBox {
+    border: 1px solid #cccccc;
+    border-radius: 2px;
+    background-color: white;
+    padding: 2px 18px 2px 4px;
+    min-height: 22px;
+}
+
+QSpinBox:focus {
+    border: 1px solid #cccccc;
+    outline: none;
+}
+
+QSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 18px;
+    border-left: 1px solid #cccccc;
+    border-bottom: 1px solid #cccccc;
+    background: #e0e0e0;
+}
+
+QSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 18px;
+    border-left: 1px solid #cccccc;
+    background: #e0e0e0;
+}
+
+QSpinBox::up-arrow {
+    image: url("up-arrow.svg");
+    width: 12px;
+    height: 12px;
+    margin-right: 3px;
+}
+
+QSpinBox::down-arrow {
+    image: url("down-arrow.svg");
+    width: 12px;
+    height: 12px;
+    margin-right: 3px;
+}
