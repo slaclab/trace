@@ -53,7 +53,7 @@ class ElogPostModal(QDialog):
 
         self.logbook_list = QListWidget(self)
         self.logbook_list.setSelectionMode(QListWidget.MultiSelection)
-        logbook_row = SettingsRowItem(self, "Logbooks", self.logbook_list)
+        logbook_row = SettingsRowItem(self, "Logbooks\n(required)", self.logbook_list)
         main_layout.addLayout(logbook_row)
 
         self.logbook_readback = QLabel()
