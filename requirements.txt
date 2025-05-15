@@ -8,3 +8,4 @@ mkdocs-material
 mkdocstrings
 mkdocstrings-python
 pre-commit
+python-dotenv

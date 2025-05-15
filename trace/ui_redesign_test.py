@@ -5,14 +5,16 @@ from getpass import getuser
 from datetime import datetime
 
 import qtawesome as qta
-from qtpy.QtGui import QFont
-from qtpy.QtCore import Qt, Slot, QSize, Signal
+from qtpy.QtGui import QFont, QImage
+from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice
 from qtpy.QtWidgets import (
     QLabel,
+    QDialog,
     QWidget,
     QSplitter,
     QFileDialog,
     QHBoxLayout,
+    QMessageBox,
     QPushButton,
     QSizePolicy,
     QSpacerItem,
@@ -21,6 +23,7 @@ from qtpy.QtWidgets import (
     QButtonGroup,
 )
 from pyqtgraph.exporters import ImageExporter
+from services.elog_client import get_user, post_entry
 
 from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
@@ -28,6 +31,7 @@ from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 from config import logger, datetime_pv
 from mixins import FileIOMixin, PlotConfigMixin
 from widgets import ControlPanel, DataInsightTool, PlotSettingsModal
+from widgets.elog_post_modal import ElogPostModal
 
 DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
 
@@ -123,7 +127,9 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         save_image_button = QPushButton("Save Image", toolbar_widget)
         save_image_button.clicked.connect(self.save_plot_image)
         tool_layout.addWidget(save_image_button)
-
+        elog_button = QPushButton("Send to Elog", toolbar_widget)
+        elog_button.clicked.connect(self.elog_button_clicked)
+        tool_layout.addWidget(elog_button)
         tool_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         tool_layout.addSpacerItem(tool_spacer)
 
@@ -240,6 +246,67 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
                 logger.info(f"Saved image file to: {file_path}")
             except Exception as e:
                 logger.error(f"Failed to save image: {e}")
+
+    @Slot()
+    def elog_button_clicked(self) -> bool:
+        """Takes a snapshot of the plot and posts it to the Elog API.
+
+        :return: True if the post was successful, False otherwise."""
+        # Test if API is reachable
+        status_code, _ = get_user()
+        if status_code != 200:
+            error_dialog = QMessageBox()
+            error_dialog.setIcon(QMessageBox.Warning)
+            error_dialog.setWindowTitle("Connection Error")
+            error_dialog.setText("Failed to connect to the Elog API.")
+            error_dialog.setInformativeText(
+                f"""No entry was posted. If this issue persists, please report it in the
+                #elog-general Slack channel. \n\nError Code: {status_code}"""
+            )
+            error_dialog.setStandardButtons(QMessageBox.Ok)
+            error_dialog.exec_()
+            return False
+
+        # Form the request info
+        # Use ImageExporter to take a snapshot of the plot
+        exporter = ImageExporter(self.plot.plotItem)
+        img: QImage = exporter.export(toBytes=True)
+        # Convert Qimage to bytes
+        buffer = QBuffer()
+        buffer.open(QIODevice.ReadWrite)
+        img.save(buffer, "PNG")
+        image_bytes = buffer.data()
+        # Get entry info from user
+        dialog = ElogPostModal.maybe_create(self, image_bytes=image_bytes)
+        if dialog is not None and dialog.exec_() == QDialog.Accepted:
+            title, body, logbooks = dialog.get_inputs()
+        else:
+            return False
+
+        # Post the request to the Elog API
+        status_code, _ = post_entry(title, body, logbooks, image_bytes)
+
+        # Check if the request was successful
+        if status_code == 201:
+            success_dialog = QMessageBox()
+            success_dialog.setIcon(QMessageBox.Information)
+            success_dialog.setWindowTitle("Elog Entry Posted")
+            success_dialog.setText("Elog entry posted successfully!")
+            success_dialog.setStandardButtons(QMessageBox.Ok)
+            success_dialog.exec_()
+            return True
+        else:
+            error_dialog = QMessageBox()
+            error_dialog.setIcon(QMessageBox.Warning)
+            error_dialog.setWindowTitle("Connection Error")
+            error_dialog.setText("Failed to connect to the Elog API.")
+            error_dialog.setInformativeText(
+                f"No entry was posted. If this issue persists, please report it in the \
+                #elog-general Slack channel. \n\nError Code: {status_code}"
+            )
+            error_dialog.setStandardButtons(QMessageBox.Ok)
+            error_dialog.exec_()
+            return False
 
     @Slot()
     def fetch_archive(self) -> None:
