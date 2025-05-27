@@ -105,6 +105,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         multi_axis_plot.sigXRangeChangedManually.connect(self.disable_auto_scroll_button.click)
         plot_side_layout.addWidget(self.plot)
 
+        self.data_insight_tool = DataInsightTool(self)
         self.data_insight_tool.plot = self.plot
 
         self.settings_button = QPushButton(self.plot)
@@ -126,22 +127,11 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         tool_layout.setContentsMargins(0, 0, 0, 0)
         toolbar_widget.setLayout(tool_layout)
 
-        save_image_button = QPushButton("Save Image", toolbar_widget)
-        save_image_button.clicked.connect(self.save_plot_image)
-        tool_layout.addWidget(save_image_button)
-        elog_button = QPushButton("Send to Elog", toolbar_widget)
-        elog_button.clicked.connect(self.elog_button_clicked)
-        tool_layout.addWidget(elog_button)
         tool_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         tool_layout.addSpacerItem(tool_spacer)
 
         timespan_buttons = self.build_timespan_buttons(toolbar_widget)
         tool_layout.addWidget(timespan_buttons)
-
-        self.data_insight_tool = DataInsightTool(self)
-        data_insight_tool_button = QPushButton("Data Insight Tool", toolbar_widget)
-        data_insight_tool_button.clicked.connect(self.data_insight_tool.show)
-        tool_layout.addWidget(data_insight_tool_button)
 
         return toolbar_widget
 
@@ -237,30 +227,28 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         # Create a custom menu for the application
         menu_bar: QMenuBar = app.main_window.ui.menubar
         first_menu = app.main_window.ui.menuFile.menuAction()
-        trace_menu = self.construct_trace_menu()
+        trace_menu = self.construct_trace_menu(menu_bar)
         menu_bar.insertMenu(first_menu, trace_menu)
 
-    def construct_trace_menu(self) -> QMenu:
+    def construct_trace_menu(self, parent: QMenuBar) -> QMenu:
         """Create the menu for the application."""
-        menu = QMenu("Trace")
+        menu = QMenu("Trace", parent)
         save = menu.addAction("Save", self.export_save_file)
         save.setShortcut(QKeySequence("Ctrl+S"))
         save_as = menu.addAction("Save As...", self.export_save_file)
         save_as.setShortcut(QKeySequence("Ctrl+Shift+S"))
         load = menu.addAction("Open Trace Config...", self.import_save_file)
         load.setShortcut(QKeySequence("Ctrl+O"))
-
         menu.addSeparator()
 
         save_image = menu.addAction("Save Plot Image...", self.save_plot_image)
         save_image.setShortcut(QKeySequence("Ctrl+I"))
         save_elog = menu.addAction("Save ELOG Entry...", self.elog_button_clicked)
         save_elog.setShortcut(QKeySequence("Ctrl+E"))
-
         menu.addSeparator()
+
         fetch_archive = menu.addAction("Fetch Archive Data", self.fetch_archive)
         fetch_archive.setShortcut(QKeySequence("Ctrl+F"))
-
         dit_action = menu.addAction("Data Insight Tool...", self.data_insight_tool.show)
         dit_action.setShortcut(QKeySequence("Ctrl+D"))
 
