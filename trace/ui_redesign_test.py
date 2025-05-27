@@ -59,14 +59,6 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
     def minimumSizeHint(self):
         return QSize(700, 350)
 
-    def file_menu_items(self) -> dict:
-        """Add export & import functionality to File menu"""
-        return {
-            "save": (self.export_save_file, "Ctrl+S"),
-            "save_as": (self.export_save_file, "Ctrl+Shift+S"),
-            "load": (self.import_save_file, "Ctrl+L"),
-        }
-
     def build_ui(self) -> None:
         # Set window title
         self.setWindowTitle("Trace")
@@ -237,12 +229,20 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         app.main_window.toggle_status_bar(False)
         app.main_window.ui.actionShow_Status_Bar.setChecked(False)
 
+        # Remove shortcut from the "Open File" menu action
         open_file_action = app.main_window.ui.actionOpen_File
         open_file_action.setText("Open PyDM File...")
         open_file_action.setShortcut(QKeySequence())
 
+        # Create a custom menu for the application
         menu_bar: QMenuBar = app.main_window.ui.menubar
-        menu = QMenu("Trace", menu_bar)
+        first_menu = app.main_window.ui.menuFile.menuAction()
+        trace_menu = self.construct_trace_menu()
+        menu_bar.insertMenu(first_menu, trace_menu)
+
+    def construct_trace_menu(self) -> QMenu:
+        """Create the menu for the application."""
+        menu = QMenu("Trace")
         save = menu.addAction("Save", self.export_save_file)
         save.setShortcut(QKeySequence("Ctrl+S"))
         save_as = menu.addAction("Save As...", self.export_save_file)
@@ -254,9 +254,8 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
 
         save_image = menu.addAction("Save Plot Image...", self.save_plot_image)
         save_image.setShortcut(QKeySequence("Ctrl+I"))
-        save_elog = menu.addAction("Save ELOG Entry...")  # , self.save_elog_entry)
+        save_elog = menu.addAction("Save ELOG Entry...", self.elog_button_clicked)
         save_elog.setShortcut(QKeySequence("Ctrl+E"))
-        save_elog.setEnabled(False)
 
         menu.addSeparator()
         fetch_archive = menu.addAction("Fetch Archive Data", self.fetch_archive)
@@ -265,8 +264,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         dit_action = menu.addAction("Data Insight Tool...", self.data_insight_tool.show)
         dit_action.setShortcut(QKeySequence("Ctrl+D"))
 
-        first_menu = app.main_window.ui.menuFile.menuAction()
-        menu_bar.insertMenu(first_menu, menu)
+        return menu
 
     @Slot()
     def save_plot_image(self) -> None:
