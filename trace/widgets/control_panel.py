@@ -14,6 +14,7 @@ class ControlPanel(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setLayout(QtWidgets.QVBoxLayout())
+        self.setStyleSheet("background-color: white;")
 
         # Create pv plotter layout
         pv_plotter_layout = QtWidgets.QHBoxLayout()
