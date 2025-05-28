@@ -67,6 +67,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         # Create the plotting and control widgets
         plot_side_widget = self.build_plot_side(self)
         control_panel = ControlPanel()
+        control_panel.layout().setContentsMargins(8, 0, 0, 0)
         control_panel.plot = self.plot
         control_panel.curve_list_changed.connect(self.data_insight_tool.update_pv_select_box)
 
@@ -76,6 +77,16 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         main_splitter.addWidget(control_panel)
         main_splitter.setCollapsible(0, False)
         main_splitter.setStretchFactor(0, 1)
+        main_splitter.setHandleWidth(10)
+        main_splitter.setStyleSheet(
+            "\n".join(
+                [
+                    "QSplitter::handle {",
+                    "  background-color: white;",
+                    "}",
+                ]
+            )
+        )
         main_layout.addWidget(main_splitter)
 
         # Create the footer section of the app
@@ -85,6 +96,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
     def build_plot_side(self, parent):
         plot_side_widget = QWidget(parent)
         plot_side_layout = QVBoxLayout()
+        plot_side_layout.setContentsMargins(0, 0, 8, 0)
         plot_side_widget.setLayout(plot_side_layout)
 
         toolbar = self.build_toolbar(plot_side_widget)
