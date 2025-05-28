@@ -33,15 +33,15 @@ from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 from pydm.utilities.macro import parse_macro_string
 
 from config import logger, datetime_pv
-from mixins import FileIOMixin, PlotConfigMixin
 from widgets import ControlPanel, DataInsightTool, PlotSettingsModal
-from trace_file_convert import PathAction
+from file_io.trace_file_convert import PathAction
+from file_io.file_handler import TraceFileHandler
 from widgets.elog_post_modal import ElogPostModal
 
 DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
 
 
-class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
+class TraceDisplay(Display):
     gridline_opacity_change = Signal(int)
 
     def __init__(self, parent=None, args=None, macros=None) -> None:
@@ -241,6 +241,9 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         app.main_window.toggle_status_bar(False)
         app.main_window.ui.actionShow_Status_Bar.setChecked(False)
 
+        # Create a TraceFileController instance for handling file I/O operations
+        self.file_handler = TraceFileHandler(self.plot, self)
+
         # Remove shortcut from the "Open File" menu action
         open_file_action = app.main_window.ui.actionOpen_File
         open_file_action.setText("Open PyDM File...")
@@ -255,11 +258,11 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
     def construct_trace_menu(self, parent: QMenuBar) -> QMenu:
         """Create the menu for the application."""
         menu = QMenu("Trace", parent)
-        save = menu.addAction("Save", self.export_save_file)
+        save = menu.addAction("Save", self.file_handler.export_save_file)
         save.setShortcut(QKeySequence("Ctrl+S"))
-        save_as = menu.addAction("Save As...", self.export_save_file)
+        save_as = menu.addAction("Save As...", self.file_handler.export_save_file)
         save_as.setShortcut(QKeySequence("Ctrl+Shift+S"))
-        load = menu.addAction("Open Trace Config...", self.import_save_file)
+        load = menu.addAction("Open Trace Config...", self.file_handler.import_save_file)
         load.setShortcut(QKeySequence("Ctrl+O"))
         menu.addSeparator()
 
