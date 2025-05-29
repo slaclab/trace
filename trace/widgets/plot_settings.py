@@ -8,6 +8,7 @@ from qtpy.QtWidgets import (
     QWidget,
     QSpinBox,
     QCheckBox,
+    QComboBox,
     QLineEdit,
     QSizePolicy,
     QVBoxLayout,
@@ -47,6 +48,12 @@ class PlotSettingsModal(QWidget):
         legend_row = SettingsRowItem(self, "Show Legend", legend_checkbox)
         main_layout.addLayout(legend_row)
 
+        mouse_mode_checkbox = QComboBox(self)
+        mouse_mode_checkbox.addItems(["Rect", "Pan"])
+        mouse_mode_checkbox.currentTextChanged.connect(self.plot.plotItem.changeMouseMode)
+        mouse_mode_row = SettingsRowItem(self, "Mouse Mode", mouse_mode_checkbox)
+        main_layout.addLayout(mouse_mode_row)
+
         self.as_interval_spinbox = QSpinBox(self)
         self.as_interval_spinbox.setValue(5)
         self.as_interval_spinbox.setMinimum(1)
@@ -69,6 +76,11 @@ class PlotSettingsModal(QWidget):
         self.end_datetime.dateTimeChanged.connect(lambda qdt: self.set_time_axis_range((None, qdt)))
         end_dt_row = SettingsRowItem(self, "End Time", self.end_datetime)
         main_layout.addLayout(end_dt_row)
+
+        crosshair_checkbox = QCheckBox(self)
+        crosshair_checkbox.stateChanged.connect(lambda check: self.plot.enableCrosshair(check, 100, 100))
+        crosshair_row = SettingsRowItem(self, "Show Crosshair", crosshair_checkbox)
+        main_layout.addLayout(crosshair_row)
 
         appearance_label = SettingsTitle(self, "Appearance")
         main_layout.addWidget(appearance_label)
@@ -200,3 +212,4 @@ class PlotSettingsModal(QWidget):
         normalized_opacity = opacity / 255
         self.plot.setShowXGrid(self.x_grid_visible, normalized_opacity)
         self.grid_alpha_change.emit(opacity)
+

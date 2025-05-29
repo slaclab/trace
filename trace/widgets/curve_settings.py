@@ -1,6 +1,6 @@
 from qtpy.QtGui import QColor
 from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import QWidget, QLineEdit, QVBoxLayout
+from qtpy.QtWidgets import QWidget, QLineEdit, QVBoxLayout, QCheckBox
 
 from pydm.widgets.archiver_time_plot import TimePlotCurveItem, PyDMArchiverTimePlot
 
@@ -50,6 +50,11 @@ class CurveSettingsModal(QWidget):
         width_row = SettingsRowItem(self, "  Width", width_combo)
         main_layout.addLayout(width_row)
 
+        extention_option = QCheckBox(self)
+        extention_option.stateChanged.connect(lambda check: self.set_extension_option(bool(check)))
+        extention_option_row = SettingsRowItem(self, "Line Extention", extention_option)
+        main_layout.addLayout(extention_option_row)
+
         symbol_title_label = SettingsTitle(self, "Symbol")
         main_layout.addWidget(symbol_title_label)
 
@@ -91,21 +96,28 @@ class CurveSettingsModal(QWidget):
         self.curve.color = color
 
     @Slot(object)
-    def set_curve_type(self, curve_type: str | None):
+    def set_curve_type(self, curve_type: str | None) -> None:
         self.curve.stepMode = curve_type
 
     @Slot(object)
-    def set_curve_style(self, style: int):
+    def set_curve_style(self, style: int) -> None:
         self.curve.lineStyle = style
 
     @Slot(object)
-    def set_curve_width(self, width: int):
+    def set_curve_width(self, width: int) -> None:
         self.curve.lineWidth = width
 
     @Slot(object)
-    def set_symbol_shape(self, shape: str):
+    def set_symbol_shape(self, shape: str) -> None:
         self.curve.symbol = shape
 
     @Slot(object)
-    def set_symbol_size(self, size: int):
+    def set_symbol_size(self, size: int) -> None:
         self.curve.symbolSize = size
+
+    @Slot(object)
+    def set_extension_option(self, enable: bool) -> None:
+        """Set the line extension based on the checkbox state."""
+        self.curve.show_extension_line = enable
+        self.curve.getViewBox().addItem(self.curve._extension_line)
+        self.curve.redrawCurve()
