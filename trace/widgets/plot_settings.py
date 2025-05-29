@@ -79,7 +79,8 @@ class PlotSettingsModal(QWidget):
         main_layout.addLayout(end_dt_row)
 
         crosshair_checkbox = QCheckBox(self)
-        crosshair_checkbox.stateChanged.connect(lambda check: self.plot.enableCrosshair(check, 100, 100))
+        #crosshair_checkbox.setChecked(True)
+        crosshair_checkbox.stateChanged.connect(lambda check: self.plot.enableCrosshair(check))
         crosshair_row = SettingsRowItem(self, "Show Crosshair", crosshair_checkbox)
         main_layout.addLayout(crosshair_row)
 
