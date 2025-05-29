@@ -1,6 +1,8 @@
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
 
+from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
+
 from config import logger
 from widgets import AxisSettingsModal, CurveSettingsModal
 from widgets.table_widgets import ColorButton
@@ -326,7 +328,9 @@ class DragHandle(QtWidgets.QPushButton):
 class CurveItem(QtWidgets.QWidget):
     curve_deleted = QtCore.Signal()
 
-    def __init__(self, plot_curve_item):
+    icon_disconnected = qta.icon("msc.debug-disconnect")
+
+    def __init__(self, plot_curve_item: ArchivePlotCurveItem):
         super().__init__()
         self.source = plot_curve_item
         self.setLayout(QtWidgets.QHBoxLayout())
@@ -371,10 +375,22 @@ class CurveItem(QtWidgets.QWidget):
         self.live_toggle.setCheckState(QtCore.Qt.Checked if self.source.liveData else QtCore.Qt.Unchecked)
         self.live_toggle.stateChanged.connect(self.set_live_data_connection)
         data_type_layout.addWidget(self.live_toggle)
+        self.live_connection_status = QtWidgets.QLabel()
+        self.live_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
+        self.live_connection_status.setToolTip("Not connected to live data")
+        self.source.live_channel_connection.connect(self.update_live_icon)
+        data_type_layout.addWidget(self.live_connection_status)
+
         self.archive_toggle = QtWidgets.QCheckBox("Archive")
         self.archive_toggle.setCheckState(QtCore.Qt.Checked if self.source.use_archive_data else QtCore.Qt.Unchecked)
         self.archive_toggle.stateChanged.connect(self.set_archive_data_connection)
         data_type_layout.addWidget(self.archive_toggle)
+        self.archive_connection_status = QtWidgets.QLabel()
+        self.archive_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
+        self.archive_connection_status.setToolTip("Not connected to archive data")
+        self.source.archive_channel_connection.connect(self.update_archive_icon)
+        data_type_layout.addWidget(self.archive_connection_status)
+
         data_type_layout.addStretch()
 
     @property
@@ -392,6 +408,12 @@ class CurveItem(QtWidgets.QWidget):
 
     def set_archive_data_connection(self, state: QtCore.Qt.CheckState) -> None:
         self.source.use_archive_data = state == QtCore.Qt.Checked
+
+    def update_live_icon(self, connected: bool) -> None:
+        self.live_connection_status.setVisible(not connected)
+
+    def update_archive_icon(self, connected: bool) -> None:
+        self.archive_connection_status.setVisible(not connected)
 
     @QtCore.Slot()
     def show_settings_modal(self):
