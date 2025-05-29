@@ -1,13 +1,13 @@
 from datetime import datetime
 
 from pyqtgraph import ViewBox
+from toggle import ToggleSwitch
 from qtpy.QtGui import QFont
 from qtpy.QtCore import Qt, Slot, Signal, QDateTime
 from qtpy.QtWidgets import (
     QSlider,
     QWidget,
     QSpinBox,
-    QCheckBox,
     QLineEdit,
     QSizePolicy,
     QVBoxLayout,
@@ -42,7 +42,7 @@ class PlotSettingsModal(QWidget):
         plot_title_row = SettingsRowItem(self, "Title", plot_title_line_edit)
         main_layout.addLayout(plot_title_row)
 
-        legend_checkbox = QCheckBox(self)
+        legend_checkbox = ToggleSwitch(self)
         legend_checkbox.stateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
         legend_row = SettingsRowItem(self, "Show Legend", legend_checkbox)
         main_layout.addLayout(legend_row)
@@ -85,7 +85,7 @@ class PlotSettingsModal(QWidget):
         x_axis_font_size_row = SettingsRowItem(self, "  X Axis Font Size", x_axis_font_size_spinbox)
         main_layout.addLayout(x_axis_font_size_row)
 
-        self.x_grid_checkbox = QCheckBox(self)
+        self.x_grid_checkbox = ToggleSwitch(self)
         self.x_grid_checkbox.stateChanged.connect(self.show_x_grid)
         x_grid_row = SettingsRowItem(self, "  X Axis Gridline", self.x_grid_checkbox)
         main_layout.addLayout(x_grid_row)
