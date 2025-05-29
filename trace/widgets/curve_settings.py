@@ -115,11 +115,9 @@ class CurveSettingsModal(QWidget):
     def set_symbol_size(self, size: int) -> None:
         self.curve.symbolSize = size
 
-    @Slot(bool)
+    @Slot(object)
     def set_extension_option(self, show: bool) -> None:
         """Set the line extension based on the checkbox state."""
-        if show:
-            self.curve.show_extension_line = True
-        else:
-            self.curve.show_extension_line = False
+        self.curve.show_extension_line = show
+
 
