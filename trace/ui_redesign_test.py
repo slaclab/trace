@@ -1,4 +1,5 @@
 import os
+import argparse
 import subprocess
 from socket import gethostname
 from getpass import getuser
@@ -29,10 +30,12 @@ from services.elog_client import get_user, post_entry
 
 from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
+from pydm.utilities.macro import parse_macro_string
 
 from config import logger, datetime_pv
 from mixins import FileIOMixin, PlotConfigMixin
 from widgets import ControlPanel, DataInsightTool, PlotSettingsModal
+from trace_file_convert import PathAction
 from widgets.elog_post_modal import ElogPostModal
 
 DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
@@ -50,6 +53,12 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         # Set plot's timerange after the UI is built
         default_button = self.timespan_buttons.button(3600)
         default_button.setChecked(True)
+
+        input_file, startup_pvs = self.parse_cli_args(args, macros)
+        if input_file:
+            self.import_save_file(input_file)
+        for pv in startup_pvs:
+            self.layout().itemAt(0).widget().widget(1).add_curve(pv)
 
     @property
     def gridline_opacity(self) -> int:
@@ -399,6 +408,103 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
             f"cd {project_directory} && git describe --tags", text=True, shell=True, capture_output=True
         )
         return git_cmd.stdout.strip()
+
+    def parse_cli_args(self, args, macros):
+        """"""
+        args = args or []
+        macros = macros or {}
+
+        parser = argparse.ArgumentParser(
+            prog="trace",
+            description="Trace\nThis is a PyDM application used to display archived and live pv data.",
+            epilog="\n\t".join(
+                [
+                    "Examples:",
+                    "pydm $PHYSICS_TOP/trace/main.py"
+                    "bash $PHYSICS_TOP/trace/launch_trace.bash"
+                    "%(prog)s"
+                    "%(prog)s -i some_input_file.trc"
+                    "%(prog)s -p SOME:PV:TO:PLOT OTHER:PV:TO:PLOT"
+                    '%(prog)s -m \'{"PVS": ["FOO:CHANNEL", "BAR:CHANNEL", "f://{A}+{B}"]}\''
+                    '%(prog)s -m "INPUT_FILE = trace/examples/FormulaExample.trc"',
+                ]
+            ),
+            formatter_class=argparse.RawTextHelpFormatter,
+        )
+
+        parser.add_argument("-v", "--version", action="version", version="%(prog)s " + self.git_version())
+        parser.add_argument(
+            "-i",
+            "--input_file",
+            action=PathAction,
+            nargs="?",
+            default=[],
+            help="Absolute file path to import from\nAlternatively can be provided as INPUT_FILE macro",
+        )
+        parser.add_argument(
+            "-p",
+            "--pvs",
+            nargs="*",
+            default=[],
+            help="\n".join(
+                [
+                    "Space-separated list of PVs to show on startup",
+                    "Formulas should be passed without spaces: f://{A}+{B}",
+                    "Alternatively can be provided as PV or PVS macros",
+                ]
+            ),
+        )
+        parser.add_argument(
+            "-m",
+            "--macro",
+            default="",
+            help="\n\t".join(
+                [
+                    "Mimic PyDM macro replacements to use. Should be in JSON object format.",
+                    "ON Formatting Reminder:",
+                    "JSON requires double quotes for strings, so you should wrap this",
+                    "whole argument in single quotes.",
+                    "--or--",
+                    "Specify macro replacements as KEY=value pairs using a comma as a",
+                    "delimiter. If you want to uses spaces after the delimiters or around",
+                    "the '=' signs, wrap the entire set with quotes.",
+                ]
+            ),
+        )
+
+        # Parse arguments and ignore unknowns
+        known, unknown = parser.parse_known_args(args)
+        for arg in unknown:
+            if arg:
+                logger.warning(f"Not using unknown argument: {arg}")
+
+        # Parse any macros passed into trace
+        if known.macro:
+            parsed_macros = parse_macro_string(known.macro)
+            macros.update(**parsed_macros)
+
+        # Get the file to import from if one is provided. Prioritize args over macro
+        try:
+            # Need to unpack as PathAction returns a list
+            input_file = known.input_file[0]
+        except IndexError:
+            input_file = macros.get("INPUT_FILE", "")
+
+        # Get the list of PVs to show on startup
+        startup_pvs = []
+        for key in ("PV", "PVS"):
+            if key in macros:
+                val = macros[key]
+                if isinstance(val, str):
+                    startup_pvs.append(val)
+                elif isinstance(val, list):
+                    startup_pvs.extend(val)
+        startup_pvs += known.pvs
+
+        # Remove duplicates from startup_pvs
+        startup_pvs = list(dict.fromkeys(startup_pvs))
+
+        return (input_file, startup_pvs)
 
 
 class BreakerLabel(QLabel):
