@@ -1,6 +1,5 @@
 import qtawesome as qta
-from qtpy import QtCore, QtWidgets
-from qtpy.QtGui import QCloseEvent
+from qtpy import QtGui, QtCore, QtWidgets
 
 from config import logger
 from widgets import AxisSettingsModal, CurveSettingsModal
@@ -112,7 +111,7 @@ class ControlPanel(QtWidgets.QWidget):
         last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
         last_axis.add_curve(pv)
 
-    def closeEvent(self, a0: QCloseEvent):
+    def closeEvent(self, a0: QtGui.QCloseEvent):
         for axis_item in range(self.axis_list.count()):
             axis_item.close()
         super().closeEvent(a0)
@@ -125,6 +124,7 @@ class AxisItem(QtWidgets.QWidget):
         super().__init__()
         self.source = plot_axis_item
         self.setLayout(QtWidgets.QVBoxLayout())
+        self.setAcceptDrops(True)
 
         self.header_layout = QtWidgets.QHBoxLayout()
         self.layout().addLayout(self.header_layout)
@@ -181,6 +181,10 @@ class AxisItem(QtWidgets.QWidget):
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
         self.active_toggle.stateChanged.connect(self.set_active)
         self.header_layout.addWidget(self.active_toggle)
+
+        self.placeholder = QtWidgets.QWidget(self)
+        self.placeholder.hide()
+        self.placeholder.setStyleSheet("background-color: lightgrey;")
 
     @property
     def plot(self):
@@ -264,6 +268,44 @@ class AxisItem(QtWidgets.QWidget):
             self.settings_modal = AxisSettingsModal(self.settings_button, self.plot, self.source)
         self.settings_modal.show()
 
+    def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
+        if event.possibleActions() & QtCore.Qt.MoveAction:
+            event.acceptProposedAction()
+            self.placeholder.setMinimumSize(event.source().size())
+            self.placeholder.show()
+            if not self._expanded:
+                self.toggle_expand()
+
+    def dragMoveEvent(self, event: QtGui.QDragMoveEvent):
+        item = self.childAt(event.position().toPoint())
+        if item != self.placeholder:
+            self.layout().removeWidget(self.placeholder)
+            index = self.layout().indexOf(item) + 1  # drop below target row
+            index = max(1, index)  # don't drop above axis detail row
+            self.layout().insertWidget(index, self.placeholder)
+
+    def dragLeaveEvent(self, event: QtGui.QDragLeaveEvent):
+        event.accept()
+        self.layout().removeWidget(self.placeholder)
+        self.placeholder.hide()
+
+    def dropEvent(self, event: QtGui.QDropEvent):
+        event.accept()
+        curve_item = event.source()
+        curve_item.curve_deleted.disconnect()
+        curve_item.curve_deleted.connect(self.curves_list_changed.emit)
+        curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
+        self.plot.plotItem.unlinkDataFromAxis(curve_item.source)
+        self.plot.plotItem.linkDataToAxis(curve_item.source, self.source.name)
+        curve_item.source.y_axis_name = self.source.name
+
+        self.layout().removeWidget(curve_item)  # in case we're reordering within an AxisItem
+        self.layout().replaceWidget(self.placeholder, curve_item)
+        self.placeholder.hide()
+        if not self._expanded:
+            self.toggle_expand()
+        self.curves_list_changed.emit()
+
     def close(self) -> bool:
         while self.layout().count() > 1:
             self.layout().itemAt(1).widget().close()
@@ -276,6 +318,11 @@ class AxisItem(QtWidgets.QWidget):
         return super().close()
 
 
+class DragHandle(QtWidgets.QPushButton):
+    def mousePressEvent(self, event: QtGui.QMouseEvent):
+        event.ignore()
+
+
 class CurveItem(QtWidgets.QWidget):
     curve_deleted = QtCore.Signal()
 
@@ -283,6 +330,13 @@ class CurveItem(QtWidgets.QWidget):
         super().__init__()
         self.source = plot_curve_item
         self.setLayout(QtWidgets.QHBoxLayout())
+
+        self.handle = DragHandle()
+        self.handle.setFlat(True)
+        self.handle.setIcon(qta.icon("ph.dots-six-vertical", scale_factor=1.5))
+        self.handle.setStyleSheet("border: None;")
+        self.handle.setCursor(QtGui.QCursor(QtCore.Qt.OpenHandCursor))
+        self.layout().addWidget(self.handle)
 
         self.active_toggle = QtWidgets.QCheckBox("Active")
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
@@ -350,6 +404,16 @@ class CurveItem(QtWidgets.QWidget):
         if pv is None and self.sender():
             pv = self.sender().text()
         self.source.address = pv
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent):
+        if event.button() == QtCore.Qt.LeftButton and self.handle.geometry().contains(event.position().toPoint()):
+            self.hide()  # hide actual widget so it doesn't conflict with pixmap on cursor
+            drag = QtGui.QDrag(self)
+            drag.setMimeData(QtCore.QMimeData())
+            drag.setPixmap(self.grab())
+            drag.setHotSpot(self.handle.geometry().center())
+            drag.exec()
+            self.show()  # show curve after drag, even if it ended outside of an axis
 
     def close(self) -> bool:
         self.plot.removeCurve(self.source)
