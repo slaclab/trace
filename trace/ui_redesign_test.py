@@ -243,6 +243,11 @@ class TraceDisplay(Display):
 
         # Create a TraceFileController instance for handling file I/O operations
         self.file_handler = TraceFileHandler(self.plot, self)
+        # self.file_handler.set_axes_signal.connect()
+        # self.file_handler.set_curves_signal.connect()
+        # self.file_handler.set_plot_signal.connect()
+        # self.file_handler.set_auto_scroll_signal.connect()
+        # self.file_handler.set_timespan_signal.connect()
 
         # Remove shortcut from the "Open File" menu action
         open_file_action = app.main_window.ui.actionOpen_File
@@ -258,11 +263,11 @@ class TraceDisplay(Display):
     def construct_trace_menu(self, parent: QMenuBar) -> QMenu:
         """Create the menu for the application."""
         menu = QMenu("Trace", parent)
-        save = menu.addAction("Save", self.file_handler.export_save_file)
+        save = menu.addAction("Save", self.file_handler.save_file)
         save.setShortcut(QKeySequence("Ctrl+S"))
-        save_as = menu.addAction("Save As...", self.file_handler.export_save_file)
+        save_as = menu.addAction("Save As...", self.file_handler.save_as)
         save_as.setShortcut(QKeySequence("Ctrl+Shift+S"))
-        load = menu.addAction("Open Trace Config...", self.file_handler.import_save_file)
+        load = menu.addAction("Open Trace Config...", self.file_handler.open_file)
         load.setShortcut(QKeySequence("Ctrl+O"))
         menu.addSeparator()
 

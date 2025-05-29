@@ -3,7 +3,7 @@ from typing import Union
 from pathlib import Path
 from urllib.parse import urlparse
 
-from qtpy.QtCore import QObject
+from qtpy.QtCore import Slot, Signal, QObject
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
 from pydm.widgets.archiver_time_plot import PyDMArchiverTimePlot
@@ -14,58 +14,84 @@ from file_io.trace_file_convert import TraceFileConverter
 
 
 class TraceFileHandler(QObject):
+    set_axes_signal = Signal(list)
+    set_curves_signal = Signal(list)
+    set_plot_settings_signal = Signal(dict)
+    set_timespan_signal = Signal(tuple)
+    set_auto_scroll_signal = Signal(bool, float)
+
     def __init__(self, plot: PyDMArchiverTimePlot, parent=None):
         """Initialize the File IO Manager, which is responsible for managing
         the import and export of Trace save files
         """
         super().__init__(parent)
         self.plot = plot
-        self.io_path = save_file_dir
+        self.current_file = None
+        self.current_dir = save_file_dir
         self.converter = TraceFileConverter()
 
-    def export_save_file(self) -> None:
+    @Slot()
+    def save_file(self) -> None:
+        """Export the current plot data to the current file"""
+        if self.current_file is None:
+            logger.debug("No current file set, prompting for save location")
+            self.save_as()
+            return
+        elif not self.current_file.match("*.trc"):
+            self.current_file = self.current_file.with_suffix(".trc")
+
+        try:
+            logger.debug(f"Attempting to export to file: {self.current_file}")
+            self.converter.export_file(self.current_file, self.plot)
+        except FileNotFoundError as e:
+            logger.error(str(e))
+            self.save_as()
+
+    @Slot()
+    def save_as(self) -> None:
         """Prompt the user for a file to export config data to"""
         file_name, _ = QFileDialog.getSaveFileName(
-            self.parent(), "Save Trace", str(self.io_path), "Trace Save File (*.trc)"
+            self.parent(), "Save Trace", str(self.current_dir), "Trace Save File (*.trc)"
         )
-        file_name = Path(file_name)
-        if file_name.is_dir():
+        file_path = Path(file_name)
+        if file_path.is_dir():
             logger.warning("No file name provided to export save file to")
             return
 
-        try:
-            logger.debug(f"Attempting to export to file: {file_name}")
-            self.io_path = file_name.parent
-            self.converter.export_file(file_name, self.plot)
-        except FileNotFoundError as e:
-            logger.error(str(e))
-            self.export_save_file()
+        self.current_file = file_path
+        self.current_dir = file_path.parent
 
-    def import_save_file(self, file_name: Union[str, Path] = None) -> None:
-        """Prompt the user for which config file to import from"""
+        self.save_file()
+
+    @Slot()
+    @Slot(str)
+    @Slot(Path)
+    def open_file(self, file_name: Union[str, Path] = None) -> None:
+        """Prompt the user for which config file to load from"""
         # Get the save file from the user
         if not file_name:
             file_name, _ = QFileDialog.getOpenFileName(
                 self.parent(),
                 "Open Trace",
-                str(self.io_path),
+                str(self.current_dir),
                 "Trace Save File (*.trc *.xml *.stp);;Java Archive Viewer (*.xml);;"
                 + "StripTool File (*.stp);;All Files (*)",
             )
-        file_name = Path(file_name)
-        if not file_name.is_file():
-            logger.warning(f"Attempted import is not a file: {file_name}")
+        file_path = Path(file_name)
+        if not file_path.is_file():
+            logger.warning(f"Attempted import is not a file: {file_path}")
             return
 
         # Import the given file, and convert it from Java Archive Viewer's
         # format to Trace's format if necessary
         try:
-            logger.debug(f"Attempting to import file: {file_name}")
-            file_data = self.converter.import_file(file_name)
-            self.io_path = file_name.parent
+            logger.debug(f"Attempting to import file: {file_path}")
+            file_data = self.converter.import_file(file_path)
+            self.current_file = file_path
+            self.current_dir = file_path.parent
         except (FileNotFoundError, ValueError) as e:
             logger.error(str(e))
-            self.import_save_file()
+            self.open_file()
             return
 
         # Confirm the PYDM_ARCHIVER_URL is the same as the imported Archiver URL
@@ -96,21 +122,25 @@ class TraceFileHandler(QObject):
             logger.debug(f"Ending time: {end_dt}")
         except ValueError as e:
             logger.error(str(e))
-            self.import_save_file()
+            self.open_file()
             return
 
         # Set the models to use the file data
-        self.axis_table_model.set_model_axes(file_data["y-axes"])
-        self.curves_model.set_model_curves(file_data["curves"] + file_data["formula"])
-        self.plot_setup(file_data["plot"])
+        self.set_axes_signal.emit(file_data["y-axes"])
+        self.set_curves_signal.emit(file_data["curves"] + file_data["formula"])
+        self.set_plot_settings_signal.emit(file_data["plot"])
+        # set_timespan_signal = Signal(tuple)
+        # set_auto_scroll_signal = Signal(bool, float)
 
         # Enable auto scroll if the end time is "now"
-        self.ui.cursor_scale_btn.click()
+        # self.ui.cursor_scale_btn.click()
         if end_str == "now":
             delta = end_dt - start_dt
             timespan = delta.total_seconds()
-            self.plot.setAutoScroll(True, timespan)
+            # self.plot.setAutoScroll(True, timespan)
+            self.set_auto_scroll_signal.emit(True, timespan)
         else:
             x_range = (start_dt.timestamp(), end_dt.timestamp())
-            self.plot.plotItem.disableXAutoRange()
-            self.plot.plotItem.setXRange(*x_range)
+            # self.plot.plotItem.disableXAutoRange()
+            # self.plot.plotItem.setXRange(*x_range)
+            self.set_timespan_signal.emit(x_range)
