@@ -276,8 +276,11 @@ class AxisItem(QtWidgets.QWidget):
 
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent):
         item = self.childAt(event.position().toPoint())
-        index = self.layout().indexOf(item) + 1  # drop below target row
-        self.layout().insertWidget(index, self.placeholder)
+        if item != self.placeholder:
+            self.layout().removeWidget(self.placeholder)
+            index = self.layout().indexOf(item) + 1  # drop below target row
+            index = max(1, index)  # don't drop above axis detail row
+            self.layout().insertWidget(index, self.placeholder)
 
     def dragLeaveEvent(self, event: QtGui.QDragLeaveEvent):
         event.accept()
