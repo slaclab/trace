@@ -273,6 +273,8 @@ class AxisItem(QtWidgets.QWidget):
             event.acceptProposedAction()
             self.placeholder.setMinimumSize(event.source().size())
             self.placeholder.show()
+            if not self._expanded:
+                self.toggle_expand()
 
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent):
         item = self.childAt(event.position().toPoint())
