@@ -2,11 +2,8 @@ import re
 
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
-from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
-from qtpy.QtGui import QCloseEvent
-import re
 
-from pydm.widgets.archiver_time_plot import FormulaCurveItem
+from pydm.widgets.archiver_time_plot import FormulaCurveItem, ArchivePlotCurveItem
 
 from config import logger
 from widgets import AxisSettingsModal, CurveSettingsModal
@@ -73,7 +70,7 @@ class ControlPanel(QtWidgets.QWidget):
         inner_size = self.axis_list.minimumSize()
         buffer = self.pv_line_edit.font().pointSize() * 3
         return QtCore.QSize(inner_size.width() + buffer, inner_size.height())
-        
+
     def add_curve_from_line_edit(self):
         pv = self.pv_line_edit.text()
         self.add_curve(pv)
@@ -464,14 +461,11 @@ class AxisItem(QtWidgets.QWidget):
         return super().close()
 
 
-<<<<<<< HEAD
 class DragHandle(QtWidgets.QPushButton):
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         event.ignore()
 
 
-=======
->>>>>>> ce6d81b (ran precommit to clean up code)
 class CurveItem(QtWidgets.QWidget):
     curve_deleted = QtCore.Signal(object)
 
@@ -584,7 +578,7 @@ class CurveItem(QtWidgets.QWidget):
             drag.exec()
             self.show()  # show curve after drag, even if it ended outside of an axis
 
-    def close(self) -> bool:        
+    def close(self) -> bool:
         curve = self.source
         control_panel = self.parent().parent()
 
