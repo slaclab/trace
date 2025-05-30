@@ -1,15 +1,19 @@
+import re
+
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
 from qtpy.QtGui import QCloseEvent
 import re
+
+from pydm.widgets.archiver_time_plot import FormulaCurveItem
+
 from config import logger
 from widgets import AxisSettingsModal, CurveSettingsModal
 from widgets.table_widgets import ColorButton
 from widgets.archive_search import ArchiveSearchWidget
 from widgets.formula_dialog import FormulaDialog
 
-from pydm.widgets.archiver_time_plot import FormulaCurveItem
 
 class ControlPanel(QtWidgets.QWidget):
     curve_list_changed = QtCore.Signal()
@@ -107,9 +111,9 @@ class ControlPanel(QtWidgets.QWidget):
 
     @QtCore.Slot(str)
     def handle_formula_accepted(self, formula: str) -> None:
-        """Handle the formula accepted from the formula dialog.""" 
+        """Handle the formula accepted from the formula dialog."""
         self.add_curve(formula)
-        
+
     def add_curves(self, pvs: list[str]) -> None:
         for pv in pvs:
             self.add_curve(pv)
@@ -136,13 +140,13 @@ class ControlPanel(QtWidgets.QWidget):
     def curve_dict(self):
         """Return dictionary of curves with PV keys"""
         return self._curve_dict
-        
+
     def _generate_pv_key(self):
         """Generate a unique PV key (PV1, PV2, etc.)"""
         key = f"PV{self._next_var_number}"
         self._next_var_number += 1
         return key
-    
+
     @QtCore.Slot()
     def add_curve(self, pv: str = None):
         if pv is None and self.sender():
@@ -151,17 +155,16 @@ class ControlPanel(QtWidgets.QWidget):
         if self.axis_list.count() == 1:  # the stretch makes count >= 1
             self.add_axis()
         last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
-        
+
         if pv.startswith("f://"):
             last_axis.add_formula_curve(pv)
         else:
             last_axis.add_curve(pv)
-        
+
         new_curve_index = len(self.plot._curves) - 1
         new_curve = self.plot._curves[new_curve_index]
         key = self._generate_pv_key()
         self._curve_dict[key] = new_curve
-        
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
         for axis_item in range(self.axis_list.count()):
@@ -220,7 +223,7 @@ class ControlPanel(QtWidgets.QWidget):
             except SyntaxError:
                 raise SyntaxError("Invalid Input")
         return pvdict
-    
+
 
 class AxisItem(QtWidgets.QWidget):
     curves_list_changed = QtCore.Signal()
@@ -321,26 +324,21 @@ class AxisItem(QtWidgets.QWidget):
 
         index = len(plot._curves)
         color = ColorButton.index_color(index)
-        
+
         var_names = re.findall(r"{(.+?)}", formula)
         var_dict = {}
-            
+
         for var_name in var_names:
             if var_name not in control_panel.curve_dict:
                 raise ValueError(f"{var_name} is an invalid variable name")
             var_dict[var_name] = control_panel.curve_dict[var_name]
-            
+
         formula_curve_item = plot.addFormulaChannel(
-            formula=formula,
-            name=formula,
-            pvs=var_dict,
-            color=color,
-            useArchiveData=True,
-            yAxisName=self.source.name
+            formula=formula, name=formula, pvs=var_dict, color=color, useArchiveData=True, yAxisName=self.source.name
         )
         formula_curve_item.redrawCurve()
         self.curves_list_changed.emit()
-        
+
         plot._curves[-1] = formula_curve_item
         curve_item = CurveItem(formula_curve_item)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
@@ -376,7 +374,7 @@ class AxisItem(QtWidgets.QWidget):
     def handle_range_change(self, _, range):
         self.min_range_line_edit.setText(f"{range[0]:.3g}")
         self.max_range_line_edit.setText(f"{range[1]:.3g}")
-    
+
     def handle_curve_deleted(self, curve):
         self.curves_list_changed.emit()
 
@@ -466,11 +464,14 @@ class AxisItem(QtWidgets.QWidget):
         return super().close()
 
 
+<<<<<<< HEAD
 class DragHandle(QtWidgets.QPushButton):
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         event.ignore()
 
 
+=======
+>>>>>>> ce6d81b (ran precommit to clean up code)
 class CurveItem(QtWidgets.QWidget):
     curve_deleted = QtCore.Signal(object)
 
@@ -583,13 +584,25 @@ class CurveItem(QtWidgets.QWidget):
             drag.exec()
             self.show()  # show curve after drag, even if it ended outside of an axis
 
-    def close(self) -> bool:
-        self.plot.removeCurve(self.source)
+    def close(self) -> bool:        
+        curve = self.source
+        control_panel = self.parent().parent()
+
+        try:
+            control_panel.plot.removeCurve(self.source)
+        except ValueError as e:
+            logger.debug(f"Warning: Curve already removed: {e}")
+
+        for key, value in list(control_panel._curve_dict.items()):
+            if value == curve:
+                del control_panel._curve_dict[key]
+                control_panel.curve_list_changed.emit()
+                break
+
         self.setParent(None)
         self.deleteLater()
-        
+
         if self.parent():
             self.curve_deleted.emit(curve)
-            
-        return super().close()
 
+        return super().close()

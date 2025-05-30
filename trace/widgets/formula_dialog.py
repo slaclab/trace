@@ -1,6 +1,7 @@
 import re
+
 from qtpy.QtGui import QKeyEvent
-from qtpy.QtCore import Qt, Slot, QObject, QAbstractTableModel, QModelIndex, Signal
+from qtpy.QtCore import Qt, Slot, Signal, QObject, QModelIndex, QAbstractTableModel
 from qtpy.QtWidgets import (
     QDialog,
     QLineEdit,
@@ -11,7 +12,6 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QAbstractItemView,
 )
-from config import logger
 
 
 class FormulaDialog(QDialog):
@@ -19,6 +19,7 @@ class FormulaDialog(QDialog):
     curves, they have the option to input a formula. They could opt to type it
     instead, but this opens a box that is a nicer UI for inputting a formula.
     """
+
     formula_accepted = Signal(str)
 
     def __init__(self, parent: QObject) -> None:
@@ -38,10 +39,10 @@ class FormulaDialog(QDialog):
         # Hide all columns unused. Leave one to add a button to
         header = self.pv_list.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
-        
+
         layout.addWidget(self.pv_list)
         layout.addWidget(self.field)
-        
+
         self.pv_list.doubleClicked.connect(self.insert_pv_key)
 
         # Define the list of calculator buttons.
@@ -122,19 +123,20 @@ class FormulaDialog(QDialog):
                 current_text = self.field.text()
                 cursor_pos = self.field.cursorPosition()
                 # Add the variable with curly braces
-                new_text = current_text[:cursor_pos] + '{' + key + '}' + current_text[cursor_pos:]
+                new_text = current_text[:cursor_pos] + "{" + key + "}" + current_text[cursor_pos:]
                 self.field.setText(new_text)
                 # Move cursor after the inserted variable (key length + 2 characters for braces)
                 self.field.setCursorPosition(cursor_pos + len(key) + 2)
-    
+
+
 class CurveModel(QAbstractTableModel):
     curve_deleted = Signal(object)
 
     def __init__(self, control_panel):
         super().__init__()
-        self.control_panel = control_panel  
-        self._headers = ["Variable Name", "Curve Name"]  
-    
+        self.control_panel = control_panel
+        self._headers = ["Variable Name", "Curve Name"]
+
     def _get_plot(self):
         """Safely get the plot from the control panel"""
         try:
@@ -145,34 +147,34 @@ class CurveModel(QAbstractTableModel):
             return None
         except AttributeError:
             return None
-    
+
     def rowCount(self, parent=QModelIndex()):
         if hasattr(self.control_panel, "curve_dict"):
             return len(self.control_panel.curve_dict)
         return 0
-    
+
     def columnCount(self, parent=QModelIndex()):
         return len(self._headers)
-    
+
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
-        
+
         if not hasattr(self.control_panel, "curve_dict"):
             return None
-            
+
         curve_dict = self.control_panel.curve_dict
         if len(curve_dict) == 0:
             return None
-            
+
         # Get the key at this row
         keys = list(curve_dict.keys())
         if index.row() >= len(keys):
             return None
-            
+
         key = keys[index.row()]
         curve = curve_dict[key]
-            
+
         if role == Qt.DisplayRole:
             if index.column() == 0:
                 return key
@@ -185,15 +187,13 @@ class CurveModel(QAbstractTableModel):
                     return curve.address
                 return str(curve)
         return None
-    
+
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._headers[section]
         return None
-    
+
     def refresh(self):
         """Force a refresh of the model data"""
         self.beginResetModel()
         self.endResetModel()
-
-    
