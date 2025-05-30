@@ -212,4 +212,3 @@ class PlotSettingsModal(QWidget):
         normalized_opacity = opacity / 255
         self.plot.setShowXGrid(self.x_grid_visible, normalized_opacity)
         self.grid_alpha_change.emit(opacity)
-

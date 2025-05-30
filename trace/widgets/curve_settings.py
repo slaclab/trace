@@ -1,6 +1,6 @@
 from qtpy.QtGui import QColor
 from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import QWidget, QLineEdit, QVBoxLayout, QCheckBox
+from qtpy.QtWidgets import QWidget, QCheckBox, QLineEdit, QVBoxLayout
 
 from pydm.widgets.archiver_time_plot import TimePlotCurveItem, PyDMArchiverTimePlot
 

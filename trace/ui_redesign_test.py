@@ -110,7 +110,6 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
             cache_data=False,
             show_all=False,
         )
-        
 
         multi_axis_plot = self.plot.plotItem
         multi_axis_plot.vb.menu = None
