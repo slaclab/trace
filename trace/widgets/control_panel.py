@@ -153,19 +153,42 @@ class ControlPanel(QtWidgets.QWidget):
         if pv is None and self.sender():
             pv = self.sender().text()
 
-        if self.axis_list.count() == 1:  # the stretch makes count >= 1
+        plot = self.plot
+        index = len(plot._curves)
+        color = ColorButton.index_color(index)
+        plot.addYChannel(
+            y_channel=pv,
+            name=pv,
+            color=color,
+            useArchiveData=True,
+            yAxisName="",
+        )
+        plot_curve_item = plot._curves[-1]
+        curve_item = CurveItem(plot_curve_item)
+        axis = None
+        if curve_item.source.units:
+            for i in range(self.axis_list.count() - 1):
+                cur = self.axis_list.itemAt(i).widget()
+                if cur.name == curve_item.source.units:
+                    axis = cur
+            if axis is None:
+                self.add_axis(curve_item.source.units)
+        elif self.axis_list.count() == 1:
             self.add_axis()
-        last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
+
+        axis = axis or self.axis_list.itemAt(self.axis_list.count() - 2).widget()
+        axis.attach_curve(curve_item)
 
         if pv.startswith("f://"):
-            last_axis.add_formula_curve(pv)
+            axis.add_formula_curve(pv)
         else:
-            last_axis.add_curve(pv)
+            axis.add_curve(pv)
 
         new_curve_index = len(self.plot._curves) - 1
         new_curve = self.plot._curves[new_curve_index]
         key = self._generate_pv_key()
         self._curve_dict[key] = new_curve
+
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
         for axis_item in range(self.axis_list.count()):
@@ -342,8 +365,20 @@ class AxisItem(QtWidgets.QWidget):
 
         plot._curves[-1] = formula_curve_item
         curve_item = CurveItem(formula_curve_item)
+        
+    def attach_curve(self, curve_item):
+        try:
+            curve_item.curve_deleted.disconnect()
+        except TypeError:
+            pass
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
+        curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
+        self.plot.plotItem.unlinkDataFromAxis(curve_item.source)
+        self.plot.plotItem.linkDataToAxis(curve_item.source, self.source.name)
+        curve_item.source.y_axis_name = self.source.name
+
         self.layout().addWidget(curve_item)
+        self.curves_list_changed.emit()
         if not self._expanded:
             self.toggle_expand()
 
