@@ -77,15 +77,15 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
 
         # Create the plotting and control widgets
         plot_side_widget = self.build_plot_side(self)
-        control_panel = ControlPanel()
-        control_panel.layout().setContentsMargins(8, 0, 0, 0)
-        control_panel.plot = self.plot
-        control_panel.curve_list_changed.connect(self.data_insight_tool.update_pv_select_box)
+        self.control_panel = ControlPanel()
+        self.control_panel.layout().setContentsMargins(8, 0, 0, 0)
+        self.control_panel.plot = self.plot
+        self.control_panel.curve_list_changed.connect(self.data_insight_tool.update_pv_select_box)
 
         # Create main splitter
         main_splitter = QSplitter(self)
         main_splitter.addWidget(plot_side_widget)
-        main_splitter.addWidget(control_panel)
+        main_splitter.addWidget(self.control_panel)
         main_splitter.setCollapsible(0, False)
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setHandleWidth(10)
@@ -272,7 +272,10 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         fetch_archive.setShortcut(QKeySequence("Ctrl+F"))
         dit_action = menu.addAction("Data Insight Tool...", self.data_insight_tool.show)
         dit_action.setShortcut(QKeySequence("Ctrl+D"))
-
+        search_archive = menu.addAction("Search Archive", self.control_panel.search_pv)
+        search_archive.setShortcut(QKeySequence("Ctrl+Q"))
+        formula_editor = menu.addAction("Formula Editor", self.control_panel.add_formula)
+        formula_editor.setShortcut(QKeySequence("Ctrl+T"))
         return menu
 
     @Slot()

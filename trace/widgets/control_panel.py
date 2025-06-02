@@ -27,13 +27,13 @@ class ControlPanel(QtWidgets.QWidget):
         pv_plotter_layout = QtWidgets.QHBoxLayout()
         self.layout().addLayout(pv_plotter_layout)
         self.search_button = QtWidgets.QPushButton()
-        self.search_button.setIcon(qta.icon("fa5s.search"))
+        self.search_button.setIcon(qta.icon("fa5s.search", color="#444444"))
         self.search_button.setFlat(True)
         self.search_button.clicked.connect(self.search_pv)
         pv_plotter_layout.addWidget(self.search_button)
 
         self.calc_button = QtWidgets.QPushButton()
-        self.calc_button.setIcon(qta.icon("fa6s.calculator"))
+        self.calc_button.setIcon(qta.icon("fa6s.calculator", color='#444444'))
         self.calc_button.setFlat(True)
         self.calc_button.clicked.connect(self.add_formula)
         pv_plotter_layout.addWidget(self.calc_button)
@@ -316,8 +316,8 @@ class AxisItem(QtWidgets.QWidget):
             self.toggle_expand()
 
     def add_formula_curve(self, formula):
-        control_panel = self.parent()
-        plot = control_panel.plot
+        control_panel = self.parent().parent().parent().parent()
+        plot = self.plot
 
         index = len(plot._curves)
         color = ColorButton.index_color(index)
@@ -580,7 +580,7 @@ class CurveItem(QtWidgets.QWidget):
 
     def close(self) -> bool:
         curve = self.source
-        control_panel = self.parent().parent()
+        control_panel = self.parent().parent().parent().parent().parent()
 
         try:
             control_panel.plot.removeCurve(self.source)
