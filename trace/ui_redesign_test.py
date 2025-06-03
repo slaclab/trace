@@ -185,7 +185,7 @@ class TraceDisplay(Display):
         self.disable_auto_scroll_button = self.timespan_buttons.button(DISABLE_AUTO_SCROLL)
         self.disable_auto_scroll_button.hide()
 
-        self.timespan_buttons.buttonToggled.connect(self.set_plot_timerange)
+        self.timespan_buttons.buttonToggled.connect(self.set_auto_scroll_span)
 
         return timespan_button_widget
 
@@ -243,11 +243,11 @@ class TraceDisplay(Display):
 
         # Create a TraceFileController instance for handling file I/O operations
         self.file_handler = TraceFileHandler(self.plot, self)
-        self.file_handler.set_axes_signal.connect(self.control_panel.set_axes)
-        # self.file_handler.set_curves_signal.connect()
-        # self.file_handler.set_plot_signal.connect()
-        # self.file_handler.set_auto_scroll_signal.connect()
-        # self.file_handler.set_timespan_signal.connect()
+        self.file_handler.axes_signal.connect(self.control_panel.set_axes)
+        # self.file_handler.curves_signal.connect()
+        # self.file_handler.plot_signal.connect()
+        self.file_handler.auto_scroll_span_signal.connect(self.set_auto_scroll_span)
+        self.file_handler.timerange_signal.connect(self.set_plot_timerange)
 
         # Remove shortcut from the "Open File" menu action
         open_file_action = app.main_window.ui.actionOpen_File
@@ -374,16 +374,28 @@ class TraceDisplay(Display):
         else:
             logger.info("Archive fetch is already queued")
 
+    @Slot(tuple)
+    def set_plot_timerange(self, timerange: tuple[float, float]) -> None:
+        """Set the plot's timerange to the given start and end datetimes."""
+        self.disable_auto_scroll_button.click()
+        self.plot.setXRange(*timerange)
+        logger.debug(f"Plot timerange set to {timerange[0]} - {timerange[1]}")
+
     @Slot()
-    def set_plot_timerange(self) -> None:
+    @Slot(float)
+    def set_auto_scroll_span(self, timespan: float = None) -> None:
         """Slot to be called when a timespan setting button is pressed.
         This will enable autoscrolling along the x-axis and disable mouse
         controls. If the "Cursor" button is pressed, then autoscrolling is
         disabled and mouse controls are enabled.
         """
-        timespan = self.timespan_buttons.checkedId()
+        if timespan is None:
+            timespan = self.timespan_buttons.checkedId()
+            enable_scroll = timespan != DISABLE_AUTO_SCROLL
+        else:
+            enable_scroll = True
+            self.disable_auto_scroll_button.click()
 
-        enable_scroll = timespan != DISABLE_AUTO_SCROLL
         if enable_scroll:
             logger.debug(f"Enabling plot autoscroll for {timespan}s")
         else:
@@ -399,8 +411,8 @@ class TraceDisplay(Display):
         self.plot.setAutoScroll(enable_scroll, timespan, refresh_rate=inteval)
 
     @Slot(bool)
-    @Slot(bool, int)
-    def autoScroll(self, enable: bool, timespan: int = None):
+    @Slot(bool, float)
+    def autoScroll(self, enable: bool, timespan: float = None):
         if timespan is None:
             timespan = self.timespan_buttons.checkedId()
             if timespan < 0:

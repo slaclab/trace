@@ -14,11 +14,11 @@ from file_io.trace_file_convert import TraceFileConverter
 
 
 class TraceFileHandler(QObject):
-    set_axes_signal = Signal(list)
-    set_curves_signal = Signal(list)
-    set_plot_settings_signal = Signal(dict)
-    set_timespan_signal = Signal(tuple)
-    set_auto_scroll_signal = Signal(bool, float)
+    axes_signal = Signal(list)
+    curves_signal = Signal(list)
+    plot_settings_signal = Signal(dict)
+    timerange_signal = Signal(tuple)
+    auto_scroll_span_signal = Signal(float)
 
     def __init__(self, plot: PyDMArchiverTimePlot, parent=None):
         """Initialize the File IO Manager, which is responsible for managing
@@ -113,7 +113,7 @@ class TraceFileHandler(QObject):
             if ret == QMessageBox.No:
                 return
 
-        # Parse the time range for the X-Axis
+        # Parse the time range for the X-Axis; check validity before prompting changes
         try:
             start_str = file_data["time_axis"]["start"]
             end_str = file_data["time_axis"]["end"]
@@ -125,22 +125,16 @@ class TraceFileHandler(QObject):
             self.open_file()
             return
 
-        # Set the models to use the file data
-        self.set_axes_signal.emit(file_data["y-axes"])
-        self.set_curves_signal.emit(file_data["curves"] + file_data["formula"])
-        self.set_plot_settings_signal.emit(file_data["plot"])
-        # set_timespan_signal = Signal(tuple)
-        # set_auto_scroll_signal = Signal(bool, float)
+        # Prompt a change to the plot's axes, curves, and settings
+        self.axes_signal.emit(file_data["y-axes"])
+        self.curves_signal.emit(file_data["curves"] + file_data["formula"])
+        self.plot_settings_signal.emit(file_data["plot"])
 
-        # Enable auto scroll if the end time is "now"
-        # self.ui.cursor_scale_btn.click()
+        # Prompt a change to the X-axis timerange
         if end_str == "now":
             delta = end_dt - start_dt
             timespan = delta.total_seconds()
-            # self.plot.setAutoScroll(True, timespan)
-            self.set_auto_scroll_signal.emit(True, timespan)
+            self.auto_scroll_span_signal.emit(timespan)
         else:
             x_range = (start_dt.timestamp(), end_dt.timestamp())
-            # self.plot.plotItem.disableXAutoRange()
-            # self.plot.plotItem.setXRange(*x_range)
-            self.set_timespan_signal.emit(x_range)
+            self.timerange_signal.emit(x_range)
