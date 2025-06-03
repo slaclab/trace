@@ -34,9 +34,9 @@ from pydm.utilities.macro import parse_macro_string
 
 from config import logger, datetime_pv
 from widgets import ControlPanel, DataInsightTool, PlotSettingsModal
-from file_io.trace_file_convert import PathAction
 from file_io.file_handler import TraceFileHandler
 from widgets.elog_post_modal import ElogPostModal
+from file_io.trace_file_convert import PathAction
 
 DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
 
@@ -77,15 +77,15 @@ class TraceDisplay(Display):
 
         # Create the plotting and control widgets
         plot_side_widget = self.build_plot_side(self)
-        control_panel = ControlPanel()
-        control_panel.layout().setContentsMargins(8, 0, 0, 0)
-        control_panel.plot = self.plot
-        control_panel.curve_list_changed.connect(self.data_insight_tool.update_pv_select_box)
+        self.control_panel = ControlPanel()
+        self.control_panel.layout().setContentsMargins(8, 0, 0, 0)
+        self.control_panel.plot = self.plot
+        self.control_panel.curve_list_changed.connect(self.data_insight_tool.update_pv_select_box)
 
         # Create main splitter
         main_splitter = QSplitter(self)
         main_splitter.addWidget(plot_side_widget)
-        main_splitter.addWidget(control_panel)
+        main_splitter.addWidget(self.control_panel)
         main_splitter.setCollapsible(0, False)
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setHandleWidth(10)
@@ -243,7 +243,7 @@ class TraceDisplay(Display):
 
         # Create a TraceFileController instance for handling file I/O operations
         self.file_handler = TraceFileHandler(self.plot, self)
-        # self.file_handler.set_axes_signal.connect()
+        self.file_handler.set_axes_signal.connect(self.control_panel.set_axes)
         # self.file_handler.set_curves_signal.connect()
         # self.file_handler.set_plot_signal.connect()
         # self.file_handler.set_auto_scroll_signal.connect()

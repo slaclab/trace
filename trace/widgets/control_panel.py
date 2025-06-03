@@ -1,6 +1,7 @@
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
 
+from pydm.widgets.baseplot import BasePlotAxisItem
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
 
 from config import logger
@@ -43,17 +44,17 @@ class ControlPanel(QtWidgets.QWidget):
         self.axis_list.addStretch()
 
         new_axis_button = QtWidgets.QPushButton("New Axis")
-        new_axis_button.clicked.connect(self.add_axis)
+        new_axis_button.clicked.connect(self.add_empty_axis)
         self.layout().addWidget(new_axis_button)
 
         self.archive_search = ArchiveSearchWidget()
 
-    def minimumSizeHint(self):
+    def minimumSizeHint(self) -> QtCore.QSize:
         inner_size = self.axis_list.minimumSize()
         buffer = self.pv_line_edit.font().pointSize() * 3
         return QtCore.QSize(inner_size.width() + buffer, inner_size.height())
 
-    def add_curve_from_line_edit(self):
+    def add_curve_from_line_edit(self) -> None:
         pv = self.pv_line_edit.text()
         self.add_curve(pv)
         self.pv_line_edit.clear()
@@ -71,7 +72,7 @@ class ControlPanel(QtWidgets.QWidget):
     def plot(self, plot):
         self._plot = plot
 
-    def search_pv(self):
+    def search_pv(self) -> None:
         if not hasattr(self, "archive_search") or not self.archive_search.isVisible():
             self.archive_search.insert_button.clicked.connect(
                 lambda: self.add_curves(self.archive_search.selectedPVs())
@@ -85,7 +86,7 @@ class ControlPanel(QtWidgets.QWidget):
         for pv in pvs:
             self.add_curve(pv)
 
-    def add_axis(self, name: str = ""):
+    def add_empty_axis(self, name: str = "") -> "AxisItem":
         logger.debug("Adding new empty axis to the plot")
         if not name:
             counter = len(self.plot.plotItem.axes) - 2
@@ -96,24 +97,67 @@ class ControlPanel(QtWidgets.QWidget):
         new_axis = self.plot._axes[-1]
         new_axis.setLabel(name, color="black")
 
-        axis_item = AxisItem(new_axis)
+        return self.add_axis_item(new_axis)
+
+    def add_axis_item(self, axis: BasePlotAxisItem) -> "AxisItem":
+        """Add an existing AxisItem to the plot."""
+        axis_item = AxisItem(axis)
         axis_item.curves_list_changed.connect(self.curve_list_changed.emit)
         self.axis_list.insertWidget(self.axis_list.count() - 1, axis_item)
-
-        logger.debug(f"Added axis {new_axis.name} to plot")
+        logger.debug(f"Added axis {axis.name} to plot")
         self.updateGeometry()
 
+        return axis_item
+
     @QtCore.Slot()
-    def add_curve(self, pv: str = None):
+    def add_curve(self, pv: str = None) -> "CurveItem":
         if pv is None and self.sender():
             pv = self.sender().text()
 
         if self.axis_list.count() == 1:  # the stretch makes count >= 1
-            self.add_axis()
+            self.add_empty_axis()
         last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
-        last_axis.add_curve(pv)
+        curve_item = last_axis.add_curve(pv)
 
-    def closeEvent(self, a0: QtGui.QCloseEvent):
+        return curve_item
+
+    def clear_all(self) -> None:
+        """Clear all axes and curves from the plot and control panel."""
+        logger.debug("Clearing all axes and curves from the plot")
+        while self.axis_list.count() > 1:  # Keep the stretch at the end
+            self.axis_list.itemAt(0).widget().close()
+
+    def set_axes(self, axes: list[dict] = None) -> None:
+        """Given a list of dictionaries containing axis data, clear the
+        plot's axes, and set all new axes based on the provided axis data.
+
+        Parameters
+        ----------
+        axes : List[Dict]
+            Axis properties to be set for all new axes on the plot
+        """
+        self.clear_all()
+        for axis in axes:
+            self.plot.addAxis(
+                plot_data_item=None,
+                name=axis["name"],
+                orientation=axis.get("orientation", "left"),
+                label=axis["name"],
+                log_mode=axis.get("logMode", False),
+            )
+            # Convert axis properties to match BasePlotAxisItem
+            new_axis = self.plot._axes[-1]
+            new_axis.setLabel(axis["name"], color="black")
+
+            new_axis_item = self.add_axis_item(new_axis)
+            if "minRange" in axis:
+                new_axis_item.set_min_range(axis["minRange"])
+            if "maxRange" in axis:
+                new_axis_item.set_max_range(axis["maxRange"])
+            if "autoRange" in axis:
+                new_axis_item.auto_range_checkbox.setChecked(axis["autoRange"])
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         for axis_item in range(self.axis_list.count()):
             axis_item.close()
         super().closeEvent(a0)
@@ -122,7 +166,7 @@ class ControlPanel(QtWidgets.QWidget):
 class AxisItem(QtWidgets.QWidget):
     curves_list_changed = QtCore.Signal()
 
-    def __init__(self, plot_axis_item):
+    def __init__(self, plot_axis_item: BasePlotAxisItem):
         super().__init__()
         self.source = plot_axis_item
         self.setLayout(QtWidgets.QVBoxLayout())
@@ -192,7 +236,7 @@ class AxisItem(QtWidgets.QWidget):
     def plot(self):
         return self.parent().parent().parent().parent().plot
 
-    def add_curve(self, pv):
+    def add_curve(self, pv: str) -> "CurveItem":
         plot = self.plot
         index = len(plot._curves)
         color = ColorButton.index_color(index)
@@ -211,6 +255,8 @@ class AxisItem(QtWidgets.QWidget):
         self.layout().addWidget(curve_item)
         if not self._expanded:
             self.toggle_expand()
+
+        return curve_item
 
     def toggle_expand(self):
         if self._expanded:
@@ -247,6 +293,7 @@ class AxisItem(QtWidgets.QWidget):
             value = float(self.sender().text())
         else:
             self.min_range_line_edit.setText(f"{value:.3g}")
+        logger.debug(f"Setting min range for axis {self.source.name}: {value}")
         self.source.min_range = value
 
     @QtCore.Slot()
@@ -255,7 +302,8 @@ class AxisItem(QtWidgets.QWidget):
             value = float(self.sender().text())
         else:
             self.max_range_line_edit.setText(f"{value:.3g}")
-        self.source.min_range = value
+        logger.debug(f"Setting max range for axis {self.source.name}: {value}")
+        self.source.max_range = value
 
     @QtCore.Slot()
     def set_axis_name(self, name: str = None):
@@ -396,6 +444,14 @@ class CurveItem(QtWidgets.QWidget):
     @property
     def plot(self):
         return self.parent().plot
+
+    @property
+    def axis_item(self):
+        """Get the AxisItem that this CurveItem belongs to."""
+        parent = self.parent()
+        while not isinstance(parent, AxisItem):
+            parent = parent.parent()
+        return parent
 
     def set_active(self, state: QtCore.Qt.CheckState):
         if state == QtCore.Qt.Unchecked:
