@@ -40,6 +40,7 @@ class PlotSettingsModal(QWidget):
         self.plot_title_line_edit = QLineEdit()
         self.plot_title_line_edit.setPlaceholderText("Enter Title")
         self.plot_title_line_edit.textChanged.connect(self.plot.setPlotTitle)
+        self.plot.plotItem.titleLabel.anchor((0.5, 0), (0.5, 0))  # Center title
         plot_title_row = SettingsRowItem(self, "Title", self.plot_title_line_edit)
         main_layout.addLayout(plot_title_row)
 
@@ -48,10 +49,10 @@ class PlotSettingsModal(QWidget):
         legend_row = SettingsRowItem(self, "Show Legend", self.legend_checkbox)
         main_layout.addLayout(legend_row)
 
-        mouse_mode_checkbox = QComboBox(self)
-        mouse_mode_checkbox.addItems(["Rect", "Pan"])
-        mouse_mode_checkbox.currentTextChanged.connect(self.plot.plotItem.changeMouseMode)
-        mouse_mode_row = SettingsRowItem(self, "Mouse Mode", mouse_mode_checkbox)
+        self.mouse_mode_combo = QComboBox(self)
+        self.mouse_mode_combo.addItems(["Rect", "Pan"])
+        self.mouse_mode_combo.currentTextChanged.connect(self.plot.plotItem.changeMouseMode)
+        mouse_mode_row = SettingsRowItem(self, "Mouse Mode", self.mouse_mode_combo)
         main_layout.addLayout(mouse_mode_row)
 
         self.as_interval_spinbox = QSpinBox(self)
@@ -77,9 +78,9 @@ class PlotSettingsModal(QWidget):
         end_dt_row = SettingsRowItem(self, "End Time", self.end_datetime)
         main_layout.addLayout(end_dt_row)
 
-        crosshair_checkbox = QCheckBox(self)
-        crosshair_checkbox.stateChanged.connect(lambda check: self.plot.enableCrosshair(check, 100, 100))
-        crosshair_row = SettingsRowItem(self, "Show Crosshair", crosshair_checkbox)
+        self.crosshair_checkbox = QCheckBox(self)
+        self.crosshair_checkbox.stateChanged.connect(lambda check: self.plot.enableCrosshair(check, 100, 100))
+        crosshair_row = SettingsRowItem(self, "Show Crosshair", self.crosshair_checkbox)
         main_layout.addLayout(crosshair_row)
 
         appearance_label = SettingsTitle(self, "Appearance")
@@ -228,8 +229,13 @@ class PlotSettingsModal(QWidget):
             self.plot_title_line_edit.setText(str(config["title"]))
         if "legend" in config:
             self.legend_checkbox.setChecked(bool(config["legend"]))
+        if "mouseMode" in config:
+            mouse_mode_index = int(config["mouseMode"] / 3)
+            self.mouse_mode_combo.setCurrentIndex(mouse_mode_index)
         if "refreshInterval" in config:
             self.as_interval_spinbox.setValue(int(config["refreshInterval"] / 1000))
+        if "crosshair" in config:
+            self.crosshair_checkbox.setChecked(bool(config["crosshair"]))
         if "backgroundColor" in config:
             self.background_button.color = QColor(config["backgroundColor"])
         if "xGrid" in config:
