@@ -33,8 +33,8 @@ from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 from pydm.utilities.macro import parse_macro_string
 
 from config import logger, datetime_pv
+from mixins import TraceFileHandler
 from widgets import ControlPanel, DataInsightTool, PlotSettingsModal
-from mixins.file_io import TraceFileHandler
 from trace_file_convert import PathAction
 from widgets.elog_post_modal import ElogPostModal
 
@@ -56,7 +56,7 @@ class TraceDisplay(Display):
 
         input_file, startup_pvs = self.parse_cli_args(args, macros)
         if input_file:
-            self.import_save_file(input_file)
+            self.file_handler.open_file(input_file)
         for pv in startup_pvs:
             self.layout().itemAt(0).widget().widget(1).add_curve(pv)
 
