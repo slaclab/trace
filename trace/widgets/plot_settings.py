@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pyqtgraph import ViewBox
-from qtpy.QtGui import QFont
+from qtpy.QtGui import QFont, QColor
 from qtpy.QtCore import Qt, Slot, Signal, QDateTime
 from qtpy.QtWidgets import (
     QSlider,
@@ -37,15 +37,15 @@ class PlotSettingsModal(QWidget):
         title_label = SettingsTitle(self, "Plot Settings", size=14)
         main_layout.addWidget(title_label)
 
-        plot_title_line_edit = QLineEdit()
-        plot_title_line_edit.setPlaceholderText("Enter Title")
-        plot_title_line_edit.textChanged.connect(self.plot.setPlotTitle)
-        plot_title_row = SettingsRowItem(self, "Title", plot_title_line_edit)
+        self.plot_title_line_edit = QLineEdit()
+        self.plot_title_line_edit.setPlaceholderText("Enter Title")
+        self.plot_title_line_edit.textChanged.connect(self.plot.setPlotTitle)
+        plot_title_row = SettingsRowItem(self, "Title", self.plot_title_line_edit)
         main_layout.addLayout(plot_title_row)
 
-        legend_checkbox = QCheckBox(self)
-        legend_checkbox.stateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
-        legend_row = SettingsRowItem(self, "Show Legend", legend_checkbox)
+        self.legend_checkbox = QCheckBox(self)
+        self.legend_checkbox.stateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
+        legend_row = SettingsRowItem(self, "Show Legend", self.legend_checkbox)
         main_layout.addLayout(legend_row)
 
         mouse_mode_checkbox = QComboBox(self)
@@ -85,9 +85,9 @@ class PlotSettingsModal(QWidget):
         appearance_label = SettingsTitle(self, "Appearance")
         main_layout.addWidget(appearance_label)
 
-        background_button = ColorButton(parent=self, color="white")
-        background_button.color_changed.connect(self.plot.setBackgroundColor)
-        background_row = SettingsRowItem(self, "  Background Color", background_button)
+        self.background_button = ColorButton(parent=self, color="white")
+        self.background_button.color_changed.connect(self.plot.setBackgroundColor)
+        background_row = SettingsRowItem(self, "  Background Color", self.background_button)
         main_layout.addLayout(background_row)
 
         x_axis_font_size_spinbox = QSpinBox(self)
@@ -204,11 +204,35 @@ class PlotSettingsModal(QWidget):
 
     @Slot(int)
     def show_x_grid(self, visible: int):
-        opacity = self.gridline_opacity / 255
-        self.plot.setShowXGrid(bool(visible), opacity)
+        """Slot to show or hide the X-Axis gridlines."""
+        opacity = self.gridline_opacity
+        self.set_plot_gridlines(bool(visible), opacity)
 
     @Slot(int)
     def change_gridline_opacity(self, opacity: int):
+        """Slot to change the opacity of the gridlines for both X and Y axes."""
+        visible = self.x_grid_visible
+        self.set_plot_gridlines(visible, opacity)
+
+    def set_plot_gridlines(self, visible: bool, opacity: int):
+        """Helper function to set the plot's gridlines visibility and opacity. Updates both X and Y axes."""
         normalized_opacity = opacity / 255
-        self.plot.setShowXGrid(self.x_grid_visible, normalized_opacity)
+        self.plot.setShowXGrid(visible, normalized_opacity)
         self.grid_alpha_change.emit(opacity)
+
+    @Slot(dict)
+    def plot_setup(self, config: dict):
+        """Read in the full config dictionary. For each config preset, set the widgets to match the value, which will
+        send signals out that will actually cause the plot to change."""
+        if "title" in config:
+            self.plot_title_line_edit.setText(str(config["title"]))
+        if "legend" in config:
+            self.legend_checkbox.setChecked(bool(config["legend"]))
+        if "refreshInterval" in config:
+            self.as_interval_spinbox.setValue(int(config["refreshInterval"] / 1000))
+        if "backgroundColor" in config:
+            self.background_button.color = QColor(config["backgroundColor"])
+        if "xGrid" in config:
+            self.x_grid_checkbox.setChecked(bool(config["xGrid"]))
+        if "gridOpacity" in config:
+            self.grid_opacity_slider.setValue(int(config["gridOpacity"]))
