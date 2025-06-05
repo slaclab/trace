@@ -1,9 +1,11 @@
 from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import QWidget, QCheckBox, QComboBox, QVBoxLayout
 
+from pydm.display import Display
 from pydm.widgets import PyDMArchiverTimePlot
 from pydm.widgets.baseplot import BasePlotAxisItem
 
+from config import logger
 from widgets import SettingsTitle, SettingsRowItem
 
 
@@ -34,17 +36,17 @@ class AxisSettingsModal(QWidget):
         main_layout.addLayout(log_mode_row)
 
         self.grid_checkbox = QCheckBox(self)
+        self.grid_checkbox.setChecked(bool(self.axis.grid))
         self.grid_checkbox.stateChanged.connect(self.show_grid)
         y_grid_row = SettingsRowItem(self, "Y Axis Gridline", self.grid_checkbox)
         main_layout.addLayout(y_grid_row)
 
-        trace_display = self.parent()
-        while trace_display is not None:
-            try:
-                trace_display.gridline_opacity_change.connect(self.change_gridline_opacity)
-                break
-            except AttributeError:
-                trace_display = trace_display.parent()
+        self.trace_display = self.parent()
+        while self.trace_display is not None and not isinstance(self.trace_display, Display):
+            self.trace_display = self.trace_display.parent()
+        if self.trace_display is not None:
+            self.trace_display.gridline_opacity_change.connect(self.change_gridline_opacity)
+            self.trace_display.set_all_y_axis_gridlines.connect(self.grid_checkbox.setChecked)
 
     @property
     def grid_visible(self):
@@ -74,13 +76,12 @@ class AxisSettingsModal(QWidget):
         if not visible:
             self.axis.setGrid(False)
         else:
-            trace_display = self.parent()
-            while trace_display is not None:
-                try:
-                    self.axis.setGrid(trace_display.gridline_opacity)
-                    break
-                except AttributeError:
-                    trace_display = trace_display.parent()
+            try:
+                opacity = self.trace_display.gridline_opacity
+            except AttributeError:
+                logger.debug("No trace display found, defaulting to full opacity")
+                opacity = 255
+            self.axis.setGrid(opacity)
 
     @Slot(int)
     def change_gridline_opacity(self, opacity: int):

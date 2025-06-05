@@ -24,6 +24,7 @@ from widgets import ColorButton, SettingsTitle, SettingsRowItem
 class PlotSettingsModal(QWidget):
     auto_scroll_interval_change = Signal(int)
     grid_alpha_change = Signal(int)
+    set_all_y_axis_gridlines = Signal(bool)
     disable_autoscroll = Signal()
 
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot):
@@ -102,6 +103,11 @@ class PlotSettingsModal(QWidget):
         self.x_grid_checkbox.stateChanged.connect(self.show_x_grid)
         x_grid_row = SettingsRowItem(self, "  X Axis Gridline", self.x_grid_checkbox)
         main_layout.addLayout(x_grid_row)
+
+        self.y_grid_checkbox = QCheckBox(self)
+        self.y_grid_checkbox.stateChanged.connect(self.show_y_grid)
+        y_grid_row = SettingsRowItem(self, "  All Y Axis Gridlines", self.y_grid_checkbox)
+        main_layout.addLayout(y_grid_row)
 
         self.grid_opacity_slider = QSlider(self)
         self.grid_opacity_slider.setOrientation(Qt.Horizontal)
@@ -208,6 +214,11 @@ class PlotSettingsModal(QWidget):
         """Slot to show or hide the X-Axis gridlines."""
         opacity = self.gridline_opacity
         self.set_plot_gridlines(bool(visible), opacity)
+
+    @Slot(int)
+    def show_y_grid(self, visible: int):
+        visible = bool(visible)
+        self.set_all_y_axis_gridlines.emit(visible)
 
     @Slot(int)
     def change_gridline_opacity(self, opacity: int):
