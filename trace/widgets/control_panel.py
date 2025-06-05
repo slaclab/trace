@@ -109,14 +109,29 @@ class ControlPanel(QtWidgets.QWidget):
 
         return axis_item
 
+    def get_axis_item(self, axis_name: str) -> "AxisItem":
+        """Get an AxisItem by its name."""
+        for item in self.axis_list:
+            if item.name == axis_name:
+                return item
+        return None
+
+    def get_last_axis_item(self) -> "AxisItem":
+        """Get the last AxisItem in the list."""
+        if self.axis_list.count() > 1:  # the stretch makes count >= 1
+            return self.axis_list.itemAt(self.axis_list.count() - 2).widget()
+        else:
+            logger.warning("No axes available to return the last AxisItem.")
+            return None
+
     @QtCore.Slot()
     def add_curve(self, pv: str = None) -> "CurveItem":
         if pv is None and self.sender():
             pv = self.sender().text()
 
-        if self.axis_list.count() == 1:  # the stretch makes count >= 1
-            self.add_empty_axis()
-        last_axis = self.axis_list.itemAt(self.axis_list.count() - 2).widget()
+        last_axis = self.get_last_axis_item()
+        if not last_axis:
+            last_axis = self.add_empty_axis()
         curve_item = last_axis.add_curve(pv)
 
         return curve_item
@@ -126,6 +141,13 @@ class ControlPanel(QtWidgets.QWidget):
         logger.debug("Clearing all axes and curves from the plot")
         while self.axis_list.count() > 1:  # Keep the stretch at the end
             self.axis_list.itemAt(0).widget().close()
+
+    def clear_curves(self) -> None:
+        """Clear all curves from the plot and control panel."""
+        logger.debug("Clearing all curves from the plot")
+        for axis_item in self.axis_list:
+            if isinstance(axis_item, AxisItem):
+                axis_item.clear_curves()
 
     def set_axes(self, axes: list[dict] = None) -> None:
         """Given a list of dictionaries containing axis data, clear the
@@ -156,6 +178,28 @@ class ControlPanel(QtWidgets.QWidget):
                 new_axis_item.set_max_range(axis["maxRange"])
             if "autoRange" in axis:
                 new_axis_item.auto_range_checkbox.setChecked(axis["autoRange"])
+
+    def set_curves(self, curves: list[dict] = None) -> None:
+        """Given a list of dictionaries containing curve data, clear the
+        plot's curves, and set all new curves based on the provided curve data.
+
+        Parameters
+        ----------
+        curves : List[Dict]
+            Curve properties to be set for all new curves on the plot
+        """
+        for curve_dict in curves:
+            try:
+                axis_name = curve_dict.get("yAxisName", "Y-Axis 0")
+                axis_item = self.get_axis_item(axis_name)
+            except KeyError:
+                axis_item = self.get_last_axis_item()
+
+            if axis_item is None:
+                axis_item = self.add_empty_axis(axis_name)
+
+            curve_item = axis_item.add_curve(curve_dict["address"])
+            curve_item.configure(curve_dict)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         for axis_item in range(self.axis_list.count()):
@@ -235,6 +279,11 @@ class AxisItem(QtWidgets.QWidget):
     @property
     def plot(self):
         return self.parent().parent().parent().parent().plot
+
+    @property
+    def name(self) -> str:
+        """Get the name of the axis."""
+        return self.source.name
 
     def add_curve(self, pv: str) -> "CurveItem":
         plot = self.plot
@@ -356,9 +405,15 @@ class AxisItem(QtWidgets.QWidget):
             self.toggle_expand()
         self.curves_list_changed.emit()
 
+    def clear_curves(self) -> None:
+        """Clear all curves from this axis item."""
+        for i in range(self.layout().count() - 1, -1, -1):
+            item = self.layout().itemAt(i).widget()
+            if isinstance(item, CurveItem):
+                item.close()
+
     def close(self) -> bool:
-        while self.layout().count() > 1:
-            self.layout().itemAt(1).widget().close()
+        self.clear_curves()
         self.source.sigYRangeChanged.disconnect(self.handle_range_change)
         self.source.linkedView().sigRangeChangedManually.disconnect(self.disable_auto_range)
         index = self.plot._axes.index(self.source)
@@ -452,6 +507,9 @@ class CurveItem(QtWidgets.QWidget):
         while not isinstance(parent, AxisItem):
             parent = parent.parent()
         return parent
+
+    def configure(self, curve_dict: dict) -> None:
+        pass
 
     def set_active(self, state: QtCore.Qt.CheckState):
         if state == QtCore.Qt.Unchecked:
