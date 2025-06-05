@@ -138,6 +138,7 @@ class TraceDisplay(Display):
         self.plot_settings = PlotSettingsModal(self.settings_button, self.plot)
         self.plot_settings.auto_scroll_interval_change.connect(self.set_auto_scroll_interval)
         self.plot_settings.grid_alpha_change.connect(self.gridline_opacity_change.emit)
+        self.plot_settings.set_all_y_axis_gridlines.connect(self.plot.setShowYGrid)
         self.plot_settings.set_all_y_axis_gridlines.connect(self.set_all_y_axis_gridlines.emit)
         self.plot_settings.disable_autoscroll.connect(self.disable_auto_scroll_button.click)
         self.settings_button.clicked.connect(self.plot_settings.show)

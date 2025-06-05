@@ -251,5 +251,7 @@ class PlotSettingsModal(QWidget):
             self.background_button.color = QColor(config["backgroundColor"])
         if "xGrid" in config:
             self.x_grid_checkbox.setChecked(bool(config["xGrid"]))
+        if "yGrid" in config:
+            self.y_grid_checkbox.setChecked(bool(config["yGrid"]))
         if "gridOpacity" in config:
             self.grid_opacity_slider.setValue(int(config["gridOpacity"]))
