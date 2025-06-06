@@ -247,7 +247,7 @@ class TraceDisplay(Display):
         # Create a TraceFileController instance for handling file I/O operations
         self.file_handler = TraceFileHandler(self.plot, self)
         self.file_handler.axes_signal.connect(self.control_panel.set_axes)
-        # self.file_handler.curves_signal.connect()
+        self.file_handler.curves_signal.connect(self.control_panel.set_curves)
         self.file_handler.plot_settings_signal.connect(self.plot_settings.plot_setup)
         self.file_handler.auto_scroll_span_signal.connect(self.set_auto_scroll_span)
         self.file_handler.timerange_signal.connect(self.set_plot_timerange)

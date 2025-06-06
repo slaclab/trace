@@ -111,8 +111,9 @@ class ControlPanel(QtWidgets.QWidget):
 
     def get_axis_item(self, axis_name: str) -> "AxisItem":
         """Get an AxisItem by its name."""
-        for item in self.axis_list:
-            if item.name == axis_name:
+        for index in range(self.axis_list.count()):
+            item = self.axis_list.itemAt(index).widget()
+            if isinstance(item, AxisItem) and item.name == axis_name:
                 return item
         return None
 
@@ -198,8 +199,9 @@ class ControlPanel(QtWidgets.QWidget):
             if axis_item is None:
                 axis_item = self.add_empty_axis(axis_name)
 
-            curve_item = axis_item.add_curve(curve_dict["address"])
-            curve_item.configure(curve_dict)
+            pv_name = curve_dict.get("channel", "")
+            del curve_dict["channel"]  # Remove channel key to avoid conflicts with y_channel
+            axis_item.add_curve(pv_name, curve_dict)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         for axis_item in range(self.axis_list.count()):
@@ -285,17 +287,21 @@ class AxisItem(QtWidgets.QWidget):
         """Get the name of the axis."""
         return self.source.name
 
-    def add_curve(self, pv: str) -> "CurveItem":
+    def add_curve(self, pv: str, channel_args: dict = None) -> "CurveItem":
         plot = self.plot
         index = len(plot._curves)
         color = ColorButton.index_color(index)
-        plot.addYChannel(
-            y_channel=pv,
-            name=pv,
-            color=color,
-            useArchiveData=True,
-            yAxisName=self.source.name,
-        )
+
+        args = {
+            "y_channel": pv,
+            "name": pv,
+            "color": color,
+            "useArchiveData": True,
+            "yAxisName": self.source.name,
+        }
+        if channel_args is not None:
+            args.update(channel_args)
+        plot.addYChannel(**args)
         self.curves_list_changed.emit()
 
         plot_curve_item = plot._curves[-1]
@@ -507,9 +513,6 @@ class CurveItem(QtWidgets.QWidget):
         while not isinstance(parent, AxisItem):
             parent = parent.parent()
         return parent
-
-    def configure(self, curve_dict: dict) -> None:
-        pass
 
     def set_active(self, state: QtCore.Qt.CheckState):
         if state == QtCore.Qt.Unchecked:
