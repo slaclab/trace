@@ -301,7 +301,11 @@ class AxisItem(QtWidgets.QWidget):
         }
         if channel_args is not None:
             args.update(channel_args)
-        plot.addYChannel(**args)
+        try:
+            plot.addYChannel(**args)
+        except TypeError as e:
+            logger.error(f"Failed to add curve: {e}")
+            return None
         self.curves_list_changed.emit()
 
         plot_curve_item = plot._curves[-1]
