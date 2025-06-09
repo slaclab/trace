@@ -177,12 +177,11 @@ class ControlPanel(QtWidgets.QWidget):
             self.add_axis()
 
         axis = axis or self.axis_list.itemAt(self.axis_list.count() - 2).widget()
-        axis.attach_curve(curve_item)
 
         if pv.startswith("f://"):
             axis.add_formula_curve(pv)
         else:
-            axis.add_curve(pv)
+            axis.attach_curve(pv)
 
         new_curve_index = len(self.plot._curves) - 1
         new_curve = self.plot._curves[new_curve_index]
@@ -322,28 +321,25 @@ class AxisItem(QtWidgets.QWidget):
     def plot(self):
         return self.parent().parent().parent().parent().plot
 
-    def add_curve(self, pv):
-        plot = self.plot
-        index = len(plot._curves)
-        color = ColorButton.index_color(index)
-        plot.addYChannel(
-            y_channel=pv,
-            name=pv,
-            color=color,
-            useArchiveData=True,
-            yAxisName=self.source.name,
-        )
-        self.curves_list_changed.emit()
-
-        plot_curve_item = plot._curves[-1]
-        curve_item = CurveItem(plot_curve_item)
+    def attach_curve(self, curve_item):
+        try:
+            curve_item.curve_deleted.disconnect()
+        except TypeError:
+            pass
+        #curve_item.curve_deleted.connect(self.curves_list_changed.emit)
+        curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
+        self.plot.plotItem.unlinkDataFromAxis(curve_item.source)
+        self.plot.plotItem.linkDataToAxis(curve_item.source, self.source.name)
+        curve_item.source.y_axis_name = self.source.name
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         self.layout().addWidget(curve_item)
+        self.curves_list_changed.emit()
         if not self._expanded:
             self.toggle_expand()
 
+
     def add_formula_curve(self, formula):
-        control_panel = self.parent()
+        control_panel = self.parent().parent().parent().parent()
         plot = control_panel.plot
 
         index = len(plot._curves)
@@ -414,7 +410,7 @@ class AxisItem(QtWidgets.QWidget):
     def handle_curve_deleted(self, curve):
         self.curves_list_changed.emit()
 
-        control_panel = self.parent()
+        control_panel = self.parent().parent().parent().parent()
 
         for key, value in list(control_panel.curve_dict.items()):
             if value == curve:
@@ -620,7 +616,7 @@ class CurveItem(QtWidgets.QWidget):
 
     def close(self) -> bool:
         curve = self.source
-        control_panel = self.parent().parent()
+        control_panel = self.parent().parent().parent().parent()
 
         try:
             control_panel.plot.removeCurve(self.source)
