@@ -142,6 +142,7 @@ class ControlPanel(QtWidgets.QWidget):
         logger.debug("Clearing all axes and curves from the plot")
         while self.axis_list.count() > 1:  # Keep the stretch at the end
             self.axis_list.itemAt(0).widget().close()
+        self.plot.redrawPlot()
 
     def clear_curves(self) -> None:
         """Clear all curves from the plot and control panel."""
@@ -202,6 +203,7 @@ class ControlPanel(QtWidgets.QWidget):
             pv_name = curve_dict.get("channel", "")
             del curve_dict["channel"]  # Remove channel key to avoid conflicts with y_channel
             axis_item.add_curve(pv_name, curve_dict)
+        self.plot.redrawPlot()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         for axis_item in range(self.axis_list.count()):
@@ -559,7 +561,9 @@ class CurveItem(QtWidgets.QWidget):
             self.show()  # show curve after drag, even if it ended outside of an axis
 
     def close(self) -> bool:
+        [ch.disconnect() for ch in self.source.channels() if ch]
         self.plot.removeCurve(self.source)
+        self.plot.set_needs_redraw()
         self.setParent(None)
         self.deleteLater()
         self.curve_deleted.emit()
