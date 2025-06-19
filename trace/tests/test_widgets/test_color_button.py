@@ -2,8 +2,8 @@ import pytest
 from qtpy.QtGui import QColor
 from qtpy.QtCore import Qt
 
-from widgets import table_widgets
-from widgets.table_widgets import ColorButton
+from widgets import color_button
+from widgets.color_button import ColorButton
 
 DEF_COLOR = QColor("black")
 
@@ -128,7 +128,7 @@ def test_random_color(monkeypatch, random_values, expected_hsl):
     def mock_random():
         return random_values.pop(0)
 
-    monkeypatch.setattr(table_widgets, "random", mock_random)
+    monkeypatch.setattr(color_button, "random", mock_random)
 
     # Get the predetermined "random" color
     color = ColorButton.random_color()
@@ -170,7 +170,7 @@ def test_index_color(monkeypatch, index, expected_base_color, expected_dark_fact
     The color returned by index_color matches the expected base color and
     darkness factor
     """
-    monkeypatch.setattr(table_widgets, "color_palette", TEST_PALETTE)
+    monkeypatch.setattr(color_button, "color_palette", TEST_PALETTE)
 
     # Call the static method and calculate expected darker color
     color = ColorButton.index_color(index)
