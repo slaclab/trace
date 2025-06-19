@@ -33,7 +33,7 @@ from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 from pydm.utilities.macro import parse_macro_string
 
 from config import logger, datetime_pv
-from mixins import FileIOMixin, PlotConfigMixin
+from mixins import TraceFileHandler
 from widgets import ControlPanel, DataInsightTool, PlotSettingsModal
 from trace_file_convert import PathAction
 from widgets.elog_post_modal import ElogPostModal
@@ -41,8 +41,9 @@ from widgets.elog_post_modal import ElogPostModal
 DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
 
 
-class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
+class TraceDisplay(Display):
     gridline_opacity_change = Signal(int)
+    set_all_y_axis_gridlines = Signal(bool)
 
     def __init__(self, parent=None, args=None, macros=None) -> None:
         super(TraceDisplay, self).__init__(parent=parent, args=args, macros=macros, ui_filename=None)
@@ -56,7 +57,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
 
         input_file, startup_pvs = self.parse_cli_args(args, macros)
         if input_file:
-            self.import_save_file(input_file)
+            self.file_handler.open_file(input_file)
         for pv in startup_pvs:
             self.layout().itemAt(0).widget().widget(1).add_curve(pv)
 
@@ -77,15 +78,15 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
 
         # Create the plotting and control widgets
         plot_side_widget = self.build_plot_side(self)
-        control_panel = ControlPanel()
-        control_panel.layout().setContentsMargins(8, 0, 0, 0)
-        control_panel.plot = self.plot
-        control_panel.curve_list_changed.connect(self.data_insight_tool.update_pv_select_box)
+        self.control_panel = ControlPanel()
+        self.control_panel.layout().setContentsMargins(8, 0, 0, 0)
+        self.control_panel.plot = self.plot
+        self.control_panel.curve_list_changed.connect(self.data_insight_tool.update_pv_select_box)
 
         # Create main splitter
         main_splitter = QSplitter(self)
         main_splitter.addWidget(plot_side_widget)
-        main_splitter.addWidget(control_panel)
+        main_splitter.addWidget(self.control_panel)
         main_splitter.setCollapsible(0, False)
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setHandleWidth(10)
@@ -137,6 +138,8 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         self.plot_settings = PlotSettingsModal(self.settings_button, self.plot)
         self.plot_settings.auto_scroll_interval_change.connect(self.set_auto_scroll_interval)
         self.plot_settings.grid_alpha_change.connect(self.gridline_opacity_change.emit)
+        self.plot_settings.set_all_y_axis_gridlines.connect(self.plot.setShowYGrid)
+        self.plot_settings.set_all_y_axis_gridlines.connect(self.set_all_y_axis_gridlines.emit)
         self.plot_settings.disable_autoscroll.connect(self.disable_auto_scroll_button.click)
         self.settings_button.clicked.connect(self.plot_settings.show)
 
@@ -185,7 +188,7 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         self.disable_auto_scroll_button = self.timespan_buttons.button(DISABLE_AUTO_SCROLL)
         self.disable_auto_scroll_button.hide()
 
-        self.timespan_buttons.buttonToggled.connect(self.set_plot_timerange)
+        self.timespan_buttons.buttonToggled.connect(self.set_auto_scroll_span)
 
         return timespan_button_widget
 
@@ -241,6 +244,14 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         app.main_window.toggle_status_bar(False)
         app.main_window.ui.actionShow_Status_Bar.setChecked(False)
 
+        # Create a TraceFileController instance for handling file I/O operations
+        self.file_handler = TraceFileHandler(self.plot, self)
+        self.file_handler.axes_signal.connect(self.control_panel.set_axes)
+        self.file_handler.curves_signal.connect(self.control_panel.set_curves)
+        self.file_handler.plot_settings_signal.connect(self.plot_settings.plot_setup)
+        self.file_handler.auto_scroll_span_signal.connect(self.set_auto_scroll_span)
+        self.file_handler.timerange_signal.connect(self.set_plot_timerange)
+
         # Remove shortcut from the "Open File" menu action
         open_file_action = app.main_window.ui.actionOpen_File
         open_file_action.setText("Open PyDM File...")
@@ -255,11 +266,11 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
     def construct_trace_menu(self, parent: QMenuBar) -> QMenu:
         """Create the menu for the application."""
         menu = QMenu("Trace", parent)
-        save = menu.addAction("Save", self.export_save_file)
+        save = menu.addAction("Save", self.file_handler.save_file)
         save.setShortcut(QKeySequence("Ctrl+S"))
-        save_as = menu.addAction("Save As...", self.export_save_file)
+        save_as = menu.addAction("Save As...", self.file_handler.save_as)
         save_as.setShortcut(QKeySequence("Ctrl+Shift+S"))
-        load = menu.addAction("Open Trace Config...", self.import_save_file)
+        load = menu.addAction("Open Trace Config...", self.file_handler.open_file)
         load.setShortcut(QKeySequence("Ctrl+O"))
         menu.addSeparator()
 
@@ -366,16 +377,28 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         else:
             logger.info("Archive fetch is already queued")
 
+    @Slot(tuple)
+    def set_plot_timerange(self, timerange: tuple[float, float]) -> None:
+        """Set the plot's timerange to the given start and end datetimes."""
+        self.disable_auto_scroll_button.click()
+        self.plot.setXRange(*timerange)
+        logger.debug(f"Plot timerange set to {timerange[0]} - {timerange[1]}")
+
     @Slot()
-    def set_plot_timerange(self) -> None:
+    @Slot(float)
+    def set_auto_scroll_span(self, timespan: float = None) -> None:
         """Slot to be called when a timespan setting button is pressed.
         This will enable autoscrolling along the x-axis and disable mouse
         controls. If the "Cursor" button is pressed, then autoscrolling is
         disabled and mouse controls are enabled.
         """
-        timespan = self.timespan_buttons.checkedId()
+        if timespan is None:
+            timespan = self.timespan_buttons.checkedId()
+            enable_scroll = timespan != DISABLE_AUTO_SCROLL
+        else:
+            enable_scroll = True
+            self.disable_auto_scroll_button.click()
 
-        enable_scroll = timespan != DISABLE_AUTO_SCROLL
         if enable_scroll:
             logger.debug(f"Enabling plot autoscroll for {timespan}s")
         else:
@@ -391,8 +414,8 @@ class TraceDisplay(Display, FileIOMixin, PlotConfigMixin):
         self.plot.setAutoScroll(enable_scroll, timespan, refresh_rate=inteval)
 
     @Slot(bool)
-    @Slot(bool, int)
-    def autoScroll(self, enable: bool, timespan: int = None):
+    @Slot(bool, float)
+    def autoScroll(self, enable: bool, timespan: float = None):
         if timespan is None:
             timespan = self.timespan_buttons.checkedId()
             if timespan < 0:

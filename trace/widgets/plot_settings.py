@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pyqtgraph import ViewBox
-from qtpy.QtGui import QFont
+from qtpy.QtGui import QFont, QColor
 from qtpy.QtCore import Qt, Slot, Signal, QDateTime
 from qtpy.QtWidgets import (
     QSlider,
@@ -24,6 +24,7 @@ from widgets import ColorButton, SettingsTitle, SettingsRowItem
 class PlotSettingsModal(QWidget):
     auto_scroll_interval_change = Signal(int)
     grid_alpha_change = Signal(int)
+    set_all_y_axis_gridlines = Signal(bool)
     disable_autoscroll = Signal()
 
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot):
@@ -37,21 +38,22 @@ class PlotSettingsModal(QWidget):
         title_label = SettingsTitle(self, "Plot Settings", size=14)
         main_layout.addWidget(title_label)
 
-        plot_title_line_edit = QLineEdit()
-        plot_title_line_edit.setPlaceholderText("Enter Title")
-        plot_title_line_edit.textChanged.connect(self.plot.setPlotTitle)
-        plot_title_row = SettingsRowItem(self, "Title", plot_title_line_edit)
+        self.plot_title_line_edit = QLineEdit()
+        self.plot_title_line_edit.setPlaceholderText("Enter Title")
+        self.plot_title_line_edit.textChanged.connect(self.plot.setPlotTitle)
+        self.plot.plotItem.titleLabel.anchor((0.5, 0), (0.5, 0))  # Center title
+        plot_title_row = SettingsRowItem(self, "Title", self.plot_title_line_edit)
         main_layout.addLayout(plot_title_row)
 
-        legend_checkbox = QCheckBox(self)
-        legend_checkbox.stateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
-        legend_row = SettingsRowItem(self, "Show Legend", legend_checkbox)
+        self.legend_checkbox = QCheckBox(self)
+        self.legend_checkbox.stateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
+        legend_row = SettingsRowItem(self, "Show Legend", self.legend_checkbox)
         main_layout.addLayout(legend_row)
 
-        mouse_mode_checkbox = QComboBox(self)
-        mouse_mode_checkbox.addItems(["Rect", "Pan"])
-        mouse_mode_checkbox.currentTextChanged.connect(self.plot.plotItem.changeMouseMode)
-        mouse_mode_row = SettingsRowItem(self, "Mouse Mode", mouse_mode_checkbox)
+        self.mouse_mode_combo = QComboBox(self)
+        self.mouse_mode_combo.addItems(["Rect", "Pan"])
+        self.mouse_mode_combo.currentTextChanged.connect(self.plot.plotItem.changeMouseMode)
+        mouse_mode_row = SettingsRowItem(self, "Mouse Mode", self.mouse_mode_combo)
         main_layout.addLayout(mouse_mode_row)
 
         self.as_interval_spinbox = QSpinBox(self)
@@ -77,17 +79,17 @@ class PlotSettingsModal(QWidget):
         end_dt_row = SettingsRowItem(self, "End Time", self.end_datetime)
         main_layout.addLayout(end_dt_row)
 
-        crosshair_checkbox = QCheckBox(self)
-        crosshair_checkbox.stateChanged.connect(lambda check: self.plot.enableCrosshair(check, 100, 100))
-        crosshair_row = SettingsRowItem(self, "Show Crosshair", crosshair_checkbox)
+        self.crosshair_checkbox = QCheckBox(self)
+        self.crosshair_checkbox.stateChanged.connect(lambda check: self.plot.enableCrosshair(check, 100, 100))
+        crosshair_row = SettingsRowItem(self, "Show Crosshair", self.crosshair_checkbox)
         main_layout.addLayout(crosshair_row)
 
         appearance_label = SettingsTitle(self, "Appearance")
         main_layout.addWidget(appearance_label)
 
-        background_button = ColorButton(parent=self, color="white")
-        background_button.color_changed.connect(self.plot.setBackgroundColor)
-        background_row = SettingsRowItem(self, "  Background Color", background_button)
+        self.background_button = ColorButton(parent=self, color="white")
+        self.background_button.color_changed.connect(self.plot.setBackgroundColor)
+        background_row = SettingsRowItem(self, "  Background Color", self.background_button)
         main_layout.addLayout(background_row)
 
         x_axis_font_size_spinbox = QSpinBox(self)
@@ -101,6 +103,11 @@ class PlotSettingsModal(QWidget):
         self.x_grid_checkbox.stateChanged.connect(self.show_x_grid)
         x_grid_row = SettingsRowItem(self, "  X Axis Gridline", self.x_grid_checkbox)
         main_layout.addLayout(x_grid_row)
+
+        self.y_grid_checkbox = QCheckBox(self)
+        self.y_grid_checkbox.stateChanged.connect(self.show_y_grid)
+        y_grid_row = SettingsRowItem(self, "  All Y Axis Gridlines", self.y_grid_checkbox)
+        main_layout.addLayout(y_grid_row)
 
         self.grid_opacity_slider = QSlider(self)
         self.grid_opacity_slider.setOrientation(Qt.Horizontal)
@@ -204,11 +211,47 @@ class PlotSettingsModal(QWidget):
 
     @Slot(int)
     def show_x_grid(self, visible: int):
-        opacity = self.gridline_opacity / 255
-        self.plot.setShowXGrid(bool(visible), opacity)
+        """Slot to show or hide the X-Axis gridlines."""
+        opacity = self.gridline_opacity
+        self.set_plot_gridlines(bool(visible), opacity)
+
+    @Slot(int)
+    def show_y_grid(self, visible: int):
+        visible = bool(visible)
+        self.set_all_y_axis_gridlines.emit(visible)
 
     @Slot(int)
     def change_gridline_opacity(self, opacity: int):
+        """Slot to change the opacity of the gridlines for both X and Y axes."""
+        visible = self.x_grid_visible
+        self.set_plot_gridlines(visible, opacity)
+
+    def set_plot_gridlines(self, visible: bool, opacity: int):
+        """Helper function to set the plot's gridlines visibility and opacity. Updates both X and Y axes."""
         normalized_opacity = opacity / 255
-        self.plot.setShowXGrid(self.x_grid_visible, normalized_opacity)
+        self.plot.setShowXGrid(visible, normalized_opacity)
         self.grid_alpha_change.emit(opacity)
+
+    @Slot(dict)
+    def plot_setup(self, config: dict):
+        """Read in the full config dictionary. For each config preset, set the widgets to match the value, which will
+        send signals out that will actually cause the plot to change."""
+        if "title" in config:
+            self.plot_title_line_edit.setText(str(config["title"]))
+        if "legend" in config:
+            self.legend_checkbox.setChecked(bool(config["legend"]))
+        if "mouseMode" in config:
+            mouse_mode_index = int(config["mouseMode"] / 3)
+            self.mouse_mode_combo.setCurrentIndex(mouse_mode_index)
+        if "refreshInterval" in config:
+            self.as_interval_spinbox.setValue(int(config["refreshInterval"] / 1000))
+        if "crosshair" in config:
+            self.crosshair_checkbox.setChecked(bool(config["crosshair"]))
+        if "backgroundColor" in config:
+            self.background_button.color = QColor(config["backgroundColor"])
+        if "xGrid" in config:
+            self.x_grid_checkbox.setChecked(bool(config["xGrid"]))
+        if "yGrid" in config:
+            self.y_grid_checkbox.setChecked(bool(config["yGrid"]))
+        if "gridOpacity" in config:
+            self.grid_opacity_slider.setValue(int(config["gridOpacity"]))

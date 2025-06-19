@@ -5,63 +5,94 @@ from typing import Tuple, Union
 from pathlib import Path
 from urllib.parse import urlparse
 
+from qtpy.QtCore import Slot, Signal, QObject
 from qtpy.QtWidgets import QFileDialog, QMessageBox
+
+from pydm.widgets.archiver_time_plot import PyDMArchiverTimePlot
 
 from config import logger, save_file_dir
 from trace_file_convert import TraceFileConverter
 
 
-class FileIOMixin:
-    """Mixins class to manage the file imports and exports for Trace"""
+class TraceFileHandler(QObject):
+    axes_signal = Signal(list)
+    curves_signal = Signal(list)
+    plot_settings_signal = Signal(dict)
+    timerange_signal = Signal(tuple)
+    auto_scroll_span_signal = Signal(float)
 
-    def file_io_init(self) -> None:
-        """Initialize the File IO capabilities of Trace by saving a default
-        path and creating an TraceFileConverter object
+    def __init__(self, plot: PyDMArchiverTimePlot, parent=None):
+        """Initialize the File IO Manager, which is responsible for managing
+        the import and export of Trace save files
         """
-        self.io_path = save_file_dir
+        super().__init__(parent)
+        self.plot = plot
+        self.current_file = None
+        self.current_dir = save_file_dir
         self.converter = TraceFileConverter()
 
-    def export_save_file(self) -> None:
+    @Slot()
+    def save_file(self) -> None:
+        """Export the current plot data to the current file"""
+        if self.current_file is None:
+            logger.debug("No current file set, prompting for save location")
+            self.save_as()
+            return
+        elif not self.current_file.match("*.trc"):
+            self.current_file = self.current_file.with_suffix(".trc")
+
+        try:
+            logger.debug(f"Attempting to export to file: {self.current_file}")
+            self.converter.export_file(self.current_file, self.plot)
+        except FileNotFoundError as e:
+            logger.error(str(e))
+            self.save_as()
+
+    @Slot()
+    def save_as(self) -> None:
         """Prompt the user for a file to export config data to"""
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save Trace", str(self.io_path), "Trace Save File (*.trc)")
-        file_name = Path(file_name)
-        if file_name.is_dir():
+        file_name, _ = QFileDialog.getSaveFileName(
+            self.parent(), "Save Trace", str(self.current_dir), "Trace Save File (*.trc)"
+        )
+        file_path = Path(file_name)
+        if file_path.is_dir():
             logger.warning("No file name provided to export save file to")
             return
 
-        try:
-            logger.debug(f"Attempting to export to file: {file_name}")
-            self.io_path = file_name.parent
-            self.converter.export_file(file_name, self.ui.main_plot)
-        except FileNotFoundError as e:
-            logger.error(str(e))
-            self.export_save_file()
+        self.current_file = file_path
+        self.current_dir = file_path.parent
 
-    def import_save_file(self, file_name: Union[str, Path] = None) -> None:
-        """Prompt the user for which config file to import from"""
+        self.save_file()
+
+    @Slot()
+    @Slot(str)
+    @Slot(Path)
+    def open_file(self, file_name: Union[str, Path] = None) -> None:
+        """Prompt the user for which config file to load from"""
         # Get the save file from the user
         if not file_name:
             file_name, _ = QFileDialog.getOpenFileName(
-                self,
+                self.parent(),
                 "Open Trace",
-                str(self.io_path),
+                str(self.current_dir),
                 "Trace Save File (*.trc *.xml *.stp);;Java Archive Viewer (*.xml);;"
                 + "StripTool File (*.stp);;All Files (*)",
             )
-        file_name = Path(file_name)
-        if not file_name.is_file():
-            logger.warning(f"Attempted import is not a file: {file_name}")
+        file_path = Path(file_name)
+        if not file_path.is_file():
+            logger.warning(f"Attempted import is not a file: {file_path}")
             return
 
         # Import the given file, and convert it from Java Archive Viewer's
         # format to Trace's format if necessary
         try:
-            logger.debug(f"Attempting to import file: {file_name}")
-            file_data = self.converter.import_file(file_name)
-            self.io_path = file_name.parent
+            logger.debug(f"Attempting to import file: {file_path}")
+            file_data = self.converter.import_file(file_path)
+            self.current_file = file_path
+            self.current_dir = file_path.parent
         except (FileNotFoundError, ValueError) as e:
             logger.error(str(e))
-            self.import_save_file()
+            self.open_file()
             return
 
         # Confirm the PYDM_ARCHIVER_URL is the same as the imported Archiver URL
@@ -71,7 +102,7 @@ class FileIOMixin:
         if import_url.hostname != archiver_url.hostname:
             logger.warning(f"Attempting to import save file using different Archiver URL: {import_url.hostname}")
             ret = QMessageBox.warning(
-                self,
+                self.parent(),
                 "Import Error",
                 "The config file you tried to open reads from a different archiver.\n"
                 f"\nCurrent archiver is:\n{archiver_url.hostname}\n"
@@ -83,7 +114,7 @@ class FileIOMixin:
             if ret == QMessageBox.No:
                 return
 
-        # Parse the time range for the X-Axis
+        # Parse the time range for the X-Axis; check validity before prompting changes
         try:
             start_str = file_data["time_axis"]["start"]
             end_str = file_data["time_axis"]["end"]
@@ -92,24 +123,22 @@ class FileIOMixin:
             logger.debug(f"Ending time: {end_dt}")
         except ValueError as e:
             logger.error(str(e))
-            self.import_save_file()
+            self.open_file()
             return
 
-        # Set the models to use the file data
-        self.axis_table_model.set_model_axes(file_data["y-axes"])
-        self.curves_model.set_model_curves(file_data["curves"] + file_data["formula"])
-        self.plot_setup(file_data["plot"])
+        # Prompt a change to the plot's axes, curves, and settings
+        self.axes_signal.emit(file_data["y-axes"])
+        self.curves_signal.emit(file_data["curves"] + file_data["formula"])
+        self.plot_settings_signal.emit(file_data["plot"])
 
-        # Enable auto scroll if the end time is "now"
-        self.ui.cursor_scale_btn.click()
+        # Prompt a change to the X-axis timerange
         if end_str == "now":
             delta = end_dt - start_dt
             timespan = delta.total_seconds()
-            self.ui.main_plot.setAutoScroll(True, timespan)
+            self.auto_scroll_span_signal.emit(timespan)
         else:
             x_range = (start_dt.timestamp(), end_dt.timestamp())
-            self.ui.main_plot.plotItem.disableXAutoRange()
-            self.ui.main_plot.plotItem.setXRange(*x_range)
+            self.timerange_signal.emit(x_range)
 
 
 class IOTimeParser:
