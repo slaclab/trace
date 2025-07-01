@@ -560,7 +560,10 @@ class CurveItem(QtWidgets.QWidget):
         self.archive_connection_status.setVisible(not connected)
 
     def set_n_data_bins(self) -> None:
-        self.source.setOptimizedDataBins(self.bins_line_edit.text())
+        try:
+            self.source.setOptimizedDataBins(self.bins_line_edit.text())
+        except AttributeError as e:
+            print(f"Unable to set data bins: {e}")
 
     @QtCore.Slot()
     def show_settings_modal(self):
