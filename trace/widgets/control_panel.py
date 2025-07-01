@@ -520,11 +520,12 @@ class CurveItem(QtWidgets.QWidget):
         self.source.archive_channel_connection.connect(self.update_archive_icon)
         data_type_layout.addWidget(self.archive_connection_status)
 
-        self.bins_layout = QtWidgets.QHBoxLayout()
-        self.bins_layout.addWidget(QtWidgets.QLabel("n archive bins:"))
         self.bins_line_edit = QtWidgets.QLineEdit()
-        self.bins_line_edit.returnPressed.connect(self.set_n_data_bins) # lambda: self.source.setOptimizedDataBins(n_bins=int(self.bins_line_edit.text())))
-        self.bins_layout.addWidget(self.bin_size_line_edit)
+        self.bins_line_edit.returnPressed.connect(
+            self.set_n_data_bins
+        )  # lambda: self.source.setOptimizedDataBins(n_bins=int(self.bins_line_edit.text())))
+        data_type_layout.addWidget(QtWidgets.QLabel("n archive bins:"))
+        data_type_layout.addWidget(self.bins_line_edit)
 
         data_type_layout.addStretch()
 
@@ -557,10 +558,9 @@ class CurveItem(QtWidgets.QWidget):
 
     def update_archive_icon(self, connected: bool) -> None:
         self.archive_connection_status.setVisible(not connected)
-    
-    def set_n_data_bins(self, n_bins: int) -> None:
-        self.source.setOptimizedDataBins(n_bins=n_bins)
-        self.bins_line_edit.setText(str(n_bins))
+
+    def set_n_data_bins(self) -> None:
+        self.source.setOptimizedDataBins(self.bins_line_edit.text())
 
     @QtCore.Slot()
     def show_settings_modal(self):
