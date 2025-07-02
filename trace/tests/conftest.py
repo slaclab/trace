@@ -76,7 +76,7 @@ def qtrace(qtbot, qapp):
     trace = TraceDisplay()
 
     # updateXAxis would be called on application render; necessary for testing X-Axis
-    trace.ui.main_plot.updateXAxis(True)
+    trace.main_plot.updateXAxis(True)
     yield trace
 
     trace.close()

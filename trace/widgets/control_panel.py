@@ -5,9 +5,12 @@ from pydm.widgets.baseplot import BasePlotAxisItem
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
 
 from config import logger
-from widgets import AxisSettingsModal, CurveSettingsModal
-from widgets.table_widgets import ColorButton
-from widgets.archive_search import ArchiveSearchWidget
+from widgets import (
+    ColorButton,
+    AxisSettingsModal,
+    CurveSettingsModal,
+    ArchiveSearchWidget,
+)
 
 
 class ControlPanel(QtWidgets.QWidget):
