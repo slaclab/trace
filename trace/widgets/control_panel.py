@@ -77,9 +77,7 @@ class ControlPanel(QtWidgets.QWidget):
 
     def search_pv(self) -> None:
         if not hasattr(self, "archive_search") or not self.archive_search.isVisible():
-            self.archive_search.insert_button.clicked.connect(
-                lambda: self.add_curves(self.archive_search.selectedPVs())
-            )
+            self.archive_search.append_PVs_requested.connect(self.add_curves)
             self.archive_search.show()
         else:
             self.archive_search.raise_()
