@@ -92,12 +92,12 @@ class PlotSettingsModal(QWidget):
         background_row = SettingsRowItem(self, "  Background Color", self.background_button)
         main_layout.addLayout(background_row)
 
-        x_axis_font_size_spinbox = QSpinBox(self)
-        x_axis_font_size_spinbox.setValue(12)
-        x_axis_font_size_spinbox.setSuffix(" pt")
-        x_axis_font_size_spinbox.valueChanged.connect(self.set_x_axis_font_size)
-        x_axis_font_size_row = SettingsRowItem(self, "  X Axis Font Size", x_axis_font_size_spinbox)
-        main_layout.addLayout(x_axis_font_size_row)
+        axis_tick_font_size_spinbox = QSpinBox(self)
+        axis_tick_font_size_spinbox.setValue(12)
+        axis_tick_font_size_spinbox.setSuffix(" pt")
+        axis_tick_font_size_spinbox.valueChanged.connect(self.set_axis_tick_font_size)
+        axis_tick_font_size_row = SettingsRowItem(self, "  Axis Tick Font Size", axis_tick_font_size_spinbox)
+        main_layout.addLayout(axis_tick_font_size_row)
 
         self.x_grid_checkbox = QCheckBox(self)
         self.x_grid_checkbox.stateChanged.connect(self.show_x_grid)
@@ -145,11 +145,13 @@ class PlotSettingsModal(QWidget):
         super().show()
 
     @Slot(int)
-    def set_x_axis_font_size(self, size: int) -> None:
+    def set_axis_tick_font_size(self, size: int) -> None:
         font = QFont()
         font.setPixelSize(size)
-        x_axis = self.plot.getAxis("bottom")
-        x_axis.setStyle(tickFont=font)
+
+        all_axes = self.plot.plotItem.getAxes()
+        for axis in all_axes:
+            axis.setStyle(tickFont=font)
 
     @Slot(object)
     def set_time_axis_range(self, raw_range: tuple[QDateTime, QDateTime] = (None, None)) -> None:

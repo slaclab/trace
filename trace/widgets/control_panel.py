@@ -102,6 +102,7 @@ class ControlPanel(QtWidgets.QWidget):
 
     def add_axis_item(self, axis: BasePlotAxisItem) -> "AxisItem":
         """Add an existing AxisItem to the plot."""
+        self.match_axis_tick_font(axis)
         axis_item = AxisItem(axis)
         axis_item.curves_list_changed.connect(self.curve_list_changed.emit)
         self.axis_list.insertWidget(self.axis_list.count() - 1, axis_item)
@@ -109,6 +110,18 @@ class ControlPanel(QtWidgets.QWidget):
         self.updateGeometry()
 
         return axis_item
+
+    def match_axis_tick_font(self, axis: BasePlotAxisItem) -> None:
+        """Matches the axis' tick font to the X-Axis of the plot. Only necessary
+        if the user has changed the tick font of the plot's axes.
+
+        Parameters
+        ----------
+        axis : BasePlotAxisItem
+            The axis to match the tick font for."""
+        x_axis = self.plot.getAxis("bottom")
+        if x_axis is not None:
+            axis.setTickFont(x_axis.style["tickFont"])
 
     def get_axis_item(self, axis_name: str) -> "AxisItem":
         """Get an AxisItem by its name."""
