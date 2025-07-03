@@ -9,13 +9,15 @@ from re import compile
 from typing import Dict, List, Union
 from pathlib import Path
 from argparse import Action, Namespace, ArgumentParser
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import zip_longest
 from collections import OrderedDict
 
 from qtpy.QtGui import QColor
 
 from pydm.widgets.timeplot import PyDMTimePlot
+
+from file_io import IOTimeParser
 
 logger = logging.getLogger("")
 if not logger.hasHandlers():
@@ -36,7 +38,8 @@ class TraceFileConverter:
     # Java date time conversion regex
     full_java_absolute_re = compile(r"^[01]\d/[0-3]\d/\d{4}\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
     java_date_re = compile(r"^[01]\d/[0-3]\d/\d{4}")
-    time_re = compile(r"(?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?")
+    time_re = IOTimeParser.time_re
+    # time_re = compile(r"(?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?")
 
     def __init__(self, input_file: Union[str, Path] = "", output_file: Union[str, Path] = "") -> None:
         self.input_file = input_file
@@ -428,14 +431,24 @@ class TraceFileConverter:
             "formula": [],
         }
 
-        [start_ts, end_ts] = plot.getXAxis().range
-        start_dt = datetime.fromtimestamp(start_ts)
-        end_dt = datetime.fromtimestamp(end_ts)
+        auto_scroll_enabled = plot.auto_scroll_timer.isActive()
+        if auto_scroll_enabled:
+            timespan = -1 * plot.scroll_timespan
+            timespan_td = timedelta(seconds=timespan)
+            start_str = IOTimeParser.delta_to_relative(timespan_td)
+            end_str = "now"
+        else:
+            [start_ts, end_ts] = plot.getXAxis().range
+            start_dt = datetime.fromtimestamp(start_ts)
+            end_dt = datetime.fromtimestamp(end_ts)
+            start_str = start_dt.isoformat(sep=" ", timespec="seconds")
+            end_str = end_dt.isoformat(sep=" ", timespec="seconds")
+
         output_dict["plot"] = plot.to_dict()
         output_dict["time_axis"] = {
             "name": "Main Time Axis",
-            "start": start_dt.isoformat(sep=" ", timespec="seconds"),
-            "end": end_dt.isoformat(sep=" ", timespec="seconds"),
+            "start": start_str,
+            "end": end_str,
             "location": "bottom",
         }
 
