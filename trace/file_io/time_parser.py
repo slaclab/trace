@@ -104,26 +104,28 @@ class IOTimeParser:
             negative = True
             remaining_seconds = abs(remaining_seconds)
 
+        # Calculate years, months, weeks, days, hours, minutes, seconds
         years, remaining_seconds = divmod(remaining_seconds, 365 * 24 * 3600)
-        return_list.append(f"{'-' if negative else '+'}{int(years)}y" if years else "")
-
         months, remaining_seconds = divmod(remaining_seconds, 30 * 24 * 3600)
-        return_list.append(f"{'-' if negative else '+'}{int(months)}M" if months else "")
-
         weeks, remaining_seconds = divmod(remaining_seconds, 7 * 24 * 3600)
-        return_list.append(f"{'-' if negative else '+'}{int(weeks)}w" if weeks else "")
-
         days, remaining_seconds = divmod(remaining_seconds, 24 * 3600)
-        return_list.append(f"{'-' if negative else '+'}{int(days)}d" if days else "")
-
         hours, remaining_seconds = divmod(remaining_seconds, 3600)
-        return_list.append(f"{'-' if negative else '+'}{int(hours)}H" if hours else "")
-
         minutes, seconds = divmod(remaining_seconds, 60)
-        return_list.append(f"{'-' if negative else '+'}{int(minutes)}m" if minutes else "")
-        return_list.append(f"{'-' if negative else '+'}{int(seconds)}s" if seconds else "")
 
-        return_list = [item for item in return_list if item]  # Remove empty strings
+        # Append non-zero values to the return list
+        return_list.append(f"{int(years)}y" if years else "")
+        return_list.append(f"{int(months)}M" if months else "")
+        return_list.append(f"{int(weeks)}w" if weeks else "")
+        return_list.append(f"{int(days)}d" if days else "")
+        return_list.append(f"{int(hours)}H" if hours else "")
+        return_list.append(f"{int(minutes)}m" if minutes else "")
+        return_list.append(f"{int(seconds)}s" if seconds else "")
+
+        # Filter out empty strings and apply the '+' or '-' sign
+        return_list = [item for item in return_list if item]
+        sign = "-" if negative else "+"
+        return_list = [sign + item for item in return_list]
+
         return " ".join(return_list) if return_list else "-1d"  # Default to -1 day if no time is given
 
     @classmethod
