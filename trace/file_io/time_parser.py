@@ -83,52 +83,6 @@ class IOTimeParser:
         return td
 
     @classmethod
-    def delta_to_relative(cls, delta: datetime.timedelta) -> str:
-        """Convert a datetime.timedelta to a relative time string
-
-        Parameters
-        ----------
-        delta : datetime.timedelta
-            The timedelta to convert
-
-        Returns
-        -------
-        str
-            A string representing the timedelta in a relative format
-        """
-        return_list = []
-        remaining_seconds = int(delta.total_seconds())
-
-        negative = False
-        if remaining_seconds < 0:
-            negative = True
-            remaining_seconds = abs(remaining_seconds)
-
-        # Calculate years, months, weeks, days, hours, minutes, seconds
-        years, remaining_seconds = divmod(remaining_seconds, 365 * 24 * 3600)
-        months, remaining_seconds = divmod(remaining_seconds, 30 * 24 * 3600)
-        weeks, remaining_seconds = divmod(remaining_seconds, 7 * 24 * 3600)
-        days, remaining_seconds = divmod(remaining_seconds, 24 * 3600)
-        hours, remaining_seconds = divmod(remaining_seconds, 3600)
-        minutes, seconds = divmod(remaining_seconds, 60)
-
-        # Append non-zero values to the return list
-        return_list.append(f"{int(years)}y" if years else "")
-        return_list.append(f"{int(months)}M" if months else "")
-        return_list.append(f"{int(weeks)}w" if weeks else "")
-        return_list.append(f"{int(days)}d" if days else "")
-        return_list.append(f"{int(hours)}H" if hours else "")
-        return_list.append(f"{int(minutes)}m" if minutes else "")
-        return_list.append(f"{int(seconds)}s" if seconds else "")
-
-        # Filter out empty strings and apply the '+' or '-' sign
-        return_list = [item for item in return_list if item]
-        sign = "-" if negative else "+"
-        return_list = [sign + item for item in return_list]
-
-        return " ".join(return_list) if return_list else "-1d"  # Default to -1 day if no time is given
-
-    @classmethod
     def set_time_on_datetime(cls, dt: datetime.datetime, time_str: str) -> datetime.datetime:
         """Set an absolute time on a datetime object
 

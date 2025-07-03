@@ -17,8 +17,6 @@ from qtpy.QtGui import QColor
 
 from pydm.widgets.timeplot import PyDMTimePlot
 
-from file_io import IOTimeParser
-
 logger = logging.getLogger("")
 if not logger.hasHandlers():
     handler = logging.StreamHandler()
@@ -38,8 +36,7 @@ class TraceFileConverter:
     # Java date time conversion regex
     full_java_absolute_re = compile(r"^[01]\d/[0-3]\d/\d{4}\s*((?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?)?$")
     java_date_re = compile(r"^[01]\d/[0-3]\d/\d{4}")
-    time_re = IOTimeParser.time_re
-    # time_re = compile(r"(?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?")
+    time_re = compile(r"(?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?")
 
     def __init__(self, input_file: Union[str, Path] = "", output_file: Union[str, Path] = "") -> None:
         self.input_file = input_file
@@ -408,8 +405,8 @@ class TraceFileConverter:
 
         return extracted_data
 
-    @staticmethod
-    def get_plot_data(plot: PyDMTimePlot) -> dict:
+    @classmethod
+    def get_plot_data(cls, plot: PyDMTimePlot) -> dict:
         """Extract plot, axis, and curve data from a PyDMTimePlot object
 
         Parameters
@@ -435,7 +432,7 @@ class TraceFileConverter:
         if auto_scroll_enabled:
             timespan = -1 * plot.scroll_timespan
             timespan_td = timedelta(seconds=timespan)
-            start_str = IOTimeParser.delta_to_relative(timespan_td)
+            start_str = cls.delta_to_relative(timespan_td)
             end_str = "now"
         else:
             [start_ts, end_ts] = plot.getXAxis().range
@@ -468,6 +465,52 @@ class TraceFileConverter:
                 output_dict["formula"].append(curve_dict)
 
         return output_dict
+
+    @staticmethod
+    def delta_to_relative(delta: timedelta) -> str:
+        """Convert a datetime.timedelta to a relative time string
+
+        Parameters
+        ----------
+        delta : datetime.timedelta
+            The timedelta to convert
+
+        Returns
+        -------
+        str
+            A string representing the timedelta in a relative format
+        """
+        return_list = []
+        remaining_seconds = int(delta.total_seconds())
+
+        negative = False
+        if remaining_seconds < 0:
+            negative = True
+            remaining_seconds = abs(remaining_seconds)
+
+        # Calculate years, months, weeks, days, hours, minutes, seconds
+        years, remaining_seconds = divmod(remaining_seconds, 365 * 24 * 3600)
+        months, remaining_seconds = divmod(remaining_seconds, 30 * 24 * 3600)
+        weeks, remaining_seconds = divmod(remaining_seconds, 7 * 24 * 3600)
+        days, remaining_seconds = divmod(remaining_seconds, 24 * 3600)
+        hours, remaining_seconds = divmod(remaining_seconds, 3600)
+        minutes, seconds = divmod(remaining_seconds, 60)
+
+        # Append non-zero values to the return list
+        return_list.append(f"{years}y" if years else "")
+        return_list.append(f"{months}M" if months else "")
+        return_list.append(f"{weeks}w" if weeks else "")
+        return_list.append(f"{days}d" if days else "")
+        return_list.append(f"{hours}H" if hours else "")
+        return_list.append(f"{minutes}m" if minutes else "")
+        return_list.append(f"{seconds}s" if seconds else "")
+
+        # Filter out empty strings and apply the '+' or '-' sign
+        return_list = [item for item in return_list if item]
+        sign = "-" if negative else "+"
+        return_list = [sign + item for item in return_list]
+
+        return " ".join(return_list) if return_list else "-1d"  # Default to -1 day if no time is given
 
     @staticmethod
     def srgb_to_qColor(srgb: str) -> QColor:
