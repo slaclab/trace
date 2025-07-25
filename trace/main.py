@@ -208,10 +208,7 @@ class TraceDisplay(Display):
         footer_info_layout.setContentsMargins(0, 0, 0, 0)
 
         footer_label_data = (
-            (self.git_version(), "Trace Version"),
             (gethostname(), "Node Name"),
-            (getuser(), "User Name"),
-            (str(os.getpid()), "PID"),
             (os.getenv("PYDM_ARCHIVER_URL"), "Archiver URL"),
         )
 
