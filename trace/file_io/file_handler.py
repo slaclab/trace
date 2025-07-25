@@ -18,6 +18,7 @@ class TraceFileHandler(QObject):
     plot_settings_signal = Signal(dict)
     timerange_signal = Signal(tuple)
     auto_scroll_span_signal = Signal(float)
+    file_loaded_signal = Signal(Path)
 
     def __init__(self, plot: PyDMArchiverTimePlot, parent=None):
         """Initialize the File IO Manager, which is responsible for managing
@@ -88,6 +89,7 @@ class TraceFileHandler(QObject):
             file_data = self.converter.import_file(file_path)
             self.current_file = file_path
             self.current_dir = file_path.parent
+            logger.info(f"Successfully loaded file: {file_path}")
         except (FileNotFoundError, ValueError) as e:
             logger.error(str(e))
             self.open_file()
@@ -128,6 +130,7 @@ class TraceFileHandler(QObject):
         self.axes_signal.emit(file_data["y-axes"])
         self.curves_signal.emit(file_data["curves"] + file_data["formula"])
         self.plot_settings_signal.emit(file_data["plot"])
+        self.file_loaded_signal.emit(file_path)
 
         # Prompt a change to the X-axis timerange
         if end_str == "now":
