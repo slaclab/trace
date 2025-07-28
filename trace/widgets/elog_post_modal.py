@@ -3,6 +3,7 @@ from qtpy.QtWidgets import (
     QLabel,
     QDialog,
     QWidget,
+    QCheckBox,
     QLineEdit,
     QTextEdit,
     QListWidget,
@@ -66,6 +67,10 @@ class ElogPostModal(QDialog):
         )
         main_layout.addLayout(logbook_readback_row)
 
+        self.attach_config_checkbox = QCheckBox(self)
+        attach_config_row = SettingsRowItem(self, "Attach config", self.attach_config_checkbox)
+        main_layout.addLayout(attach_config_row)
+
         buttons = QDialogButtonBox()
         send_button = buttons.addButton("Send", QDialogButtonBox.AcceptRole)
         cancel_button = buttons.addButton(QDialogButtonBox.Cancel)
@@ -79,7 +84,7 @@ class ElogPostModal(QDialog):
         Handles the submission of the dialog. This method is called when the user clicks the 'Send' button.
         It retrieves the inputs, validates, and closes the dialog.
         """
-        title, _, logbooks = self.get_inputs()
+        title, _, logbooks, _ = self.get_inputs()
         if not title:
             QMessageBox.warning(self, "Input Error", "Title is required.")
             return
@@ -89,14 +94,15 @@ class ElogPostModal(QDialog):
 
         self.accept()
 
-    def get_inputs(self) -> tuple[str, str, list[str]]:
+    def get_inputs(self) -> tuple[str, str, list[str], bool]:
         """
         Returns the inputs from the dialog as a tuple of (title, body, logbooks).
         """
         title = self.title_edit.text().strip()
         body = self.body_edit.toPlainText().strip()
         logbooks = [item.text() for item in self.logbook_list.selectedItems()]
-        return title, body, logbooks
+        attach_config = self.attach_config_checkbox.isChecked()
+        return title, body, logbooks, attach_config
 
     @classmethod
     def maybe_create(cls, parent: QWidget = None, image_bytes: bytes | None = None) -> "ElogPostModal | None":
