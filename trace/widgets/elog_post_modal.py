@@ -68,7 +68,7 @@ class ElogPostModal(QDialog):
         main_layout.addLayout(logbook_readback_row)
 
         self.attach_config_checkbox = QCheckBox(self)
-        attach_config_row = SettingsRowItem(self, "Attach config", self.attach_config_checkbox)
+        attach_config_row = SettingsRowItem(self, "Attach Config", self.attach_config_checkbox)
         main_layout.addLayout(attach_config_row)
 
         buttons = QDialogButtonBox()
@@ -96,7 +96,7 @@ class ElogPostModal(QDialog):
 
     def get_inputs(self) -> tuple[str, str, list[str], bool]:
         """
-        Returns the inputs from the dialog as a tuple of (title, body, logbooks).
+        Returns the inputs from the dialog as a tuple of (title, body, logbooks, attach_config).
         """
         title = self.title_edit.text().strip()
         body = self.body_edit.toPlainText().strip()
