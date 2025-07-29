@@ -231,7 +231,7 @@ class TraceDisplay(Display):
         footer_layout.addWidget(self.time_label)
 
         return footer_widget
-    
+
     def set_file_indicator(self, file_path: str) -> None:
         """Set the file indicator label to the given file path."""
         if not file_path:
