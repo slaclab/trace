@@ -736,6 +736,12 @@ class CurveItem(QtWidgets.QWidget):
         data_type_layout = QtWidgets.QHBoxLayout()
         second_layout.addLayout(data_type_layout)
 
+        self.color_circle_label = QtWidgets.QLabel()
+        circle_pixmap = self.create_color_circle(self.source.color_string, 12)
+        self.color_circle_label.setPixmap(circle_pixmap)
+        self.color_circle_label.setFixedSize(12, 12)
+        pv_settings_layout.addWidget(self.color_circle_label)
+
         self.invalid_action = None
         self.variable_name_label = QtWidgets.QLabel()
         self.variable_name_label.setMinimumWidth(40)
@@ -785,6 +791,21 @@ class CurveItem(QtWidgets.QWidget):
         data_type_layout.addWidget(self.archive_connection_status)
 
         data_type_layout.addStretch()
+
+    def create_color_circle(self, color, size=12):
+        """Create a colored circle pixmap for the curve color indicator"""
+        pixmap = QtGui.QPixmap(size, size)
+        pixmap.fill(QtCore.Qt.transparent)
+        
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        painter.setBrush(QtGui.QBrush(QtGui.QColor(color)))
+        painter.setPen(QtGui.QPen(QtCore.Qt.black, 1))
+        painter.drawEllipse(0, 0, size-1, size-1)
+        painter.end()
+        
+        return pixmap
 
     def update_variable_name(self):
         """Update the variable name label"""
@@ -853,7 +874,20 @@ class CurveItem(QtWidgets.QWidget):
     def show_settings_modal(self):
         if self.pv_settings_modal is None:
             self.pv_settings_modal = CurveSettingsModal(self.pv_settings_button, self.plot, self.source)
+            self.pv_settings_modal.color_changed.connect(self.on_color_changed)
         self.pv_settings_modal.show()
+
+    @QtCore.Slot(object)
+    def on_color_changed(self, color):
+        """Handle color change from settings modal"""
+        self.update_color_circle()
+
+    def update_color_circle(self):
+        """Update the color circle when the curve color changes"""
+        if hasattr(self, 'color_circle_label'):
+            curve_color = getattr(self.source, 'color_string', None) 
+            circle_pixmap = self.create_color_circle(curve_color, 12)
+            self.color_circle_label.setPixmap(circle_pixmap)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         if event.button() == QtCore.Qt.LeftButton and self.handle.geometry().contains(event.position().toPoint()):

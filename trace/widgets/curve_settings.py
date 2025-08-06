@@ -1,5 +1,5 @@
 from qtpy.QtGui import QColor
-from qtpy.QtCore import Qt, Slot
+from qtpy.QtCore import Qt, Slot, Signal
 from qtpy.QtWidgets import QWidget, QCheckBox, QLineEdit, QVBoxLayout
 
 from pydm.widgets.archiver_time_plot import TimePlotCurveItem, PyDMArchiverTimePlot
@@ -8,6 +8,8 @@ from widgets import ColorButton, SettingsTitle, ComboBoxWrapper, SettingsRowItem
 
 
 class CurveSettingsModal(QWidget):
+    color_changed = Signal(object)
+
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot, curve: TimePlotCurveItem):
         super().__init__(parent)
         self.setWindowFlag(Qt.Popup)
@@ -94,6 +96,7 @@ class CurveSettingsModal(QWidget):
     @Slot(QColor)
     def set_curve_color(self, color: QColor):
         self.curve.color = color
+        self.color_changed.emit(color)
 
     @Slot(object)
     def set_curve_type(self, curve_type: str | None) -> None:
