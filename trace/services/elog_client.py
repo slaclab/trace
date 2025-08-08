@@ -6,6 +6,7 @@ Elog API client for posting entries and fetching user and logbook information.
 
 import os
 import json
+from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
@@ -31,7 +32,9 @@ def get_user() -> tuple[int, dict | Exception]:
         return response.status_code, e
 
 
-def post_entry(title: str, body: str, logbooks: list[str], image_bytes) -> tuple[int, dict | Exception]:
+def post_entry(
+    title: str, body: str, logbooks: list[str], image_bytes, config_file_path: Path | None = None
+) -> tuple[int, dict | Exception]:
     """
     Posts a new entry with image to the ELOG API.
 
@@ -39,6 +42,7 @@ def post_entry(title: str, body: str, logbooks: list[str], image_bytes) -> tuple
     :param body: The body of the entry.
     :param logbooks: A list of logbook names to post the entry to.
     :param image_bytes: Bytes of the image to be attached to the entry.
+    :param config_file: Optional, path of config file to attach.
     :return: A tuple containing the status code and the response data or exception.
     """
     url = f"{ELOG_API_URL}/v2/entries"
@@ -47,14 +51,19 @@ def post_entry(title: str, body: str, logbooks: list[str], image_bytes) -> tuple
     entry_data = {"title": title, "text": body, "logbooks": logbooks}
     entry_json = json.dumps(entry_data).encode("utf-8")
 
+    files = [
+        ("entry", ("entry.json", entry_json, "application/json")),
+        ("files", ("trace_plot.png", image_bytes, "image/png")),
+    ]
+    if config_file_path is not None:
+        with open(config_file_path, "rb") as f:
+            config_bytes = f.read()
+        files.append(("files", (config_file_path.name, config_bytes, "application/octet-stream")))
     try:
         response = requests.post(
             url,
             headers=headers,
-            files={
-                "entry": ("entry.json", entry_json, "application/json"),
-                "files": ("trace_plot.png", image_bytes, "image/png"),
-            },
+            files=files,
         )
         response.raise_for_status()
         return response.status_code, response.json()

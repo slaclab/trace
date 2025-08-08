@@ -338,12 +338,17 @@ class TraceDisplay(Display):
         # Get entry info from user
         dialog = ElogPostModal.maybe_create(self, image_bytes=image_bytes)
         if dialog is not None and dialog.exec_() == QDialog.Accepted:
-            title, body, logbooks = dialog.get_inputs()
+            title, body, logbooks, attach_config = dialog.get_inputs()
         else:
             return False
 
+        config_file_path = None
+        if attach_config:
+            self.file_handler.save_file()
+            config_file_path = self.file_handler.current_file
+
         # Post the request to the Elog API
-        status_code, _ = post_entry(title, body, logbooks, image_bytes)
+        status_code, _ = post_entry(title, body, logbooks, image_bytes, config_file_path)
 
         # Check if the request was successful
         if status_code == 201:
