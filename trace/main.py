@@ -192,8 +192,8 @@ class TraceDisplay(Display):
         return timespan_button_widget
 
     def build_footer(self, parent: QWidget):
-        label_font = QFont()
-        label_font.setPointSize(8)
+        self.footer_label_font = QFont()
+        self.footer_label_font.setPointSize(8)
 
         footer_widget = QWidget(parent)
         footer_widget.setFixedHeight(12)
@@ -201,24 +201,27 @@ class TraceDisplay(Display):
         footer_layout.setContentsMargins(0, 0, 0, 0)
         footer_widget.setLayout(footer_layout)
 
+        # Left side of footer, with various info labels
+        self.footer_info_widget = QWidget(footer_widget)
+        footer_layout.addWidget(self.footer_info_widget)
+        footer_info_layout = QHBoxLayout(self.footer_info_widget)
+        footer_info_layout.setContentsMargins(0, 0, 0, 0)
+
         footer_label_data = (
-            (self.git_version(), "Trace Version"),
             (gethostname(), "Node Name"),
-            (getuser(), "User Name"),
-            (str(os.getpid()), "PID"),
             (os.getenv("PYDM_ARCHIVER_URL"), "Archiver URL"),
         )
 
         for text, tooltip in footer_label_data:
-            label = QLabel(text, footer_widget)
-            label.setFont(label_font)
+            label = QLabel(text, self.footer_info_widget)
+            label.setFont(self.footer_label_font)
             label.setToolTip(tooltip)
             label.setAlignment(Qt.AlignBottom)
-            footer_layout.addWidget(label)
-            footer_layout.addWidget(BreakerLabel(footer_widget))
+            footer_info_layout.addWidget(label)
+            footer_info_layout.addWidget(BreakerLabel(self.footer_info_widget))
 
-        last_breaker = footer_widget.children()[-1]
-        footer_layout.removeWidget(last_breaker)
+        last_breaker = self.footer_info_widget.children()[-1]
+        footer_info_layout.removeWidget(last_breaker)
 
         footer_spacer = QSpacerItem(40, 12, QSizePolicy.Expanding, QSizePolicy.Minimum)
         footer_layout.addSpacerItem(footer_spacer)
@@ -228,6 +231,20 @@ class TraceDisplay(Display):
         footer_layout.addWidget(self.time_label)
 
         return footer_widget
+
+    def set_file_indicator(self, file_path: str) -> None:
+        """Set the file indicator label to the given file path."""
+        if not file_path:
+            return
+        filename = os.path.basename(file_path)
+        if hasattr(self, "file_label") and self.file_label is not None:
+            self.file_label.setText(filename)
+        else:
+            self.footer_info_widget.layout().addWidget(BreakerLabel(self.footer_info_widget))
+            self.file_label = QLabel(filename, self.footer_info_widget)
+            self.file_label.setFont(self.footer_label_font)
+            self.file_label.setToolTip("Currently loaded file")
+            self.footer_info_widget.layout().addWidget(self.file_label)
 
     def configure_app(self):
         """UI changes to be made to the PyDMApplication"""
@@ -250,6 +267,7 @@ class TraceDisplay(Display):
         self.file_handler.plot_settings_signal.connect(self.plot_settings.plot_setup)
         self.file_handler.auto_scroll_span_signal.connect(self.set_auto_scroll_span)
         self.file_handler.timerange_signal.connect(self.set_plot_timerange)
+        self.file_handler.file_loaded_signal.connect(self.set_file_indicator)
 
         # Remove shortcut from the "Open File" menu action
         open_file_action = app.main_window.ui.actionOpen_File
