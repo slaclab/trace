@@ -99,6 +99,8 @@ class CurveSettingsModal(QWidget):
         parent_pos = self.parent().rect().bottomRight()
         global_pos = self.parent().mapToGlobal(parent_pos)
         self.move(global_pos)
+        self.bin_count_line_edit.setStyleSheet("")
+        self.bin_count_line_edit.setText("")
         super().show()
 
     @Slot()
