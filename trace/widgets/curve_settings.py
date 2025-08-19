@@ -4,6 +4,7 @@ from qtpy.QtWidgets import QWidget, QCheckBox, QLineEdit, QVBoxLayout
 
 from pydm.widgets.archiver_time_plot import TimePlotCurveItem, PyDMArchiverTimePlot
 
+from config import logger
 from widgets import ColorButton, SettingsTitle, ComboBoxWrapper, SettingsRowItem
 
 
@@ -29,6 +30,16 @@ class CurveSettingsModal(QWidget):
         color_button.color_changed.connect(self.set_curve_color)
         color_row = SettingsRowItem(self, "Color", color_button)
         main_layout.addLayout(color_row)
+
+        self.bin_count_line_edit = bin_count_line_edit = QLineEdit()
+        bin_count_line_edit.setMaximumWidth(65)
+        bin_count_line_edit.returnPressed.connect(self.set_curve_data_bins)
+        optimized_bin_count = SettingsRowItem(self, "Optimized bin count", bin_count_line_edit)
+        bin_count = curve.optimized_data_bins
+        if not bin_count:
+            bin_count = plot.optimized_data_bins
+        bin_count_line_edit.setPlaceholderText(str(bin_count))
+        main_layout.addLayout(optimized_bin_count)
 
         line_title_label = SettingsTitle(self, "Line")
         main_layout.addWidget(line_title_label)
@@ -69,10 +80,27 @@ class CurveSettingsModal(QWidget):
         size_row = SettingsRowItem(self, "  Size", size_combo)
         main_layout.addLayout(size_row)
 
+    def set_curve_data_bins(self):
+        n_bins = self.bin_count_line_edit.text()
+        if not n_bins.isdigit() or int(n_bins) < 1:
+            self.bin_count_line_edit.setStyleSheet("border: 2px solid #d32f2f")
+            logger.warning("Invalid bin count entered. Please enter a postive integer.")
+            return
+        else:
+            self.bin_count_line_edit.setStyleSheet("")
+        try:
+            n_bins = int(n_bins)
+            self.curve.setOptimizedDataBins(n_bins)
+            self.bin_count_line_edit.setPlaceholderText(str(n_bins))
+        except (AttributeError, ValueError) as e:
+            logger.warning(f"Unable to set data bins: {e}")
+
     def show(self):
         parent_pos = self.parent().rect().bottomRight()
         global_pos = self.parent().mapToGlobal(parent_pos)
         self.move(global_pos)
+        self.bin_count_line_edit.setStyleSheet("")
+        self.bin_count_line_edit.setText("")
         super().show()
 
     @Slot()
