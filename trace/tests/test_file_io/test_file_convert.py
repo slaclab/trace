@@ -355,6 +355,58 @@ def test_get_plot_data(converter):
     assert result["formula"] == expected_output["formula"]
 
 
+def test_export_relative_time(converter):
+    """Test that the TraceFileConverter.get_plot_data exports relative time
+    data if the plot has auto-scroll enabled
+
+    Parameters
+    ----------
+    converter : fixture
+        Instance of TraceFileConverter for testing
+
+    Expectations
+    ------------
+    Extracts the correct data from the plot object
+    """
+    # Create a mock plot object
+    mock_plot = Mock()
+
+    # Mock the x-axis range with example timestamps
+    start_ts = datetime(2021, 10, 1, 12).timestamp()
+    end_ts = datetime(2021, 10, 2, 12).timestamp()
+    mock_plot.getXAxis.return_value.range = [start_ts, end_ts]
+
+    # Mock y-axes data (as JSON strings)
+    mock_y_axis_json = json.dumps({"label": "Y Axis 1", "unit": "A"})
+    mock_plot.getYAxes.return_value = [mock_y_axis_json]
+
+    # Mock the auto_scroll_timer is active
+    mock_plot.auto_scroll_timer.isActive.return_value = True
+    mock_plot.scroll_timespan = int(end_ts - start_ts)
+
+    # Mock curve data with both channel and formula data
+    mock_curve_with_channel = json.dumps({"channel": "test_channel", "name": "Curve 1"})
+
+    # Return curves including both valid and edge cases
+    mock_plot.getCurves.return_value = [
+        mock_curve_with_channel,
+    ]
+
+    # Call the static method
+    result = converter.get_plot_data(mock_plot)
+
+    # Expected output dictionary
+    expected = {
+        "name": "Main Time Axis",
+        "start": "-1d",
+        "end": "now",
+        "location": "bottom",
+    }
+
+    # Assertions to check if the result matches expected output
+    assert result["time_axis"] == expected
+
+
 def test_convert_cli(get_test_file, tmp_path):
     """Test that the TraceFileConverter can be run from the command line
 
