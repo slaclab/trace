@@ -75,7 +75,7 @@ def post_entry(
         return response.status_code, e
 
 
-def get_logbooks() -> Tuple[int, Union[List[str] | Exception]]:
+def get_logbooks() -> Tuple[int, Union[List[str], Exception]]:
     """
     Fetches the list of logbooks from the ELOG API.
 
