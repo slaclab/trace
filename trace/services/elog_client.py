@@ -6,17 +6,20 @@ Elog API client for posting entries and fetching user and logbook information.
 
 import os
 import json
+from typing import Dict, List, Tuple, Union, Optional
 from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
+
+from config import logger
 
 load_dotenv()
 ELOG_API_URL = os.getenv("SWAPPS_TRACE_ELOG_API_URL")
 ELOG_API_KEY = os.getenv("SWAPPS_TRACE_ELOG_API_KEY")
 
 
-def get_user() -> tuple[int, dict | Exception]:
+def get_user() -> Tuple[int, Union[Dict, Exception]]:
     """
     Fetches the user information from the ELOG API. Also used to verify the API key.
     :return: A tuple containing the status code and the user data or exception.
@@ -28,13 +31,13 @@ def get_user() -> tuple[int, dict | Exception]:
         response.raise_for_status()
         return response.status_code, response.json()
     except requests.exceptions.RequestException as e:
-        print(e)
+        logger.error(e)
         return response.status_code, e
 
 
 def post_entry(
-    title: str, body: str, logbooks: list[str], image_bytes, config_file_path: Path | None = None
-) -> tuple[int, dict | Exception]:
+    title: str, body: str, logbooks: list[str], image_bytes, config_file_path: Optional[Path] = None
+) -> Tuple[int, Union[Dict, Exception]]:
     """
     Posts a new entry with image to the ELOG API.
 
@@ -68,11 +71,11 @@ def post_entry(
         response.raise_for_status()
         return response.status_code, response.json()
     except requests.exceptions.RequestException as e:
-        print(e)
+        logger.error(e)
         return response.status_code, e
 
 
-def get_logbooks() -> tuple[int, list[str] | Exception]:
+def get_logbooks() -> Tuple[int, Union[List[str], Exception]]:
     """
     Fetches the list of logbooks from the ELOG API.
 
@@ -86,5 +89,5 @@ def get_logbooks() -> tuple[int, list[str] | Exception]:
         response.raise_for_status()
         return response.status_code, [logbook["name"] for logbook in response.json()["payload"]]
     except requests.exceptions.RequestException as e:
-        print(e)
+        logger.error(e)
         return response.status_code, e
