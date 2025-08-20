@@ -105,7 +105,7 @@ class ElogPostModal(QDialog):
         return title, body, logbooks, attach_config
 
     @classmethod
-    def maybe_create(cls, parent: QWidget = None, image_bytes: bytes | None = None) -> "ElogPostModal" | None:
+    def maybe_create(cls, parent: QWidget = None, image_bytes: bytes | None = None) -> "ElogPostModal | None":
         """
         Creates and shows the ElogPostModal dialog if the logbook list can be populated.
         """
