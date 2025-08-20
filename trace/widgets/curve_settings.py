@@ -107,7 +107,7 @@ class CurveSettingsModal(QWidget):
             self.bin_count_line_edit.setPlaceholderText(str(n_bins))
         except (AttributeError, ValueError) as e:
             logger.warning(f"Unable to set data bins: {e}")
-    
+
     def set_live_data_connection(self, state: Qt.CheckState) -> None:
         self.curve.liveData = state == Qt.Checked
 
