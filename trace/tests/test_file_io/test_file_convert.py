@@ -313,6 +313,9 @@ def test_get_plot_data(converter):
     mock_y_axis_json = json.dumps({"label": "Y Axis 1", "unit": "A"})
     mock_plot.getYAxes.return_value = [mock_y_axis_json]
 
+    # Mock the auto_scroll_timer is inactive
+    mock_plot.auto_scroll_timer.isActive.return_value = False
+
     # Mock curve data with both channel and formula data
     mock_curve_with_channel = json.dumps({"channel": "test_channel", "name": "Curve 1"})
     mock_curve_with_formula = json.dumps({"formula": "x^2", "name": "Curve 2"})
