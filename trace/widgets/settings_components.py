@@ -1,3 +1,5 @@
+from typing import Dict, List, Tuple, Union, Optional
+
 from qtpy.QtGui import QFont
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import (
@@ -35,7 +37,9 @@ class SettingsRowItem(QHBoxLayout):
 class ComboBoxWrapper(QComboBox):
     text_changed = Signal(object)
 
-    def __init__(self, parent: QWidget, data_source: list | tuple | dict, init_value: int | str = None):
+    def __init__(
+        self, parent: QWidget, data_source: Union[List, Tuple, Dict], init_value: Optional[Union[int, str]] = None
+    ):
         super().__init__(parent)
         if isinstance(data_source, (list, tuple)):
             data_source = {v: v for v in data_source}
