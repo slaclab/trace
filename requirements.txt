@@ -2,8 +2,10 @@ pydm
 pandas
 pytest
 pytest-qt
+qtawesome
 mkdocs
 mkdocs-material
 mkdocstrings
 mkdocstrings-python
 pre-commit
+python-dotenv

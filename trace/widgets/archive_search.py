@@ -123,7 +123,7 @@ class ArchiveSearchWidget(QWidget):
         The parent item of this widget
     """
 
-    append_PVs_requested = Signal(str)
+    append_PVs_requested = Signal(list)
 
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent=parent)
@@ -132,64 +132,64 @@ class ArchiveSearchWidget(QWidget):
         self.network_manager.finished.connect(self.populate_results_list)
 
         self.resize(400, 800)
-        self.layout = QVBoxLayout()
+        self.main_layout = QVBoxLayout()
 
+        self.archive_url_layout = QHBoxLayout()
         self.archive_title_label = QLabel("Archive URL:")
+        self.archive_url_layout.addWidget(self.archive_title_label)
         self.archive_url_textedit = QLineEdit(getenv("PYDM_ARCHIVER_URL"))
         self.archive_url_textedit.setFixedWidth(250)
         self.archive_url_textedit.setFixedHeight(25)
+        self.archive_url_layout.addWidget(self.archive_url_textedit)
+        self.main_layout.addLayout(self.archive_url_layout)
 
+        self.search_layout = QHBoxLayout()
         self.search_label = QLabel("Pattern:")
+        self.search_layout.addWidget(self.search_label)
         self.search_box = QLineEdit()
+        self.search_layout.addWidget(self.search_box)
         self.search_button = QPushButton("Search")
         self.search_button.setDefault(True)
         self.search_button.clicked.connect(self.request_archiver_info)
+        self.search_layout.addWidget(self.search_button)
+        self.main_layout.addLayout(self.search_layout)
 
         self.loading_label = QLabel("Loading...")
         self.loading_label.hide()
+        self.main_layout.addWidget(self.loading_label)
 
         self.results_table_model = ArchiveResultsTableModel()
         self.results_view = QTableView(self)
         self.results_view.setModel(self.results_table_model)
-        self.results_view.setProperty("showDropIndicator", False)
-        self.results_view.setDragDropOverwriteMode(False)
-        self.results_view.setDragEnabled(True)
+        # self.results_view.setProperty("showDropIndicator", False)
+        # self.results_view.setDragDropOverwriteMode(False)
+        # self.results_view.setDragEnabled(True)  # Removing drag & drop for now
         self.results_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.results_view.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.results_view.setDropIndicatorShown(True)
+        # self.results_view.setDropIndicatorShown(True)
         self.results_view.setCornerButtonEnabled(False)
         self.results_view.setSortingEnabled(True)
         self.results_view.verticalHeader().setVisible(False)
         self.results_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.results_view.startDrag = self.startDragAction
+        # self.results_view.startDrag = self.startDragAction
+        self.results_view.doubleClicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
+        self.main_layout.addWidget(self.results_view)
 
-        self.archive_url_layout = QHBoxLayout()
-        self.archive_url_layout.addWidget(self.archive_title_label)
-        self.archive_url_layout.addWidget(self.archive_url_textedit)
-        self.layout.addLayout(self.archive_url_layout)
-        self.search_layout = QHBoxLayout()
-        self.search_layout.addWidget(self.search_label)
-        self.search_layout.addWidget(self.search_box)
-        self.search_layout.addWidget(self.search_button)
-        self.layout.addLayout(self.search_layout)
-        self.layout.addWidget(self.loading_label)
-        self.layout.addWidget(self.results_view)
         self.insert_button = QPushButton("Add PVs")
         self.insert_button.clicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
-        self.results_view.doubleClicked.connect(lambda: self.append_PVs_requested.emit(self.selectedPVs()))
-        self.layout.addWidget(self.insert_button)
-        self.setLayout(self.layout)
+        self.main_layout.addWidget(self.insert_button)
 
-    def selectedPVs(self) -> str:
+        self.setLayout(self.main_layout)
+
+    def selectedPVs(self) -> list[str]:
         """Figure out based on which indexes were selected, the list of PVs (by string name)
         The user was hoping to insert into the table. Concatenate them into string form i.e.
         <pv1>, <pv2>, <pv3>"""
         indices = self.results_view.selectedIndexes()
-        pv_list = ""
+        pv_list = []
         for index in indices:
-            pv_name = self.results_table_model.results_list[index.row()]
-            pv_list += pv_name + ", "
-        return pv_list[:-2]
+            pv_list.append(self.results_table_model.results_list[index.row()])
+        return pv_list
 
     def startDragAction(self, supported_actions) -> None:
         """
