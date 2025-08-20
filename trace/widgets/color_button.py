@@ -1,5 +1,5 @@
 from random import random
-from typing import Any, Union
+from typing import Any
 
 from qtpy.QtGui import QColor, QMouseEvent
 from qtpy.QtCore import Qt, Signal
@@ -25,7 +25,7 @@ class ColorButton(QPushButton):
 
     color_changed = Signal(QColor)
 
-    def __init__(self, *args: Any, color: Union[QColor, str] = None, index: int = -1, **kwargs) -> None:
+    def __init__(self, *args: Any, color: QColor | str = None, index: int = -1, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         if not color:
             if index >= 0:

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from qtpy.QtGui import QColor
 from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import QWidget, QCheckBox, QLineEdit, QVBoxLayout
@@ -126,7 +124,7 @@ class CurveSettingsModal(QWidget):
         self.curve.color = color
 
     @Slot(object)
-    def set_curve_type(self, curve_type: Optional[str]) -> None:
+    def set_curve_type(self, curve_type: str | None = None) -> None:
         self.curve.stepMode = curve_type
 
     @Slot(object)
