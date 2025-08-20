@@ -494,31 +494,24 @@ class CurveItem(QtWidgets.QWidget):
         self.pv_settings_modal = None
         self.pv_settings_button.clicked.connect(self.show_settings_modal)
         pv_settings_layout.addWidget(self.pv_settings_button)
+
+        self.live_connection_status = QtWidgets.QLabel()
+        self.live_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
+        self.live_connection_status.setToolTip("Not connected to live data")
+        self.source.live_channel_connection.connect(self.update_live_icon)
+        pv_settings_layout.addWidget(self.live_connection_status)
+
+        self.archive_connection_status = QtWidgets.QLabel()
+        self.archive_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
+        self.archive_connection_status.setToolTip("Not connected to archive data")
+        self.source.archive_channel_connection.connect(self.update_archive_icon)
+        pv_settings_layout.addWidget(self.archive_connection_status)
+
         self.delete_button = QtWidgets.QPushButton()
         self.delete_button.setIcon(qta.icon("msc.trash"))
         self.delete_button.setFlat(True)
         self.delete_button.clicked.connect(self.close)
         pv_settings_layout.addWidget(self.delete_button)
-
-        self.live_toggle = QtWidgets.QCheckBox("Live")
-        self.live_toggle.setCheckState(QtCore.Qt.Checked if self.source.liveData else QtCore.Qt.Unchecked)
-        self.live_toggle.stateChanged.connect(self.set_live_data_connection)
-        data_type_layout.addWidget(self.live_toggle)
-        self.live_connection_status = QtWidgets.QLabel()
-        self.live_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
-        self.live_connection_status.setToolTip("Not connected to live data")
-        self.source.live_channel_connection.connect(self.update_live_icon)
-        data_type_layout.addWidget(self.live_connection_status)
-
-        self.archive_toggle = QtWidgets.QCheckBox("Archive")
-        self.archive_toggle.setCheckState(QtCore.Qt.Checked if self.source.use_archive_data else QtCore.Qt.Unchecked)
-        self.archive_toggle.stateChanged.connect(self.set_archive_data_connection)
-        data_type_layout.addWidget(self.archive_toggle)
-        self.archive_connection_status = QtWidgets.QLabel()
-        self.archive_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
-        self.archive_connection_status.setToolTip("Not connected to archive data")
-        self.source.archive_channel_connection.connect(self.update_archive_icon)
-        data_type_layout.addWidget(self.archive_connection_status)
 
         data_type_layout.addStretch()
 
@@ -539,12 +532,6 @@ class CurveItem(QtWidgets.QWidget):
             self.source.hide()
         else:
             self.source.show()
-
-    def set_live_data_connection(self, state: QtCore.Qt.CheckState) -> None:
-        self.source.liveData = state == QtCore.Qt.Checked
-
-    def set_archive_data_connection(self, state: QtCore.Qt.CheckState) -> None:
-        self.source.use_archive_data = state == QtCore.Qt.Checked
 
     def update_live_icon(self, connected: bool) -> None:
         self.live_connection_status.setVisible(not connected)

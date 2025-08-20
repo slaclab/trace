@@ -1,6 +1,7 @@
 from qtpy.QtGui import QColor
 from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import QWidget, QCheckBox, QLineEdit, QVBoxLayout
+from qtpy.QtWidgets import QWidget, QCheckBox, QLineEdit, QVBoxLayout, QLabel
+from qtawesome import icon
 
 from pydm.widgets.archiver_time_plot import TimePlotCurveItem, PyDMArchiverTimePlot
 
@@ -40,6 +41,18 @@ class CurveSettingsModal(QWidget):
             bin_count = plot.optimized_data_bins
         bin_count_line_edit.setPlaceholderText(str(bin_count))
         main_layout.addLayout(optimized_bin_count)
+
+        self.live_toggle = QCheckBox("")
+        self.live_toggle.setCheckState(Qt.Checked if self.curve.liveData else Qt.Unchecked)
+        self.live_toggle.stateChanged.connect(self.set_live_data_connection)
+        live_toggle_row = SettingsRowItem(self, "Connect to Live", self.live_toggle)
+        main_layout.addLayout(live_toggle_row)
+
+        self.archive_toggle = QCheckBox("")
+        self.archive_toggle.setCheckState(Qt.Checked if self.curve.use_archive_data else Qt.Unchecked)
+        self.archive_toggle.stateChanged.connect(self.set_archive_data_connection)
+        archive_toggle_row = SettingsRowItem(self, "Connect to Archive", self.archive_toggle)
+        main_layout.addLayout(archive_toggle_row)
 
         line_title_label = SettingsTitle(self, "Line")
         main_layout.addWidget(line_title_label)
@@ -94,6 +107,12 @@ class CurveSettingsModal(QWidget):
             self.bin_count_line_edit.setPlaceholderText(str(n_bins))
         except (AttributeError, ValueError) as e:
             logger.warning(f"Unable to set data bins: {e}")
+    
+    def set_live_data_connection(self, state: Qt.CheckState) -> None:
+        self.curve.liveData = state == Qt.Checked
+
+    def set_archive_data_connection(self, state: Qt.CheckState) -> None:
+        self.curve.use_archive_data = state == Qt.Checked
 
     def show(self):
         parent_pos = self.parent().rect().bottomRight()
