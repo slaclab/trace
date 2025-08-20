@@ -46,6 +46,7 @@ extra:
 
 # Extensions
 markdown_extensions:
+  - md_in_html
   - pymdownx.highlight
   - pymdownx.superfences
 
@@ -53,15 +54,29 @@ markdown_extensions:
 nav:
   - Home: index.md
   - How To:
-      - Overview: how_to/overview.md
-      - Traces: how_to/traces.md
-      - Traces Table Menu: how_to/traces_table_menu.md
-      - Axes: how_to/axes.md
-      - Plot Config: how_to/plot_config.md
-      - Import/Export: how_to/io.md
-      - Convert Save Files: how_to/file_conversion.md
+    - how_to/index.md
+    - Overview: how_to/overview.md
+    - Traces: how_to/traces.md
+    - Traces Table Menu: how_to/traces_table_menu.md
+    - Axes: how_to/axes.md
+    - Plot Config: how_to/plot_config.md
+    - Import/Export: how_to/io.md
+    - Convert Save Files: how_to/file_conversion.md
   - API Reference:
-      - Trace: api_reference/trace.md
-      - Traces Table: api_reference/traces_table.md
-      - Axis Table: api_reference/axis_table.md
-      - Plot Config: api_reference/plot_config.md
+    - api_reference/trace.md
+    - Widgets:
+      - api_reference/widgets/index.md
+      - Control Panel: api_reference/widgets/control_panel.md
+      - Settings Popups: api_reference/widgets/settings_popups.md
+      - Archive Search: api_reference/widgets/archive_search.md
+      - Data Insight Tool: api_reference/widgets/data_insight_tool.md
+      - E-Log Post Modal: api_reference/widgets/elog_post_modal.md
+      - Helper Widgets: api_reference/widgets/helper_widgets.md
+    - File IO:
+      - api_reference/file_io/index.md
+      - File Converter: api_reference/file_io/trace_file_convert.md
+      - File Handler: api_reference/file_io/file_handler.md
+      - Time Parser: api_reference/file_io/time_parser.md
+    - Services:
+      - api_reference/services/index.md
+      - E-Log Service: api_reference/services/elog_client.md
