@@ -1,26 +1,16 @@
+# Project Information
 site_name: Trace
-repo_url: https://github.com/slaclab/trace
+site-url: https://slaclab.github.io/trace/
+site-author: SLAC National Accelerator Laboratory - EED / Software Applications Group
+site_description: Trace is a Python application for plotting live and archived EPICS data.
+
+# Repository
 repo_name: slaclab/trace
+repo_url: https://github.com/slaclab/trace
 
-nav:
-  - Home: index.md
-  - How To:
-      - Overview: how_to/overview.md
-      - Traces: how_to/traces.md
-      - Traces Table Menu: how_to/traces_table_menu.md
-      - Axes: how_to/axes.md
-      - Plot Config: how_to/plot_config.md
-      - Import/Export: how_to/io.md
-      - Convert Save Files: how_to/file_conversion.md
-  - API Reference:
-      - Trace: api_reference/trace.md
-      - Traces Table: api_reference/traces_table.md
-      - Axis Table: api_reference/axis_table.md
-      - Plot Config: api_reference/plot_config.md
-
+# Configuration
 theme:
   name: material
-  # custom_dir: overrides
   icon:
     repo: fontawesome/brands/github
   features:
@@ -42,13 +32,7 @@ theme:
         icon: material/toggle-switch
         name: Switch to light mode
 
-extra:
-  generator: false
-
-markdown_extensions:
-  - pymdownx.highlight
-  - pymdownx.superfences
-
+# Plugins
 plugins:
   - search
   - mkdocstrings:
@@ -56,3 +40,28 @@ plugins:
         python:
           paths: [trace]
 
+# Additional Configuration
+extra:
+  generator: false
+
+# Extensions
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+# Page Tree
+nav:
+  - Home: index.md
+  - How To:
+      - Overview: how_to/overview.md
+      - Traces: how_to/traces.md
+      - Traces Table Menu: how_to/traces_table_menu.md
+      - Axes: how_to/axes.md
+      - Plot Config: how_to/plot_config.md
+      - Import/Export: how_to/io.md
+      - Convert Save Files: how_to/file_conversion.md
+  - API Reference:
+      - Trace: api_reference/trace.md
+      - Traces Table: api_reference/traces_table.md
+      - Axis Table: api_reference/axis_table.md
+      - Plot Config: api_reference/plot_config.md
