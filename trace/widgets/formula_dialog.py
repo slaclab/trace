@@ -38,7 +38,8 @@ class FormulaDialog(QDialog):
 
         # Hide all columns unused. Leave one to add a button to
         header = self.pv_list.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        header.setStretchLastSection(True)
 
         layout.addWidget(self.pv_list)
         layout.addWidget(self.field)
