@@ -198,6 +198,21 @@ class CurveModel(QAbstractTableModel):
             return self._headers[section]
         return None
 
+    def row_to_key(self, row: int) -> str:
+        """If the given row index is valid, return the key for that row.
+
+        Parameters
+        ----------
+        row : int
+            Row index for the requested key.
+        """
+        if not (0 <= row < self.rowCount()):
+            return None
+
+        curve_dict = self.control_panel.curve_dict
+        keys = list(curve_dict.keys())
+        return keys[row]
+
     def refresh(self):
         """Force a refresh of the model data"""
         self.beginResetModel()
