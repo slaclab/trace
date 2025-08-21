@@ -1,7 +1,7 @@
 # Project Information
 site_name: Trace
-site-url: https://slaclab.github.io/trace/
-site-author: SLAC National Accelerator Laboratory - EED / Software Applications Group
+site_url: https://slaclab.github.io/trace/
+site_author: SLAC National Accelerator Laboratory - EED / Software Applications Group
 site_description: Trace is a Python application for plotting live and archived EPICS data.
 
 # Repository
@@ -18,6 +18,7 @@ theme:
     - navigation.tabs
     - navigation.indexes
     - navigation.footer
+    - search.highlight
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -46,7 +47,6 @@ extra:
 
 # Extensions
 markdown_extensions:
-  - md_in_html
   - pymdownx.highlight
   - pymdownx.superfences
 
