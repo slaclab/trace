@@ -104,7 +104,7 @@ class ControlPanel(QtWidgets.QWidget):
             self.archive_search.raise_()
             self.archive_search.activateWindow()
 
-    def add_formula(self):
+    def show_formula_dialog(self):
         """Show the formula dialog pop-up."""
         if not hasattr(self, "formula_dialog") or not self.formula_dialog.isVisible():
             self.formula_dialog.show()
