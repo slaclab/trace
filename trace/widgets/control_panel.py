@@ -354,7 +354,7 @@ class AxisItem(QtWidgets.QWidget):
     def __init__(self, plot_axis_item: BasePlotAxisItem, control_panel=None):
         super().__init__()
         self.source = plot_axis_item
-        self.control_panel_ref = None
+        self.control_panel_ref = control_panel
         self.setLayout(QtWidgets.QVBoxLayout())
         self.setAcceptDrops(True)
 
