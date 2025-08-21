@@ -43,7 +43,7 @@ class ControlPanel(QtWidgets.QWidget):
         self.calc_button = QtWidgets.QPushButton()
         self.calc_button.setIcon(qta.icon("fa6s.calculator"))
         self.calc_button.setFlat(True)
-        self.calc_button.clicked.connect(self.add_formula)
+        self.calc_button.clicked.connect(self.show_formula_dialog)
         pv_plotter_layout.addWidget(self.calc_button)
 
         self.pv_line_edit = QtWidgets.QLineEdit()
@@ -293,59 +293,12 @@ class ControlPanel(QtWidgets.QWidget):
             del curve_dict["channel"]  # Remove channel key to avoid conflicts with y_channel
             axis_item.add_curve(pv_name, curve_dict)
         self.plot.redrawPlot()
-
-        if self.axis_list.count() == 1:  # the stretch makes count >= 1
-            self.add_axis()
         self.axis_list.itemAt(self.axis_list.count() - 2).widget()
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
         for axis_item in range(self.axis_list.count()):
             axis_item.close()
         super().closeEvent(a0)
-
-    def recursionCheck(self, target: str, rowHeaders: dict) -> bool:
-        """Internal method that uses DFS to confirm there are not cyclical formula dependencies
-
-        We are handling base case in the loop
-        We are running this every single time formulaToPVDict is called,
-        so our target is the only fail check
-
-        Parameters
-        --------------
-        target: str
-            The row header that initially called this check. If we find it, there is a cyclical dependency
-
-        rowHeaders: dict()
-            This contains rowHeader -> BasePlotCurveItem so we can find all of our dependencies
-                From this we know which Formula we then have to traverse to confirm we are good
-        """
-        for rowHeader, curve in rowHeaders.items():
-            if rowHeader == target:
-                return False
-            if isinstance(curve, FormulaCurveItem):
-                if not self.recursionCheck(target, curve.pvs):
-                    return False
-        return True
-
-    def formulaToPVDict(self, rowName: str, formula: str) -> dict:
-        """Take in a formula and return a dictionary with keys of row headers and values of the BasePlotCurveItems"""
-        pvs = re.findall("{(.+?)}", formula)
-        pvdict = dict()
-        for pv in pvs:
-            if pv not in self._row_names:
-                raise ValueError(f"{pv} is an invalid variable name")
-            elif pv == rowName:
-                raise ValueError(f"{pv} is recursive")
-
-            rindex = self._row_names.index(pv)
-            pvdict[pv] = self._plot._curves[rindex]
-
-        if not self.recursionCheck(rowName, pvdict):
-            raise ValueError("There was a recursive dependency somewhere")
-        if not pvdict:
-            expression = formula[4:]
-            validate_formula(expression, allowed_symbols=set())
-        return pvdict
 
 
 class AxisItem(QtWidgets.QWidget):
@@ -450,7 +403,7 @@ class AxisItem(QtWidgets.QWidget):
 
         plot_curve_item = plot._curves[-1]
 
-        control_panel = self.parent()
+        control_panel = self.control_panel
         while control_panel and not hasattr(control_panel, "_curve_dict"):
             control_panel = control_panel.parent()
 
@@ -471,7 +424,7 @@ class AxisItem(QtWidgets.QWidget):
         return curve_item
 
     def add_formula_curve(self, formula):
-        control_panel = self.parent()
+        control_panel = self.control_panel
         while control_panel and not hasattr(control_panel, "_curve_dict"):
             control_panel = control_panel.parent()
 
@@ -564,7 +517,7 @@ class AxisItem(QtWidgets.QWidget):
 
     def handle_curve_deleted(self, curve):
         self.curves_list_changed.emit()
-        control_panel = self.parent().parent().parent().parent()
+        control_panel = self.control_panel
         curve_key_to_delete = None
 
         for key, value in control_panel.curve_dict.items():
@@ -602,7 +555,7 @@ class AxisItem(QtWidgets.QWidget):
             if hasattr(widget, "source") and widget.source == target_curve:
                 return widget
 
-        control_panel = self.parent().parent().parent().parent()
+        control_panel = self.control_panel
         for i in range(control_panel.axis_list.count() - 1):  # -1 for stretch
             axis_item = control_panel.axis_list.itemAt(i).widget()
             if hasattr(axis_item, "layout"):
@@ -698,6 +651,15 @@ class AxisItem(QtWidgets.QWidget):
         self.setParent(None)
         self.deleteLater()
         return super().close()
+
+    @property
+    def control_panel(self):
+        if self.control_panel_ref is None:
+            parent = self.parent().parent().parent().parent()
+            while parent and not isinstance(parent, ControlPanel):
+                parent = parent.parent()
+            self.control_panel_ref = parent.control_panel
+        return self.control_panel_ref
 
 
 class DragHandle(QtWidgets.QPushButton):

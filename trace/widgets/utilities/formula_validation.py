@@ -3,11 +3,7 @@ import ast
 import math
 from typing import Set
 
-_ALLOWED_FUNC_NAMES: Set[str] = {
-    *vars(math).keys(),
-    "mean",
-    "ln"
-}
+_ALLOWED_FUNC_NAMES: Set[str] = {*vars(math).keys(), "mean", "ln"}
 
 _ALLOWED_NODES = (
     ast.Expression,
@@ -25,6 +21,7 @@ _ALLOWED_NODES = (
     ast.Call,
     ast.Name,
     ast.Load,
+    ast.BitXor,
 )
 
 

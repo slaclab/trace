@@ -9,6 +9,8 @@ from qtpy.QtWidgets import (
     QGridLayout,
     QHeaderView,
     QPushButton,
+    QSizePolicy,
+    QSpacerItem,
     QVBoxLayout,
     QAbstractItemView,
 )
@@ -27,11 +29,9 @@ class FormulaDialog(QDialog):
         self.setWindowTitle("Formula Input")
 
         layout = QVBoxLayout(self)
-        
-        layout.addSpacerItem(
-            QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        )
-        
+
+        layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
         self.field = QLineEdit(self)
         self.curve_model = CurveModel(parent)
 
@@ -122,8 +122,8 @@ class FormulaDialog(QDialog):
     @Slot(QModelIndex)
     def insert_pv_key(self, index):
         """Insert the variable name into the formula field when a row is double-clicked"""
-        if index.isValid() and index.column() == 0:  # Only respond to clicks on the key column
-            key = index.data()
+        if index.isValid():
+            key = self.curve_model.row_to_key(index.row())
             if key:
                 current_text = self.field.text()
                 cursor_pos = self.field.cursorPosition()
@@ -141,17 +141,6 @@ class CurveModel(QAbstractTableModel):
         super().__init__()
         self.control_panel = control_panel
         self._headers = ["Variable Name", "Curve Name"]
-
-    def _get_plot(self):
-        """Safely get the plot from the control panel"""
-        try:
-            if hasattr(self.control_panel, "_plot") and self.control_panel._plot:
-                return self.control_panel._plot
-            elif hasattr(self.control_panel, "plot"):
-                return self.control_panel.plot
-            return None
-        except AttributeError:
-            return None
 
     def rowCount(self, parent=QModelIndex()):
         if hasattr(self.control_panel, "curve_dict"):
