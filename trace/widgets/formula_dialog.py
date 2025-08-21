@@ -27,6 +27,11 @@ class FormulaDialog(QDialog):
         self.setWindowTitle("Formula Input")
 
         layout = QVBoxLayout(self)
+        
+        layout.addSpacerItem(
+            QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        )
+        
         self.field = QLineEdit(self)
         self.curve_model = CurveModel(parent)
 
