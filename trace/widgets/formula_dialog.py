@@ -84,7 +84,6 @@ class FormulaDialog(QDialog):
         ok_button = QPushButton("Add Formula Curve", self)
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
-        self.showPVList()
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
         """Special key press tracker. If enter or return is pressed the formula
