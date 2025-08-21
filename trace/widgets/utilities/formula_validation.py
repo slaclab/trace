@@ -5,6 +5,8 @@ from typing import Set
 
 _ALLOWED_FUNC_NAMES: Set[str] = {
     *vars(math).keys(),
+    "mean",
+    "ln"
 }
 
 _ALLOWED_NODES = (
