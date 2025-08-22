@@ -2,7 +2,6 @@ import os
 import re
 import json
 import logging
-from typing import Iterable
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -136,7 +135,7 @@ class DataVisualizationModel(QAbstractTableModel):
         self.description = description
         self.description_changed.emit()
 
-    def set_all_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]) -> None:
+    def set_all_data(self, curve_item: TimePlotCurveItem, x_range: list[int] | tuple[int, int]) -> None:
         """Set the model's data for the given curve and the given time range.
         This function determines what kind of data should be saved and prompts
         the methods for setting live or archived data as necessary. This also
@@ -146,7 +145,7 @@ class DataVisualizationModel(QAbstractTableModel):
         ----------
         curve_item : TimePlotCurveItem
             The curve for the model to collect and store data on
-        x_range : Iterable[int]
+        x_range : list[int] | tuple[int, int]
             The time range to collect and store data between
         """
         self.address = curve_item.address if curve_item.address else ""
@@ -177,7 +176,7 @@ class DataVisualizationModel(QAbstractTableModel):
             # Emulate network reply being recieved for parent widget
             self.reply_recieved.emit()
 
-    def set_live_data(self, curve_item: TimePlotCurveItem, x_range: Iterable[int]) -> None:
+    def set_live_data(self, curve_item: TimePlotCurveItem, x_range: list[int] | tuple[int, int]) -> None:
         """Set the live data for the given curve in the given time range. Appends
         rows within the time range to the end of the model's dataframe.
 
@@ -185,7 +184,7 @@ class DataVisualizationModel(QAbstractTableModel):
         ----------
         curve_item : TimePlotCurveItem
             The curve for the model to collect and store data on
-        x_range : Iterable[int]
+        x_range : list[int] | tuple[int, int]
             The time range to collect and store data between
         """
         data_n = curve_item.points_accumulated
@@ -208,7 +207,7 @@ class DataVisualizationModel(QAbstractTableModel):
         self.df = live_df
         self.endResetModel()
 
-    def request_archive_data(self, pv_name: str, x_range: Iterable[int]) -> None:
+    def request_archive_data(self, pv_name: str, x_range: list[int] | tuple[int, int]) -> None:
         """Request data from the Archiver Appliance for the given PV and time range.
         Only gets raw data, never optimized. Ends early if there is no environment
         variable PYDM_ARCHIVER_URL, which would contain the url for the Archiver
@@ -218,7 +217,7 @@ class DataVisualizationModel(QAbstractTableModel):
         ----------
         pv_name : str
             The PV address to request data for
-        x_range : Iterable[int]
+        x_range : list[int] | tuple[int, int]
             The time range to collect and store data between
         """
         # Check the $PYDM_ARCHIVER_URL is populated

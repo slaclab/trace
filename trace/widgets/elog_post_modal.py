@@ -1,5 +1,3 @@
-from typing import List, Tuple, Optional
-
 from qtpy.QtGui import QPixmap
 from qtpy.QtWidgets import (
     QLabel,
@@ -23,7 +21,7 @@ class ElogPostModal(QDialog):
     def __init__(
         self,
         parent: QWidget = None,
-        image_bytes: Optional[bytes] = None,
+        image_bytes: bytes | None = None,
     ):
         super().__init__(parent)
 
@@ -96,7 +94,7 @@ class ElogPostModal(QDialog):
 
         self.accept()
 
-    def get_inputs(self) -> Tuple[str, str, List[str], bool]:
+    def get_inputs(self) -> tuple[str, str, list[str], bool]:
         """
         Returns the inputs from the dialog as a tuple of (title, body, logbooks, attach_config).
         """
@@ -107,7 +105,7 @@ class ElogPostModal(QDialog):
         return title, body, logbooks, attach_config
 
     @classmethod
-    def maybe_create(cls, parent: QWidget = None, image_bytes: Optional[bytes] = None) -> Optional["ElogPostModal"]:
+    def maybe_create(cls, parent: QWidget = None, image_bytes: bytes | None = None) -> "ElogPostModal | None":
         """
         Creates and shows the ElogPostModal dialog if the logbook list can be populated.
         """
