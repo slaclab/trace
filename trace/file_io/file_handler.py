@@ -1,5 +1,4 @@
 from os import getenv
-from typing import Union
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -66,7 +65,7 @@ class TraceFileHandler(QObject):
     @Slot()
     @Slot(str)
     @Slot(Path)
-    def open_file(self, file_name: Union[str, Path] = None) -> None:
+    def open_file(self, file_name: str | Path = None) -> None:
         """Prompt the user for which config file to load from"""
         # Get the save file from the user
         if not file_name:

@@ -6,7 +6,6 @@ import logging
 import xml.etree.ElementTree as ET
 from os import path, getenv
 from re import compile
-from typing import Dict, List, Union
 from pathlib import Path
 from argparse import Action, Namespace, ArgumentParser
 from datetime import datetime, timedelta
@@ -38,7 +37,7 @@ class TraceFileConverter:
     java_date_re = compile(r"^[01]\d/[0-3]\d/\d{4}")
     time_re = compile(r"(?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?")
 
-    def __init__(self, input_file: Union[str, Path] = "", output_file: Union[str, Path] = "") -> None:
+    def __init__(self, input_file: str | Path = "", output_file: str | Path = "") -> None:
         self.input_file = input_file
         self.output_file = output_file
 
@@ -54,7 +53,7 @@ class TraceFileConverter:
         with self.input_file.open() as f:
             return f.readline().startswith("StripConfig")
 
-    def import_file(self, file_name: Union[str, Path] = None) -> Dict:
+    def import_file(self, file_name: str | Path = None) -> dict:
         """Import Archive Viewer save data from the provided file. The file
         should be one of two types: '.trc' or '.xml'. The data is returned as
         well as saved in the stored_data property.
@@ -90,7 +89,7 @@ class TraceFileConverter:
 
         return self.stored_data
 
-    def export_file(self, file_name: Union[str, Path] = None, output_data: Union[Dict, PyDMTimePlot] = None) -> None:
+    def export_file(self, file_name: str | Path = None, output_data: dict | PyDMTimePlot = None) -> None:
         """Export the provided Archive Viewer save data to the provided file.
         The file to export to should be of type '.trc'. The provided data can
         be either a dictionary or a PyDMTimePlot object. If no data is provided,
@@ -132,7 +131,7 @@ class TraceFileConverter:
         with open(self.output_file, "w") as f:
             json.dump(output_data, f, indent=4)
 
-    def convert_xml_data(self, data_in: Dict = {}) -> Dict:
+    def convert_xml_data(self, data_in: dict = {}) -> dict:
         """Convert the inputted data from being formatted for the Java Archive
         Viewer to a format used by trace. This is accomplished by converting one
         dictionary structure to another.
@@ -212,7 +211,7 @@ class TraceFileConverter:
         self.stored_data = self.remove_null_values(converted_data)
         return self.stored_data
 
-    def convert_stp_data(self, data_in: Dict = {}) -> Dict:
+    def convert_stp_data(self, data_in: dict = {}) -> dict:
         """Convert the inputted data from a format used by StripTool to a format
         used by Trace. This is accomplished by converting one dictionary structure
         to another.
@@ -317,7 +316,7 @@ class TraceFileConverter:
         return formatted_date
 
     @staticmethod
-    def xml_to_dict(xml: ET.ElementTree) -> Dict:
+    def xml_to_dict(xml: ET.ElementTree) -> dict:
         """Convert an XML ElementTree containing an Archive Viewer save
         file to a dictionary for easier use
 
@@ -365,7 +364,7 @@ class TraceFileConverter:
         return data_dict
 
     @staticmethod
-    def stp_to_dict(stp_text: str) -> Dict:
+    def stp_to_dict(stp_text: str) -> dict:
         """Convert the StripTool file's text into a dictionary.
 
         Parameters
@@ -535,7 +534,7 @@ class TraceFileConverter:
         return QColor(srgb)
 
     @staticmethod
-    def xColor_to_qColor(rgb: List[str]) -> QColor:
+    def xColor_to_qColor(rgb: list[str]) -> QColor:
         """Convert XColor values into QColors. Colors in StripTool files (*.stp)
         are saved as XColors.
 
@@ -555,7 +554,7 @@ class TraceFileConverter:
         return QColor(*rgb)
 
     @staticmethod
-    def remove_null_values(obj_in: Union[Dict, List]) -> Union[Dict, List]:
+    def remove_null_values(obj_in: dict | list) -> dict | list:
         """Delete None values recursively from all of the dictionaries, tuples, lists, sets
 
         Parameters
@@ -594,9 +593,9 @@ def convert(converter: TraceFileConverter, input_file: Path = None, output_file:
     ----------
     converter : TraceFileConverter
         The TraceFileConverter object to use for the conversion.
-    input_file : List[Path]
+    input_file : list[Path]
         The user provided input file to be converted
-    output_file : List[Path], optional
+    output_file : list[Path], optional
         The user provided output file name to use during conversion, by default None
     overwrite : bool, optional
         Whether or not to overwrite the existing output file, by default False
@@ -625,15 +624,15 @@ def convert(converter: TraceFileConverter, input_file: Path = None, output_file:
     converter.export_file(output_file)
 
 
-def main(input_file: List[Path] = None, output_file: List[Path] = None, overwrite: bool = False, clean: bool = False):
+def main(input_file: list[Path] = None, output_file: list[Path] = None, overwrite: bool = False, clean: bool = False):
     """Convert all provided input files into the expected output files. If requested,
     overwrite the existing output files and remove any leftover input files.
 
     Parameters
     ----------
-    input_file : List[Path]
+    input_file : list[Path]
         The user provided input files to be converted
-    output_file : List[Path], optional
+    output_file : list[Path], optional
         The user provided output file names to use during conversion, by default None
     overwrite : bool, optional
         Whether or not to overwrite the existing output files, by default False
@@ -666,7 +665,7 @@ def main(input_file: List[Path] = None, output_file: List[Path] = None, overwrit
 
 class PathAction(Action):
     def __call__(
-        self, parser: ArgumentParser, namespace: Namespace, values: Union[str, List], option_string: str = None
+        self, parser: ArgumentParser, namespace: Namespace, values: str | list, option_string: str = None
     ) -> None:
         """Convert filepath string from argument into  a pathlib.Path object"""
         if isinstance(values, str):

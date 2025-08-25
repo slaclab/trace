@@ -1,6 +1,5 @@
 import datetime
 from re import compile
-from typing import Tuple
 
 from config import logger
 
@@ -112,7 +111,7 @@ class IOTimeParser:
         return dt
 
     @classmethod
-    def parse_times(cls, start_str: str, end_str: str) -> Tuple[datetime.datetime, datetime.datetime]:
+    def parse_times(cls, start_str: str, end_str: str) -> tuple[datetime.datetime, datetime.datetime]:
         """Convert 2 strings containing a start and end date & time, return the
         values' datetime objects. The strings can be formatted as either absolute
         times or relative times. Both are needed as relative times may be relative
@@ -127,7 +126,7 @@ class IOTimeParser:
 
         Returns
         -------
-        Tuple[datetime, datetime]
+        tuple[datetime, datetime]
             The python datetime objects for the exact start and end datetimes referenced
 
         Raises

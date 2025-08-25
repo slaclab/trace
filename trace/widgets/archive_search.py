@@ -1,6 +1,6 @@
 import logging
 from os import getenv
-from typing import Any, List
+from typing import Any
 
 from qtpy.QtGui import QDrag, QKeyEvent
 from qtpy.QtCore import (
@@ -91,7 +91,7 @@ class ArchiveResultsTableModel(QAbstractTableModel):
         self.endInsertRows()
         self.layoutChanged.emit()
 
-    def replace_rows(self, pvs: List[str]) -> None:
+    def replace_rows(self, pvs: list[str]) -> None:
         """Overwrites any existing rows in the table with the input list of PV names"""
         self.beginInsertRows(QModelIndex(), 0, len(pvs) - 1)
         self.results_list = pvs

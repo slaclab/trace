@@ -11,6 +11,8 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
+from config import logger
+
 load_dotenv()
 ELOG_API_URL = os.getenv("SWAPPS_TRACE_ELOG_API_URL")
 ELOG_API_KEY = os.getenv("SWAPPS_TRACE_ELOG_API_KEY")
@@ -28,7 +30,7 @@ def get_user() -> tuple[int, dict | Exception]:
         response.raise_for_status()
         return response.status_code, response.json()
     except requests.exceptions.RequestException as e:
-        print(e)
+        logger.error(e)
         return response.status_code, e
 
 
@@ -68,7 +70,7 @@ def post_entry(
         response.raise_for_status()
         return response.status_code, response.json()
     except requests.exceptions.RequestException as e:
-        print(e)
+        logger.error(e)
         return response.status_code, e
 
 
@@ -86,5 +88,5 @@ def get_logbooks() -> tuple[int, list[str] | Exception]:
         response.raise_for_status()
         return response.status_code, [logbook["name"] for logbook in response.json()["payload"]]
     except requests.exceptions.RequestException as e:
-        print(e)
+        logger.error(e)
         return response.status_code, e
