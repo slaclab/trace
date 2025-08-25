@@ -66,15 +66,16 @@ markdown_extensions:
 # Page Tree
 nav:
   - Home: index.md
-  - How To:
-    - how_to/index.md
-    - Overview: how_to/overview.md
-    - Traces: how_to/traces.md
-    - Traces Table Menu: how_to/traces_table_menu.md
-    - Axes: how_to/axes.md
-    - Plot Config: how_to/plot_config.md
-    - Import/Export: how_to/io.md
-    - Convert Save Files: how_to/file_conversion.md
+  - Getting Started:
+    - installation.md
+    - Application Overview: overview.md
+    - Arguments & Macros: arguments.md
+    - Traces: traces.md
+    - Traces Table Menu: traces_table_menu.md
+    - Axes: axes.md
+    - Plot Config: plot_config.md
+    - Import/Export: io.md
+    - Convert Save Files: file_conversion.md
   - API Reference:
     - api_reference/index.md
     - api_reference/trace.md

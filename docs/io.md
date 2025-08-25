@@ -1,4 +1,4 @@
-# Import and Export
+# Import & Export
 
 Trace allows users to export their current configuration of the application into a save file so that it can be imported later. The exported files include the archiver URL used, plot's configuration, the X-axis' time range, all of the Y-axes, and all of the traces.
 
