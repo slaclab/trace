@@ -12,6 +12,7 @@ repo_url: https://github.com/slaclab/trace
 theme:
   name: material
   icon:
+    logo: fontawesome/solid/wave-square
     repo: fontawesome/brands/github
   features:
     - navigation.top
@@ -63,6 +64,7 @@ nav:
     - Import/Export: how_to/io.md
     - Convert Save Files: how_to/file_conversion.md
   - API Reference:
+    - api_reference/index.md
     - api_reference/trace.md
     - Widgets:
       - api_reference/widgets/index.md
