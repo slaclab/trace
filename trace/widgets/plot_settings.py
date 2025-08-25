@@ -47,6 +47,7 @@ class PlotSettingsModal(QWidget):
 
         self.legend_checkbox = QCheckBox(self)
         self.legend_checkbox.stateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
+        self.legend_checkbox.setChecked(True)  # legend on by default
         legend_row = SettingsRowItem(self, "Show Legend", self.legend_checkbox)
         main_layout.addLayout(legend_row)
 
