@@ -9,30 +9,25 @@ on:
 
 jobs:
   deploy:
-    if: ${{ github.repository == 'slaclab/trace' }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python-version: [3.12]
+    runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          miniforge-version: latest
-          use-mamba: true
-          python-version: ${{ matrix.python-version }}
-          channels: conda-forge
-          activate-environment: trace-dev
-          environment-file: environment.yml
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python
 
       - name: Build Docs
-        shell: bash -l {0}
-        run: |
-          mkdocs build
+        run: mkdocs build
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site/
+          publish_dir: ./site
