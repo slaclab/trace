@@ -780,7 +780,7 @@ class CurveItem(QtWidgets.QWidget):
                 self.invalid_action = None
 
             self.label.setStyleSheet("")
-            
+
             if self.label.toolTip() == "Formula is invalid":
                 self.label.setToolTip("")
 
@@ -863,7 +863,7 @@ class CurveItem(QtWidgets.QWidget):
         """Handle formula updates when user edits the formula text"""
         if hasattr(self, "_updating_formula") and self._updating_formula:
             return
-            
+
         self.show_invalid_icon(False)
 
         new_formula = self.label.text().strip()
@@ -939,7 +939,7 @@ class CurveItem(QtWidgets.QWidget):
     def _perform_formula_update(self, new_formula, axis_item, control_panel):
         """
         Perform the actual formula update with complete cleanup of the old curve.
-        
+
         This method is called asynchronously to avoid Qt segmentation faults during
         formula curve replacement. It handles the complete lifecycle of replacing
         an existing formula curve with a new one, including signal disconnection,
@@ -955,30 +955,30 @@ class CurveItem(QtWidgets.QWidget):
             The control panel widget that manages curve dictionaries and plot references.
         """
         plot = control_panel.plot
-        old_source = self.source  
+        old_source = self.source
 
-        if hasattr(old_source, 'formula_invalid_signal'):      
+        if hasattr(old_source, "formula_invalid_signal"):
             old_source.formula_invalid_signal.disconnect()
- 
-        if hasattr(old_source, 'channels'):
+
+        if hasattr(old_source, "channels"):
             for ch in old_source.channels():
                 if ch:
                     ch.disconnect()
 
-        if old_source in plot._curves:  
+        if old_source in plot._curves:
             plot._curves.remove(old_source)
             plot.plotItem.removeItem(old_source)
 
         old_key = None
         for key, value in list(control_panel._curve_dict.items()):
-            if value == old_source:  
+            if value == old_source:
                 old_key = key
                 del control_panel._curve_dict[key]
-                logger.debug(f"Removed old formula curve {key} from curve dictionary")  
+                logger.debug(f"Removed old formula curve {key} from curve dictionary")
                 break
 
         old_source.setParent(None)
-        if hasattr(old_source, 'deleteLater'):
+        if hasattr(old_source, "deleteLater"):
             old_source.deleteLater()
 
         var_names = re.findall(r"{(.+?)}", new_formula)
@@ -1017,7 +1017,7 @@ class CurveItem(QtWidgets.QWidget):
         self.update_variable_name()
         axis_item.curves_list_changed.emit()
         control_panel.cleanup_duplicate_curves()
-            
+
     def get_parent_axis(self):
         """Find the parent AxisItem by traversing up the widget hierarchy"""
         parent = self.parent()
@@ -1039,10 +1039,10 @@ class CurveItem(QtWidgets.QWidget):
         self.source.address = pv
 
     def close(self) -> bool:
-        if hasattr(self, 'show_invalid_icon'):
+        if hasattr(self, "show_invalid_icon"):
             self.show_invalid_icon(False)
 
-        if hasattr(self, '_updating_formula'):
+        if hasattr(self, "_updating_formula"):
             self._updating_formula = False
 
         curve = self.source
