@@ -15,11 +15,14 @@ theme:
     logo: fontawesome/solid/wave-square
     repo: fontawesome/brands/github
   features:
+    - content.code.copy
     - navigation.top
     - navigation.tabs
     - navigation.indexes
     - navigation.footer
     - search.highlight
+    - search.share
+    - search.suggest
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

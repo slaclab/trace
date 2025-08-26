@@ -11,7 +11,7 @@ hide:
 
   [Trace]: https://github.com/slaclab/trace/
 
-Trace is intended to replace the StripTool and Java Archive Viewer applications used to plot EPICS data. It is a flexible, modern application for plotting live data (Channel Access or PV Access), and historical data from the EPICS Archive Appliance.
+The motivation behind trace is as a replacement for the StripTool and Java Archive Viewer applications used to plot EPICS data. It is a flexible, modern application for plotting live data (Channel Access or PV Access), and historical data from the EPICS Archive Appliance.
 
 With built in conveniences like an archived PV search, and designed to be easily launched from PyDM widgets, files, or the command line, Trace will provide an improved user experience for accelerator staff.
 
@@ -20,4 +20,6 @@ Trace is open-source and in active development, so don't hesitate to [request fe
   [request features]: https://github.com/slaclab/trace/issues/new?labels=enhancement&projects=&template=feature-request.yml&title=%5BFEATURE%5D+-+
   [report bugs]: https://github.com/slaclab/trace/issues/new?labels=bug&projects=&template=bug-report.yml&title=%5BBUG%5D+-+
 
-![Image of Trace](images/Index_Image.png)
+<div style="text-align: center;">
+    <img src="images/Trace_Screenshot.png">
+</div>
