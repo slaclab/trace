@@ -780,6 +780,9 @@ class CurveItem(QtWidgets.QWidget):
                 self.invalid_action = None
 
             self.label.setStyleSheet("")
+            
+            if self.label.toolTip() == "Formula is invalid":
+                self.label.setToolTip("")
 
     @property
     def plot(self):
@@ -860,6 +863,8 @@ class CurveItem(QtWidgets.QWidget):
         """Handle formula updates when user edits the formula text"""
         if hasattr(self, "_updating_formula") and self._updating_formula:
             return
+            
+        self.show_invalid_icon(False)
 
         new_formula = self.label.text().strip()
 
@@ -910,8 +915,13 @@ class CurveItem(QtWidgets.QWidget):
             def delayed_update():
                 try:
                     self._perform_formula_update(new_formula, axis_item, control_panel)
+                    self.show_invalid_icon(False)
                 except Exception as e:
                     QtWidgets.QMessageBox.critical(None, "Formula Update Failed", f"Failed to update formula: {str(e)}")
+                    if hasattr(self.source, "formula"):
+                        self.label.setText(self.source.formula)
+                    else:
+                        self.show_invalid_icon(True)
                 finally:
                     if hasattr(self, "_updating_formula"):
                         self._updating_formula = False
@@ -923,22 +933,53 @@ class CurveItem(QtWidgets.QWidget):
             QtWidgets.QMessageBox.critical(self, "Formula Update Failed", f"Failed to update formula: {str(e)}")
             if hasattr(self.source, "formula"):
                 self.label.setText(self.source.formula)
-            self.show_invalid_icon(True)
+            else:
+                self.show_invalid_icon(True)
 
     def _perform_formula_update(self, new_formula, axis_item, control_panel):
-        """Perform the actual formula update - called asynchronously to avoid segfault"""
-        plot = control_panel.plot
+        """
+        Perform the actual formula update with complete cleanup of the old curve.
+        
+        This method is called asynchronously to avoid Qt segmentation faults during
+        formula curve replacement. It handles the complete lifecycle of replacing
+        an existing formula curve with a new one, including signal disconnection,
+        plot removal, dictionary cleanup, and garbage collection.
 
-        if self.source in plot._curves:
-            plot._curves.remove(self.source)
-        plot.plotItem.removeItem(self.source)
+        Parameters
+        ----------
+        new_formula : str
+            The new formula string starting with 'f://' (e.g., 'f://{x1}+{x2}').
+        axis_item : AxisItem
+            The axis item widget that contains this curve item.
+        control_panel : ControlPanel
+            The control panel widget that manages curve dictionaries and plot references.
+        """
+        plot = control_panel.plot
+        old_source = self.source  
+
+        if hasattr(old_source, 'formula_invalid_signal'):      
+            old_source.formula_invalid_signal.disconnect()
+ 
+        if hasattr(old_source, 'channels'):
+            for ch in old_source.channels():
+                if ch:
+                    ch.disconnect()
+
+        if old_source in plot._curves:  
+            plot._curves.remove(old_source)
+            plot.plotItem.removeItem(old_source)
 
         old_key = None
         for key, value in list(control_panel._curve_dict.items()):
-            if value == self.source:
+            if value == old_source:  
                 old_key = key
                 del control_panel._curve_dict[key]
+                logger.debug(f"Removed old formula curve {key} from curve dictionary")  
                 break
+
+        old_source.setParent(None)
+        if hasattr(old_source, 'deleteLater'):
+            old_source.deleteLater()
 
         var_names = re.findall(r"{(.+?)}", new_formula)
         var_dict = {}
@@ -967,19 +1008,16 @@ class CurveItem(QtWidgets.QWidget):
 
         if old_key and old_key.startswith("fx"):
             control_panel._curve_dict[old_key] = new_formula_curve
+            logger.debug(f"Updated formula curve {old_key} in curve dictionary")
         else:
             key = control_panel._generate_pv_key("formula")
             control_panel._curve_dict[key] = new_formula_curve
+            logger.debug(f"Added new formula curve {key} to curve dictionary")
 
         self.update_variable_name()
-
-        self.show_invalid_icon(False)
-
         axis_item.curves_list_changed.emit()
-
-        if hasattr(self, "_updating_formula"):
-            self._updating_formula = False
-
+        control_panel.cleanup_duplicate_curves()
+            
     def get_parent_axis(self):
         """Find the parent AxisItem by traversing up the widget hierarchy"""
         parent = self.parent()
@@ -1001,6 +1039,12 @@ class CurveItem(QtWidgets.QWidget):
         self.source.address = pv
 
     def close(self) -> bool:
+        if hasattr(self, 'show_invalid_icon'):
+            self.show_invalid_icon(False)
+
+        if hasattr(self, '_updating_formula'):
+            self._updating_formula = False
+
         curve = self.source
         [ch.disconnect() for ch in curve.channels() if ch]
 
