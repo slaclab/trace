@@ -20,6 +20,6 @@ Trace is open-source and in active development, so don't hesitate to [request fe
   [request features]: https://github.com/slaclab/trace/issues/new?labels=enhancement&projects=&template=feature-request.yml&title=%5BFEATURE%5D+-+
   [report bugs]: https://github.com/slaclab/trace/issues/new?labels=bug&projects=&template=bug-report.yml&title=%5BBUG%5D+-+
 
-<div style="text-align: center;">
-    <img src="images/Trace_Screenshot.png">
-</div>
+<figure markdown="span">
+  ![Trace Screenshot](images/trace_screenshot.png)
+</figure>
