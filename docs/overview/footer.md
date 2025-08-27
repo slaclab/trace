@@ -1,6 +1,8 @@
 # Footer
 
-![Image of Footer](../images/footer.png)
+<figure markdown="span">
+  ![Image of Footer](../images/footer.png)
+</figure>
 
 At the very bottom of the screen is a footer containing some information that may be useful to users.
 

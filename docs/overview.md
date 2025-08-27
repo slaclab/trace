@@ -1,6 +1,8 @@
 # Interface Layout & Sections
 
-![Application Sections](images/sections.png)
+<figure markdown="span">
+  ![Application Sections](images/sections.png)
+</figure>
 
 Trace is a PyDM application used to plot value data for given PVs.
 The application is capable of plotting both live and archived data, as well as [formulas] containing PVs as variables.

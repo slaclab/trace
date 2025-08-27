@@ -1,6 +1,8 @@
 # Plot Section & Mouse Interaction
 
-![Image of Plot Section](../images/plot_section.png)
+<figure markdown="span">
+  ![Image of Plot Section](../images/plot_section.png)
+</figure>
 
 The plot section is primarily for viewing the plot, but also has some control over the plot's settings.
 It displays whatever traces, axes, or other properties the user sets.

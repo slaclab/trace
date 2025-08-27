@@ -1,6 +1,8 @@
 # Configuration Section
 
-![Image of Configuration Section](../images/config_section.png)
+<figure markdown="span">
+  ![Image of Configuration Section](../images/config_section.png)
+</figure>
 
 The configuration section is where users are able to add axes and traces to the plot as well as configure their appearances.
 
@@ -13,8 +15,14 @@ This will create a trace for the PV and add it to the Y-axis listed last in the 
 
 Users are able to search for PV(s) by clicking the button labeled "Search PVs" to open the Archive Search Tool.
 More information on the tool can be found [here].
-  [here]: site:/tools/search.md
 
+  [here]: ../tools/search.md
+
+Users are also able to add [formula traces] by using the [Formula Maker Tool].
+The tool can be opened by clicking the :fontawesome-solid-calculator: button in the top of this section.
+
+  [formula traces]: ../traces.md#formula-traces
+  [Formula Maker Tool]: ../tools/formula_maker.md
 
 
 ## Adding Axes
