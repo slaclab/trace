@@ -1,4 +1,5 @@
-# Arguments & Macros
+# Input Arguments & Macros
+
 Trace supports several optional startup arguments and macros that allow users to customize its behavior at launch. These arguments let you specify input files, define process variables (PVs) to display, apply macro replacements, and access help or version information.
 
 Below, you'll find a detailed overview of each available argument and example usage to help you configure Trace to fit your workflow.

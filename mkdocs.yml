@@ -90,8 +90,8 @@ nav:
     - Axes: axes.md
     - Plot Config: plot_config.md
     - Import/Export: io.md
-    - Convert Save Files: file_conversion.md
     - Tools:
+      - File Converter: tools/file_converter.md
       - Archive Search Tool: tools/search.md
   - API Reference:
     - api_reference/index.md
