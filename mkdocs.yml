@@ -84,8 +84,6 @@ nav:
       - Plot Section: overview/plot_section.md
       - Configuration Section: overview/config_section.md
       - Footer: overview/footer.md
-    - Tools:
-      - Archive Search Tool: tools/archive_search_tool.md
     - Arguments & Macros: arguments.md
     - Traces: traces.md
     - Traces Table Menu: traces_table_menu.md
@@ -93,6 +91,8 @@ nav:
     - Plot Config: plot_config.md
     - Import/Export: io.md
     - Convert Save Files: file_conversion.md
+    - Tools:
+      - Archive Search Tool: tools/search.md
   - API Reference:
     - api_reference/index.md
     - api_reference/trace.md
