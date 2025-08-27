@@ -65,6 +65,12 @@ markdown_extensions:
   - md_in_html
   - toc:
       permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        custom_icons:
+          - images/
   - pymdownx.highlight
   - pymdownx.superfences
 
@@ -73,7 +79,13 @@ nav:
   - Home: index.md
   - Getting Started:
     - installation.md
-    - Application Overview: overview.md
+    - Interface Overview:
+      - overview.md
+      - Plot Section: overview/plot_section.md
+      - Configuration Section: overview/config_section.md
+      - Footer: overview/footer.md
+    - Tools:
+      - Archive Search Tool: tools/archive_search_tool.md
     - Arguments & Macros: arguments.md
     - Traces: traces.md
     - Traces Table Menu: traces_table_menu.md
