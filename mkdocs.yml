@@ -92,7 +92,8 @@ nav:
     - Import/Export: io.md
     - Tools:
       - File Converter: tools/file_converter.md
-      - Archive Search Tool: tools/search.md
+      - Archive Search: tools/search.md
+      - Formula Maker: tools/formula_maker.md
   - API Reference:
     - api_reference/index.md
     - api_reference/trace.md
