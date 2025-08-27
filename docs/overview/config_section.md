@@ -1,5 +1,7 @@
 # Configuration Section
 
+![Image of Configuration Section](../images/config_section.png)
+
 The configuration section is where users are able to add axes and traces to the plot as well as configure their appearances.
 
 
@@ -36,4 +38,3 @@ All of the traces will still appear on the plot.
 ### From the Plot
 
 Both axes and individual traces can be shown/hidden from the plot by toggling the checkboxes labeled "Active".
-

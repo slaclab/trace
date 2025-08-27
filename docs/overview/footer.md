@@ -1,5 +1,7 @@
 # Footer
 
+![Image of Footer](../images/footer.png)
+
 At the very bottom of the screen is a footer containing some information that may be useful to users.
 
 The left side of the footer displays some information about the application itself.
