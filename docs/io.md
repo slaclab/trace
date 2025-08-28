@@ -4,7 +4,7 @@ Trace allows users to export their current configuration of the application into
 
 The importing and exporting features can be found in the menu bar at the top of the application under the Action menu. Alternatively, users can export their current configuration with `Ctrl+S` or import a file with `Ctrl+L`.
 
-Files can also be imported on startup using the `-i` flag followed by the path to the file. Find more information on application arguments [here](../api_reference/trace.md#arguments-and-macros).
+Files can also be imported on startup using the `-i` flag followed by the path to the file. Find more information on application arguments [here](../reference/trace.md#arguments-and-macros).
 
 
 

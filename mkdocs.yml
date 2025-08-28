@@ -95,22 +95,22 @@ nav:
       - Formula Maker: tools/formula_maker.md
       - Data Insight: tools/data_insight.md
       - E-Log Entry: tools/elog_entry.md
-  - API Reference:
-    - api_reference/index.md
-    - api_reference/trace.md
+  - Developer Reference:
+    - reference/index.md
+    - reference/trace.md
     - Widgets:
-      - api_reference/widgets/index.md
-      - Control Panel: api_reference/widgets/control_panel.md
-      - Settings Popups: api_reference/widgets/settings_popups.md
-      - Archive Search: api_reference/widgets/archive_search.md
-      - Data Insight Tool: api_reference/widgets/data_insight_tool.md
-      - E-Log Post Modal: api_reference/widgets/elog_post_modal.md
-      - Helper Widgets: api_reference/widgets/helper_widgets.md
+      - reference/widgets/index.md
+      - Control Panel: reference/widgets/control_panel.md
+      - Settings Popups: reference/widgets/settings_popups.md
+      - Archive Search: reference/widgets/archive_search.md
+      - Data Insight Tool: reference/widgets/data_insight_tool.md
+      - E-Log Post Modal: reference/widgets/elog_post_modal.md
+      - Helper Widgets: reference/widgets/helper_widgets.md
     - File IO:
-      - api_reference/file_io/index.md
-      - File Converter: api_reference/file_io/trace_file_convert.md
-      - File Handler: api_reference/file_io/file_handler.md
-      - Time Parser: api_reference/file_io/time_parser.md
+      - reference/file_io/index.md
+      - File Converter: reference/file_io/trace_file_convert.md
+      - File Handler: reference/file_io/file_handler.md
+      - Time Parser: reference/file_io/time_parser.md
     - Services:
-      - api_reference/services/index.md
-      - E-Log Service: api_reference/services/elog_client.md
+      - reference/services/index.md
+      - E-Log Service: reference/services/elog_client.md

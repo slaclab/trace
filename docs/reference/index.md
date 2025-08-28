@@ -1,6 +1,6 @@
-# API Reference
+# Developer Reference
 
-Welcome to the Trace API Reference.
+Welcome to the Trace Developer Reference.
 This section provides comprehensive documentation for the internal Python modules, classes, and functions that make up the Trace application.
 Here you will find detailed descriptions of each component, including their parameters, return values, and usage examples.
 
