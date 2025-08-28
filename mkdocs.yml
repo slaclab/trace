@@ -84,16 +84,17 @@ nav:
       - Plot Section: overview/plot_section.md
       - Configuration Section: overview/config_section.md
       - Footer: overview/footer.md
-    - Arguments & Macros: arguments.md
     - Traces: traces.md
-    - Traces Table Menu: traces_table_menu.md
     - Axes: axes.md
     - Plot Config: plot_config.md
+    - Arguments & Macros: arguments.md
     - Import/Export: io.md
     - Tools:
       - File Converter: tools/file_converter.md
       - Archive Search: tools/search.md
       - Formula Maker: tools/formula_maker.md
+      - Data Insight: tools/data_insight.md
+      - E-Log Entry: tools/elog_entry.md
   - API Reference:
     - api_reference/index.md
     - api_reference/trace.md
