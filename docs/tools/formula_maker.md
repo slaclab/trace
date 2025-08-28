@@ -26,3 +26,7 @@ To use a variable in the formula it should be surrounded by brackets `{}`.
 The bottom part of the tool consists of a text box that users can type a formula in as well as buttons that users can use to build their formula.
 
 When the user is finished making their formula, they can either hit `Enter` or click the button labeled "Add Formula Curve".
+
+Formulas can include all basic arithmetic and binary operations, as well as `mean` and all functions in Python's [standard math library].
+
+  [standard math library]: https://docs.python.org/library/math.html
