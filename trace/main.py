@@ -5,9 +5,9 @@ from socket import gethostname
 from getpass import getuser
 from datetime import datetime
 
-import qtawesome as qta
-from qtpy.QtGui import QFont, QImage, QKeySequence
-from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice
+from qtpy.QtGui import QFont, QImage, QKeySequence, QColor
+from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice, QSettings
+from theme_manager import Theme, IconColors, ThemeManager
 from qtpy.QtWidgets import (
     QMenu,
     QLabel,
@@ -46,8 +46,21 @@ class TraceDisplay(Display):
 
     def __init__(self, parent=None, args=None, macros=None) -> None:
         super(TraceDisplay, self).__init__(parent=parent, args=args, macros=macros, ui_filename=None)
+
+        app = QApplication.instance()
+        if not app.main_window:
+            return
+
+        self.theme_manager = ThemeManager(
+            app,
+            light_stylesheet_path="stylesheets/light_mode.qss",
+            dark_stylesheet_path="stylesheets/dark_mode.qss",
+        )
+        settings = QSettings()
+        self.is_dark_mode = settings.value("isDarkTheme", False, type=bool)
         self.build_ui()
-        self.configure_app()
+        self.configure_app(app)
+        self.setup_icons()
         self.resize(1000, 600)
 
         # Set plot's timerange after the UI is built
@@ -77,7 +90,7 @@ class TraceDisplay(Display):
 
         # Create the plotting and control widgets
         plot_side_widget = self.build_plot_side(self)
-        self.control_panel = ControlPanel()
+        self.control_panel = ControlPanel(theme_manager=self.theme_manager)
         self.control_panel.layout().setContentsMargins(8, 0, 0, 0)
         self.control_panel.plot = self.plot
         self.control_panel.curve_list_changed.connect(self.data_insight_tool.update_pv_select_box)
@@ -89,15 +102,7 @@ class TraceDisplay(Display):
         main_splitter.setCollapsible(0, False)
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setHandleWidth(10)
-        main_splitter.setStyleSheet(
-            "\n".join(
-                [
-                    "QSplitter::handle {",
-                    "  background-color: white;",
-                    "}",
-                ]
-            )
-        )
+
         main_layout.addWidget(main_splitter)
 
         # Create the footer section of the app
@@ -113,10 +118,11 @@ class TraceDisplay(Display):
         toolbar = self.build_toolbar(plot_side_widget)
         plot_side_layout.addWidget(toolbar)
 
-        # Create plot
+        background_color = "#1E1E1E" if self.theme_manager.get_current_theme() == Theme.DARK else "white"        
+        
         self.plot = PyDMArchiverTimePlot(
             plot_side_widget,
-            background="white",
+            background=background_color,
             optimized_data_bins=5000,
             cache_data=False,
             show_all=False,
@@ -131,7 +137,6 @@ class TraceDisplay(Display):
         self.data_insight_tool.plot = self.plot
 
         self.settings_button = QPushButton(self.plot)
-        self.settings_button.setIcon(qta.icon("msc.settings-gear"))
         self.settings_button.setFlat(True)
 
         self.plot_settings = PlotSettingsModal(self.settings_button, self.plot)
@@ -251,7 +256,29 @@ class TraceDisplay(Display):
         app = QApplication.instance()
         if not app.main_window:
             return
+        
+    def setup_icons(self):
+        """Set up all icons after theme manager is initialized"""
+        self.settings_button.setIcon(self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY))
 
+    def on_theme_changed(self, theme: Theme):
+        """Handle theme changes - update icons and button text"""
+        if theme == Theme.DARK:
+            self.theme_toggle_button.setText("Light Mode")
+            icon = self.theme_manager.create_icon("fa.sun-o", IconColors.PRIMARY)
+        else:
+            self.theme_toggle_button.setText("Dark Mode")
+            icon = self.theme_manager.create_icon("fa.moon-o", IconColors.PRIMARY)
+
+        if icon:
+            self.theme_toggle_button.setIcon(icon)
+
+        settings_icon = self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY)
+        if settings_icon:
+            self.settings_button.setIcon(settings_icon)
+
+    def configure_app(self, app):
+        """UI changes to be made to the PyDMApplication"""
         # Hide navigation bar by default (can be shown in menu bar)
         app.main_window.toggle_nav_bar(False)
         app.main_window.ui.actionShow_Navigation_Bar.setChecked(False)
@@ -301,8 +328,35 @@ class TraceDisplay(Display):
         fetch_archive.setShortcut(QKeySequence("Ctrl+F"))
         dit_action = menu.addAction("Data Insight Tool...", self.data_insight_tool.show)
         dit_action.setShortcut(QKeySequence("Ctrl+D"))
+        
+        menu.addSeparator()
+
+        if self.is_dark_mode:
+            self.theme_action = menu.addAction("Switch to Light Mode", self.toggle_theme)
+        else:
+            self.theme_action = menu.addAction("Switch to Dark Mode", self.toggle_theme)
+        
+        self.theme_action.setShortcut(QKeySequence("Ctrl+T"))
 
         return menu
+
+    def toggle_theme(self):
+        """Toggle between dark and light mode."""
+        if self.is_dark_mode:
+            self.theme_manager.set_theme(Theme.LIGHT)
+            self.theme_action.setText("Switch to Dark Mode")
+            self.plot.setBackgroundColor(QColor("#FFFFFF")) 
+            self.setup_icons()
+            self.is_dark_mode = False
+        else:
+            self.theme_manager.set_theme(Theme.DARK)
+            self.theme_action.setText("Switch to Light Mode")
+            self.plot.setBackgroundColor(QColor("#1E1E1E"))
+            self.setup_icons()
+            self.is_dark_mode = True
+
+        QApplication.processEvents()
+        self.repaint()
 
     @Slot()
     def save_plot_image(self) -> None:
