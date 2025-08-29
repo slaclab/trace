@@ -24,6 +24,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QApplication,
     QButtonGroup,
+    QAbstractButton,
 )
 from pyqtgraph.exporters import ImageExporter
 from services.elog_client import get_user, post_entry
@@ -462,7 +463,8 @@ class TraceDisplay(Display):
 
     @Slot()
     @Slot(float)
-    def set_auto_scroll_span(self, timespan: float = None) -> None:
+    @Slot(QAbstractButton, bool)
+    def set_auto_scroll_span(self, _=None, timespan: float = None) -> None:
         """Slot to be called when a timespan setting button is pressed.
         This will enable autoscrolling along the x-axis and disable mouse
         controls. If the "Cursor" button is pressed, then autoscrolling is
