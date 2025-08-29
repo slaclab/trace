@@ -26,7 +26,7 @@ When adding new traces, they will be attached to the last y-axis in the configur
 If no axes exist, a new one will be created for the new trace.
 
 
-### Planned for Future Development
+### :material-wrench: Planned for Future Development
 
 When adding new traces, they will be attached to a y-axis with the same unit.
 If no such axis exists, a new one will be created for the channel's unit.
@@ -45,6 +45,15 @@ This can be done by unchecking the box labeled "Active".
 
 Users can remove traces from the plot by clicking the :fontawesome-regular-trash-can: button for the associated trace.
 This will remove the row from the configuration section and remove the trace from the plot at the same time.
+
+
+
+## Moving Traces
+
+When a trace is created it is attached to the last Y-axis in the configuration section, as mentioned above in [Adding Traces].
+If users want to move a trace to a different Y-axis, they can click and hold the handle marked with a :material-dots-vertical: symbol.
+
+  [Adding Traces]: #adding-traces
 
 
 

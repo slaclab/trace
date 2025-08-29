@@ -86,7 +86,7 @@ nav:
       - Configuration Section: overview/config_section.md
       - Footer: overview/footer.md
     - Traces: traces.md
-    - Axes: axes.md
+    - Y-Axes: y_axes.md
     - Plot Config: plot_config.md
     - Arguments & Macros: arguments.md
     - Import/Export: io.md
