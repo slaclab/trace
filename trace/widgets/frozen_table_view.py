@@ -1,5 +1,5 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QTableView, QHeaderView
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QTableView, QHeaderView, QAbstractItemView
 
 
 class FrozenTableView(QTableView):
@@ -42,9 +42,9 @@ class FrozenTableView(QTableView):
         self.frozenTableView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.frozenTableView.show()
         self.updateFrozenTableGeometry()
-        self.setHorizontalScrollMode(self.ScrollPerPixel)
-        self.setVerticalScrollMode(self.ScrollPerPixel)
-        self.frozenTableView.setVerticalScrollMode(self.ScrollPerPixel)
+        self.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.frozenTableView.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
 
     def updateSectionWidth(self, logicalIndex, oldSize, newSize):
         if logicalIndex == 0:
