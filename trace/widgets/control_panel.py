@@ -772,20 +772,12 @@ class CurveItem(QtWidgets.QWidget):
 
         self.setup_line_edit()
 
-        self.live_toggle = QtWidgets.QCheckBox("Live")
-        self.live_toggle.setCheckState(QtCore.Qt.Checked if self.source.liveData else QtCore.Qt.Unchecked)
-        self.live_toggle.checkStateChanged.connect(self.set_live_data_connection)
-        data_type_layout.addWidget(self.live_toggle)
         self.live_connection_status = QtWidgets.QLabel()
         self.live_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
         self.live_connection_status.setToolTip("Not connected to live data")
         self.source.live_channel_connection.connect(self.update_live_icon)
         pv_settings_layout.addWidget(self.live_connection_status)
 
-        self.archive_toggle = QtWidgets.QCheckBox("Archive")
-        self.archive_toggle.setCheckState(QtCore.Qt.Checked if self.source.use_archive_data else QtCore.Qt.Unchecked)
-        self.archive_toggle.checkStateChanged.connect(self.set_archive_data_connection)
-        data_type_layout.addWidget(self.archive_toggle)
         self.archive_connection_status = QtWidgets.QLabel()
         self.archive_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
         self.archive_connection_status.setToolTip("Not connected to archive data")

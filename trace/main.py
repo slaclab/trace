@@ -457,24 +457,29 @@ class TraceDisplay(Display):
 
     @Slot()
     @Slot(float)
-    @Slot(QAbstractButton, bool)
-    def set_auto_scroll_span(self, _=None, timespan: float = None) -> None:
+    @Slot(QAbstractButton, float)
+    def set_auto_scroll_span(self, arg1=None, arg2=None) -> None:
         """Slot to be called when a timespan setting button is pressed.
         This will enable autoscrolling along the x-axis and disable mouse
         controls. If the "Cursor" button is pressed, then autoscrolling is
-        disabled and mouse controls are enabled.
-        """
-        if timespan is None:
-            timespan = self.timespan_buttons.checkedId()
-            enable_scroll = timespan != DISABLE_AUTO_SCROLL
+        disabled and mouse controls are enabled."""
+        if isinstance(arg1, QAbstractButton):
+            if not arg2:
+                return
+            timespan = self.timespan_buttons.id(arg1)
+        elif isinstance(arg1, (int, float)):
+            timespan = arg1
         else:
-            enable_scroll = True
-            self.disable_auto_scroll_button.click()
+            timespan = self.timespan_buttons.checkedId()
+
+        enable_scroll = timespan != DISABLE_AUTO_SCROLL
 
         if enable_scroll:
             logger.debug(f"Enabling plot autoscroll for {timespan}s")
         else:
             logger.debug("Disabling plot autoscroll, using mouse controls")
+            self.disable_auto_scroll_button.click()
+
         self.autoScroll(enable=enable_scroll, timespan=timespan)
 
     @Slot(int)
