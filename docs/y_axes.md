@@ -1,6 +1,14 @@
-# Axes
+# Y-Axes
 
-The Axes tab of the properties section is where users will be able to manage the axes on their plot. From adding/removing axes, hiding axes, or changing an axis' properties, users have plenty of control over the Y-Axes of their plot.
+Users are able to manage the axes on their plot in the [configuration section].
+From adding/removing axes, hiding axes, or changing an axis' properties, users have plenty of control over the Y-Axes of their plot.
+
+  [configuration section]: overview/config_section.md
+
+<figure markdown="span">
+  ![Image of Some Axes](images/y_axes.png)
+</figure>
+
 
 While most X-Axis (timerange) controls should be conducted through the mouse, users can set their time range in the Axes tab as well. This can be done with the 2 datetime widgets at the top of the tab. They can be used to set an absolute date and time for either side of the X-Axis.
 
@@ -28,3 +36,9 @@ Users can remove axes by clicking the "Delete Row" button for the given axis in 
 ## Hiding Axes
 
 Users have the option to hide/show Y-Axes on the plot using the checkbox in the second to last column. By hiding a Y-Axis, all curves attached to that axis will be hidden as well.
+
+
+
+## Moving Traces
+
+Users are able to move a trace from one y-axis to another by
