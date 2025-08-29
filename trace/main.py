@@ -252,12 +252,6 @@ class TraceDisplay(Display):
             self.file_label.setToolTip("Currently loaded file")
             self.footer_info_widget.layout().addWidget(self.file_label)
 
-    def configure_app(self):
-        """UI changes to be made to the PyDMApplication"""
-        app = QApplication.instance()
-        if not app.main_window:
-            return
-        
     def setup_icons(self):
         """Set up all icons after theme manager is initialized"""
         self.settings_button.setIcon(self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY))
