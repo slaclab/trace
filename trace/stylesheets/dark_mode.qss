@@ -86,7 +86,7 @@ QPushButton:disabled, PyDMPushButton:disabled {
     cursor: not-allowed;
 }
 
-/* Icon Buttons */
+/* Flat Icon Buttons */
 QPushButton[flat="true"] {
     background: transparent;
     border: none;
@@ -424,7 +424,7 @@ QComboBox::down-arrow {
 QComboBox QAbstractItemView {
     background-color: #2A2A2A;
     color: #E0E0E0;
-/*    border: 1px solid #5A5A5A;*/
+    /* border: 1px solid #5A5A5A;*/
     selection-background-color: #4A4A4A;
     selection-color: #FFFFFF;
 }

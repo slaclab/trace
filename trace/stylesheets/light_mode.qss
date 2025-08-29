@@ -73,6 +73,7 @@ QPushButton:hover, PyDMPushButton:hover {
 
 QPushButton:pressed, PyDMPushButton:pressed {
     background-color: #CFCFCF;
+    color: #000000;
     border: 1px solid #999999;
     padding-top: 7px;
     padding-bottom: 5px;
@@ -82,6 +83,7 @@ QPushButton:disabled, PyDMPushButton:disabled {
     background-color: #F0F0F0;
     color: #AAAAAA;
     border: 1px solid #DDDDDD;
+    cursor: not-allowed;
 }
 
 /* Flat Icon Buttons */
@@ -90,12 +92,45 @@ QPushButton[flat="true"] {
     border: none;
 }
 
+QPushButton[flat="true"]::icon {
+    color: #202020;
+}
+
 QPushButton[flat="true"]:hover {
     background-color: #EEEEEE;
 }
 
 QPushButton[flat="true"]:pressed {
     background-color: #DDDDDD;
+}
+
+QPushButton QIcon {
+    color: #202020;
+}
+
+/* Time Range Buttons */
+QPushButton[timeRange=true] {
+    background-color: #F4F4F4;
+    border: 1px solid #888888;
+}
+
+QPushButton[timeRange=true]:checked {
+    background-color: #555555;
+    color: #FFFFFF;
+}
+
+/* Plot Button */
+QPushButton#plotButton {
+    background-color: #444444;
+    border: 1px solid #666666;
+}
+
+QPushButton#plotButton:hover {
+    background-color: #555555;
+}
+
+QPushButton#plotButton:pressed {
+    background-color: #333333;
 }
 
 /* Line Edits */
@@ -113,7 +148,33 @@ QLineEdit:disabled, PyDMLineEdit:disabled {
     border: 1px solid #DDDDDD;
 }
 
-/* Labels */
+/* Group Boxes */
+QGroupBox {
+    border: 1px solid #5A5A5A;
+    border-radius: 5px;
+    margin-top: 6px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
+    padding: 0 4px;
+}
+
+/* Collapsible Sections */
+QWidget[collapsible=true] {
+    border: 1px solid #5A5A5A;
+    margin: 6px;
+    padding: 4px;
+}
+
+QLabel[sectionHeader=true] {
+    font-weight: bold;
+    font-size: 11px;
+    color: #E0E0E0;
+}
+
+/* PV Labels */
 PyDMLabel[pvName=true] {
     color: #007ACC;
 }
@@ -121,7 +182,10 @@ PyDMLabel[pvName=true] {
 /* Checkboxes */
 QCheckBox {
     spacing: 6px;
-    color: red;
+}
+
+QCheckBox::indicator:unchecked {
+    background-color: #2A2A2A;
 }
 
 QCheckBox::indicator {
@@ -135,7 +199,6 @@ QCheckBox::indicator {
 QCheckBox::indicator:checked {
     background-color: #D0D0D0;
     image: url("assets/light_icons/check.svg");
-    color: red;
 }
 
 QCheckBox::indicator:hover {
@@ -143,33 +206,12 @@ QCheckBox::indicator:hover {
     background-color: #EEEEEE;
 }
 
-/* Radio Buttons */
-QRadioButton {
-    spacing: 6px;
-    color: #202020;
-}
-
-QRadioButton::indicator {
-    width: 16px;
-    height: 16px;
-    border: 1px solid #AAAAAA;
-    background-color: #FFFFFF;
-    border-radius: 8px;
-}
-
-QRadioButton::indicator:checked {
-    background-color: #C8DAF0;
-    image: url("assets/light_icons/circle-solid.svg");
-}
-
-QRadioButton::indicator:hover {
-    border-color: #888888;
-}
-
 /* Sliders */
 QSlider::handle:horizontal {
     background: #777777;
     border: 1px solid #555555;
+    /*width: 14px;
+    height: 14px;*/
     margin: -4px 0;
     border-radius: 7px;
 }
@@ -188,32 +230,61 @@ QSlider::add-page:horizontal {
     border-radius: 3px;
 }
 
-/* ComboBox */
-QComboBox {
-    background-color: #FFFFFF;
-    border: 1px solid #CCCCCC;
-    border-radius: 4px;
+/* Toggle Switches */
+QSwitch, PyDMSwitch {
+    background-color: #2F2F2F;
+    border: 1px solid #666666;
+}
+
+/* PyDMChannel Indicators */
+PyDMChannel[connected=true] {
+    background-color: #006600;
+}
+
+PyDMChannel[connected=false] {
+    background-color: #660000;
+}
+
+/* Live/Archive Indicators */
+QLabel[status="live"] {
+    color: #00CC00;
+    font-weight: bold;
+}
+
+QLabel[status="archive"] {
+    color: #FF9900;
+    font-weight: bold;
+}
+
+/* Plot Areas */
+PyDMTimePlot, PyDMWaveformPlot {
+    background-color: #1E1E1E;
+    border: 1px solid #555555;
+}
+
+/* Plot Settings Panel */
+QFrame#plotSettings {
+    background-color: #2A2A2A;
+    border: 1px solid #555555;
+}
+
+QFrame#plotSettings QLabel {
+    color: #E0E0E0;
+}
+
+/* Status Bar */
+QStatusBar {
+    background-color: #2C2C2C;
+    border-top: 1px solid #444444;
+}
+
+/* Tooltips */
+QToolTip {
+    background-color: #333333;
+    color: #FFFFFF;
+    border: 1px solid #888888;
     padding: 4px;
-    color: #202020;
-}
-
-QComboBox::drop-down {
-    background-color: #FFFFFF;
-    border-left: 1px solid #CCCCCC;
-    margin: 0px;
-}
-
-QComboBox::down-arrow {
-    image: url("assets/light_icons/down-arrow.svg");
-    width: 10px;
-    height: 10px;
-}
-
-QComboBox QAbstractItemView {
-    background-color: #FFFFFF;
-    color: #202020;
-    selection-background-color: #DADADA;
-        selection-color: #000000;
+    font-size: 10px;
 }
 
 /* Scrollbars */
@@ -303,6 +374,61 @@ QScrollBar::add-line:horizontal {
     image: url("assets/light_icons/right-arrow.svg");
 }
 
+/* Radio Buttons */
+QRadioButton {
+    spacing: 6px;
+}
+
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #AAAAAA;
+    background-color: #FFFFFF;
+    border-radius: 8px;
+}
+
+QRadioButton::indicator:checked {
+    background-color: #C8DAF0;
+    image: url("assets/light_icons/circle-solid.svg");
+}
+
+QRadioButton::indicator:unchecked {
+    background-color: #2A2A2A;
+}
+
+QRadioButton::indicator:hover {
+    border-color: #888888;
+}
+
+/* ComboBox */
+QComboBox {
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    border-radius: 4px;
+    padding: 4px;
+    color: #202020;
+}
+
+QComboBox::drop-down {
+    background-color: #FFFFFF;
+    border-left: 1px solid #CCCCCC;
+    margin: 0px;
+}
+
+QComboBox::down-arrow {
+    image: url("assets/light_icons/down-arrow.svg");
+    width: 10px;
+    height: 10px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #FFFFFF;
+    color: #202020;
+    /* border: 1px solid #5A5A5A;*/
+    selection-background-color: #DADADA;
+    selection-color: #000000;
+}
+
 /* SpinBox */
 QSpinBox {
     background-color: #FFFFFF;
@@ -317,10 +443,21 @@ QSpinBox::up-button, QSpinBox::down-button {
     width: 16px;
 }
 
+QSpinBox::up-button {
+    subcontrol-position: top right;
+    border-top-right-radius: 4px;
+}
+
+QSpinBox::down-button {
+    subcontrol-position: bottom right;
+    border-bottom-right-radius: 4px;
+}
+
 QSpinBox::up-arrow {
     image: url("assets/light_icons/up-arrow.svg");
     width: 8px;
     height: 8px;
+    color: #5EA7FF;
 }
 
 QSpinBox::down-arrow {
@@ -328,4 +465,3 @@ QSpinBox::down-arrow {
     width: 8px;
     height: 8px;
 }
-

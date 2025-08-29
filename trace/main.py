@@ -5,7 +5,7 @@ from socket import gethostname
 from getpass import getuser
 from datetime import datetime
 
-from qtpy.QtGui import QFont, QImage, QKeySequence, QColor
+from qtpy.QtGui import QFont, QColor, QImage, QKeySequence
 from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice, QSettings
 from theme_manager import Theme, IconColors, ThemeManager
 from qtpy.QtWidgets import (
@@ -118,8 +118,8 @@ class TraceDisplay(Display):
         toolbar = self.build_toolbar(plot_side_widget)
         plot_side_layout.addWidget(toolbar)
 
-        background_color = "#1E1E1E" if self.theme_manager.get_current_theme() == Theme.DARK else "white"        
-        
+        background_color = "#1E1E1E" if self.theme_manager.get_current_theme() == Theme.DARK else "white"
+
         self.plot = PyDMArchiverTimePlot(
             plot_side_widget,
             background=background_color,
@@ -328,14 +328,14 @@ class TraceDisplay(Display):
         fetch_archive.setShortcut(QKeySequence("Ctrl+F"))
         dit_action = menu.addAction("Data Insight Tool...", self.data_insight_tool.show)
         dit_action.setShortcut(QKeySequence("Ctrl+D"))
-        
+
         menu.addSeparator()
 
         if self.is_dark_mode:
             self.theme_action = menu.addAction("Switch to Light Mode", self.toggle_theme)
         else:
             self.theme_action = menu.addAction("Switch to Dark Mode", self.toggle_theme)
-        
+
         self.theme_action.setShortcut(QKeySequence("Ctrl+T"))
 
         return menu
@@ -345,7 +345,7 @@ class TraceDisplay(Display):
         if self.is_dark_mode:
             self.theme_manager.set_theme(Theme.LIGHT)
             self.theme_action.setText("Switch to Dark Mode")
-            self.plot.setBackgroundColor(QColor("#FFFFFF")) 
+            self.plot.setBackgroundColor(QColor("#FFFFFF"))
             self.setup_icons()
             self.is_dark_mode = False
         else:

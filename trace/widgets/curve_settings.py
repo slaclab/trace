@@ -76,7 +76,7 @@ class CurveSettingsModal(QWidget):
         main_layout.addLayout(width_row)
 
         extention_option = QCheckBox(self)
-        extention_option.stateChanged.connect(lambda check: self.set_extension_option(bool(check)))
+        extention_option.checkStateChanged.connect(lambda check: self.set_extension_option(bool(check)))
         extention_option_row = SettingsRowItem(self, "Line Extention", extention_option)
         main_layout.addLayout(extention_option_row)
 

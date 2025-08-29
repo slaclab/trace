@@ -368,7 +368,7 @@ class AxisItem(QtWidgets.QWidget):
         layout.addLayout(self.bottom_settings_layout)
         self.auto_range_checkbox = QtWidgets.QCheckBox("Auto")
         self.auto_range_checkbox.setCheckState(QtCore.Qt.Checked if self.source.auto_range else QtCore.Qt.Unchecked)
-        self.auto_range_checkbox.stateChanged.connect(self.set_auto_range)
+        self.auto_range_checkbox.checkStateChanged.connect(self.set_auto_range)
         self.source.linkedView().sigRangeChangedManually.connect(self.disable_auto_range)
         self.bottom_settings_layout.addWidget(self.auto_range_checkbox)
         self.bottom_settings_layout.addWidget(QtWidgets.QLabel("min, max"))
@@ -387,7 +387,7 @@ class AxisItem(QtWidgets.QWidget):
 
         self.active_toggle = ToggleSwitch("Active")
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
-        self.active_toggle.stateChanged.connect(self.set_active)
+        self.active_toggle.checkStateChanged.connect(self.set_active)
         self.header_layout.addWidget(self.active_toggle)
 
         self.placeholder = QtWidgets.QWidget(self)
@@ -726,12 +726,12 @@ class CurveItem(QtWidgets.QWidget):
         self._variable_name = variable_name
         self.theme_manager = theme_manager
         self.setLayout(QtWidgets.QHBoxLayout())
-        
+
         self.icon_disconnected = self.theme_manager.create_icon("msc.debug-disconnect", IconColors.PRIMARY)
 
         if self.theme_manager:
             self.theme_manager.theme_changed.connect(self.on_theme_changed)
-            
+
         self.handle = DragHandle()
         self.handle.setFlat(True)
         self.handle.setStyleSheet("border: None;")
@@ -740,7 +740,7 @@ class CurveItem(QtWidgets.QWidget):
 
         self.active_toggle = ToggleSwitch("Active", color=self.source.color_string)
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
-        self.active_toggle.stateChanged.connect(self.set_active)
+        self.active_toggle.checkStateChanged.connect(self.set_active)
         self.layout().addWidget(self.active_toggle)
 
         second_layout = QtWidgets.QVBoxLayout()
@@ -772,12 +772,20 @@ class CurveItem(QtWidgets.QWidget):
 
         self.setup_line_edit()
 
+        self.live_toggle = QtWidgets.QCheckBox("Live")
+        self.live_toggle.setCheckState(QtCore.Qt.Checked if self.source.liveData else QtCore.Qt.Unchecked)
+        self.live_toggle.checkStateChanged.connect(self.set_live_data_connection)
+        data_type_layout.addWidget(self.live_toggle)
         self.live_connection_status = QtWidgets.QLabel()
         self.live_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
         self.live_connection_status.setToolTip("Not connected to live data")
         self.source.live_channel_connection.connect(self.update_live_icon)
         pv_settings_layout.addWidget(self.live_connection_status)
 
+        self.archive_toggle = QtWidgets.QCheckBox("Archive")
+        self.archive_toggle.setCheckState(QtCore.Qt.Checked if self.source.use_archive_data else QtCore.Qt.Unchecked)
+        self.archive_toggle.checkStateChanged.connect(self.set_archive_data_connection)
+        data_type_layout.addWidget(self.archive_toggle)
         self.archive_connection_status = QtWidgets.QLabel()
         self.archive_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
         self.archive_connection_status.setToolTip("Not connected to archive data")
@@ -813,11 +821,10 @@ class CurveItem(QtWidgets.QWidget):
             delete_icon = self.theme_manager.create_icon("msc.trash", IconColors.PRIMARY)
             if delete_icon:
                 self.delete_button.setIcon(delete_icon)
-            
+
             if self.icon_disconnected:
                 self.live_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
                 self.archive_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
-
 
     def update_variable_name(self):
         """Update the variable name label"""

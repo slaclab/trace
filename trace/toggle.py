@@ -44,22 +44,17 @@ class ToggleSwitch(QCheckBox):
         color : QColor, optional
             Custom color for the "on" state. If None, uses default blue.
         """
-        # Handle the case where first argument might be parent widget
         if isinstance(text, (type(None), object)) and not isinstance(text, str):
             parent = text
             text = ""
         super().__init__(parent)
         self.setFixedSize(46, 26)
         self.setCursor(Qt.PointingHandCursor)
-        self._x = self.MARGIN  # Start with knob on the left (off position)
+        self._x = self.MARGIN
         self._anim = QPropertyAnimation(self, b"offset", self)
         self._anim.setDuration(120)
-        
-        # Set custom color or use default
-        self._track_on_color = color if color is not None else self.TRACK_ON
 
-        # Don't connect to stateChanged to avoid dual animations
-        # Animation will only be triggered by user clicks in nextCheckState
+        self._track_on_color = color if color is not None else self.TRACK_ON
 
     def getOffset(self) -> int:
         """
@@ -93,7 +88,7 @@ class ToggleSwitch(QCheckBox):
         super().nextCheckState()
         start = self._x
         end = self.width() - self.DIAMETER - self.MARGIN if self.isChecked() else self.MARGIN
-        
+
         self._anim.stop()
         self._anim.setStartValue(start)
         self._anim.setEndValue(end)
@@ -105,7 +100,6 @@ class ToggleSwitch(QCheckBox):
         """
         if self.isChecked() != checked:
             super().setChecked(checked)
-            # Animate to new position
             start = self._x
             end = self.width() - self.DIAMETER - self.MARGIN if checked else self.MARGIN
             self._anim.stop()
@@ -117,32 +111,29 @@ class ToggleSwitch(QCheckBox):
         """
         Override setCheckState to handle Qt.CheckState enums properly in PySide6.
         """
-        # Convert Qt.CheckState to boolean for setChecked
         if isinstance(state, int):
-            # Handle integer values
-            checked = state != 0  # 0 = Unchecked, anything else = Checked
+            checked = state != 0
         else:
-            # Handle Qt.CheckState enums
             checked = state != Qt.Unchecked
-        
+
         self.setChecked(checked)
 
     def setColor(self, color: QColor) -> None:
         """
         Set the color for the "on" state of the toggle switch.
-        
+
         Parameters
         ----------
         color : QColor
             The color to use when the toggle is in the "on" state
         """
         self._track_on_color = color
-        self.update()  # Trigger a repaint
+        self.update()
 
     def getColor(self) -> QColor:
         """
         Get the current "on" state color.
-        
+
         Returns
         -------
         QColor
@@ -161,10 +152,9 @@ class ToggleSwitch(QCheckBox):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
 
-        # Draw the track - use custom color for "on" state
         track_col = self._track_on_color if self.isChecked() else self.TRACK_OFF
         p.setPen(Qt.NoPen)
-        p.setBrush(track_col)
+        p.setBrush(QColor(track_col))
         p.drawRoundedRect(self.rect(), self.height() / 2, self.height() / 2)
 
         # Draw the knob

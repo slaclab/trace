@@ -46,7 +46,7 @@ class PlotSettingsModal(QWidget):
         main_layout.addLayout(plot_title_row)
 
         self.legend_checkbox = QCheckBox(self)
-        self.legend_checkbox.stateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
+        self.legend_checkbox.checkStateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
         self.legend_checkbox.setChecked(True)  # legend on by default
         legend_row = SettingsRowItem(self, "Show Legend", self.legend_checkbox)
         main_layout.addLayout(legend_row)
@@ -81,7 +81,7 @@ class PlotSettingsModal(QWidget):
         main_layout.addLayout(end_dt_row)
 
         self.crosshair_checkbox = QCheckBox(self)
-        self.crosshair_checkbox.stateChanged.connect(lambda check: self.plot.enableCrosshair(check, 100, 100))
+        self.crosshair_checkbox.checkStateChanged.connect(lambda check: self.plot.enableCrosshair(check, 100, 100))
         crosshair_row = SettingsRowItem(self, "Show Crosshair", self.crosshair_checkbox)
         main_layout.addLayout(crosshair_row)
 
@@ -101,12 +101,12 @@ class PlotSettingsModal(QWidget):
         main_layout.addLayout(axis_tick_font_size_row)
 
         self.x_grid_checkbox = QCheckBox(self)
-        self.x_grid_checkbox.stateChanged.connect(self.show_x_grid)
+        self.x_grid_checkbox.checkStateChanged.connect(self.show_x_grid)
         x_grid_row = SettingsRowItem(self, "  X Axis Gridline", self.x_grid_checkbox)
         main_layout.addLayout(x_grid_row)
 
         self.y_grid_checkbox = QCheckBox(self)
-        self.y_grid_checkbox.stateChanged.connect(self.show_y_grid)
+        self.y_grid_checkbox.checkStateChanged.connect(self.show_y_grid)
         y_grid_row = SettingsRowItem(self, "  All Y Axis Gridlines", self.y_grid_checkbox)
         main_layout.addLayout(y_grid_row)
 
