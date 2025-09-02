@@ -32,10 +32,10 @@ from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 from pydm.utilities.macro import parse_macro_string
 
-from trace.config import logger, datetime_pv
-from trace.file_io import PathAction, TraceFileHandler
-from trace.widgets import ControlPanel, DataInsightTool, PlotSettingsModal
-from trace.widgets.elog_post_modal import ElogPostModal
+from config import logger, datetime_pv
+from file_io import PathAction, TraceFileHandler
+from widgets import ControlPanel, DataInsightTool, PlotSettingsModal
+from widgets.elog_post_modal import ElogPostModal
 
 DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
 

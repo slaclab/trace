@@ -5,8 +5,8 @@ from pydm.display import Display
 from pydm.widgets import PyDMArchiverTimePlot
 from pydm.widgets.baseplot import BasePlotAxisItem
 
-from trace.config import logger
-from trace.widgets import SettingsTitle, SettingsRowItem
+from config import logger
+from widgets import SettingsTitle, SettingsRowItem
 
 
 class AxisSettingsModal(QWidget):

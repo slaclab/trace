@@ -6,7 +6,7 @@ from qtpy.QtGui import QDrag
 from qtpy.QtCore import QUrl, QMimeData, QByteArray, QModelIndex
 from qtpy.QtNetwork import QNetworkReply
 
-from trace.widgets import ArchiveSearchWidget
+from widgets import ArchiveSearchWidget
 
 DUMMY_ARCHIVER_URL = "dummy.archiver.url"
 

@@ -12,9 +12,9 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QDialogButtonBox,
 )
-from trace.services.elog_client import get_logbooks
+from services.elog_client import get_logbooks
 
-from trace.widgets.settings_components import SettingsTitle, SettingsRowItem
+from widgets.settings_components import SettingsTitle, SettingsRowItem
 
 
 class ElogPostModal(QDialog):

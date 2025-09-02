@@ -4,8 +4,8 @@ from qtpy.QtWidgets import QWidget, QCheckBox, QLineEdit, QVBoxLayout
 
 from pydm.widgets.archiver_time_plot import TimePlotCurveItem, PyDMArchiverTimePlot
 
-from trace.config import logger
-from trace.widgets import ColorButton, SettingsTitle, ComboBoxWrapper, SettingsRowItem
+from config import logger
+from widgets import ColorButton, SettingsTitle, ComboBoxWrapper, SettingsRowItem
 
 
 class CurveSettingsModal(QWidget):

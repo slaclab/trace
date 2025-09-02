@@ -6,8 +6,8 @@ import pytest
 
 from pydm.application import PyDMApplication
 
-from trace.main import TraceDisplay
-from trace.config import logger
+from main import TraceDisplay
+from config import logger
 
 
 @pytest.fixture

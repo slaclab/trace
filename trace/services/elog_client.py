@@ -11,7 +11,7 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
-from trace.config import logger
+from config import logger
 
 load_dotenv()
 ELOG_API_URL = os.getenv("SWAPPS_TRACE_ELOG_API_URL")

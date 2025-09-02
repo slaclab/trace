@@ -7,15 +7,15 @@ from qtpy.QtCore import QTimer
 from pydm.widgets.baseplot import BasePlotAxisItem
 from pydm.widgets.archiver_time_plot import FormulaCurveItem, ArchivePlotCurveItem
 
-from trace.config import logger
-from trace.widgets import (
+from config import logger
+from widgets import (
     ColorButton,
     AxisSettingsModal,
     CurveSettingsModal,
     ArchiveSearchWidget,
 )
-from trace.widgets.formula_dialog import FormulaDialog
-from trace.widgets.utilities.formula_validation import (
+from widgets.formula_dialog import FormulaDialog
+from widgets.utilities.formula_validation import (
     validate_formula,
     sanitize_for_validation,
 )

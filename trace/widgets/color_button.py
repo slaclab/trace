@@ -5,7 +5,7 @@ from qtpy.QtGui import QColor, QMouseEvent
 from qtpy.QtCore import Qt, Signal
 from qtpy.QtWidgets import QPushButton, QColorDialog
 
-from trace.config import color_palette
+from config import color_palette
 
 
 class ColorButton(QPushButton):

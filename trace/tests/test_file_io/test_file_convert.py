@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 import pytest
 from qtpy.QtGui import QColor
 
-from trace.file_io import TraceFileConverter
+from file_io import TraceFileConverter
 
 DUMMY_ARCHIVER_URL = "dummy.archiver.url"
 SCRIPT_PATH = Path(__file__).parent.parent.parent / "file_io" / "trace_file_convert.py"

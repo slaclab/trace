@@ -1,7 +1,7 @@
 import datetime
 from re import compile
 
-from trace.config import logger
+from config import logger
 
 
 class IOTimeParser:
