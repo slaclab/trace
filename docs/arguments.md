@@ -50,6 +50,7 @@ pydm trace/main.py -m "INPUT_FILE = trace/examples/FormulaExample.trc"
 
 Shows Trace's help message, which outlines the available arguments for users.
 
+
 ## Version Number
 
 `-v` or `--version`

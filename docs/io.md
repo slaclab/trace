@@ -4,7 +4,9 @@ Trace allows users to export their current configuration of the application into
 
 The importing and exporting features can be found in the menu bar at the top of the application under the Action menu. Alternatively, users can export their current configuration with `Ctrl+S` or import a file with `Ctrl+L`.
 
-Files can also be imported on startup using the `-i` flag followed by the path to the file. Find more information on application arguments [here](../reference/trace.md#arguments-and-macros).
+Files can also be imported on startup using the `-i` flag followed by the path to the file. Find more information on application arguments [here].
+
+  [here]: arguments.md
 
 
 
@@ -19,7 +21,9 @@ Save files for the Java-based Archive Viewer can also be imported into Trace. Th
 
 Trace will not save new files in the Java-based Archive Viewer's format, only as `.trc` files.
 
-Files can be converted en masse from the Java-based file format to Trace's formate using the [CLI file converter tool](file_conversion.md).
+Files can be converted en masse from the Java-based file format to Trace's formate using the [CLI file converter tool].
+
+  [CLI file converter tool]: tools/file_converter.md
 
 
 ### StripTool Save Files
@@ -28,7 +32,7 @@ Save files for the StripTool can be converted using the same tool or imported di
 
 Trace will not save new files in the Java-based Archive Viewer's format, only as `.trc` files.
 
-Files can be converted en masse from the StripTool file format to Trace's formate using the [CLI file converter tool](file_conversion.md).
+Files can be converted en masse from the StripTool file format to Trace's formate using the file converter tool.
 
 
 ### Note About Colors
