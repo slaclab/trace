@@ -143,3 +143,4 @@ debug_trace.bash
 
 # Image files
 *.png
+!docs/**/*.png

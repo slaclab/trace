@@ -1,33 +1,29 @@
+# Project Information
 site_name: Trace
-repo_url: https://github.com/slaclab/trace
+site_url: https://slaclab.github.io/trace/
+site_author: SLAC National Accelerator Laboratory - EED / Software Applications Group
+site_description: Trace is a Python application for plotting live and archived EPICS data.
+
+# Repository
 repo_name: slaclab/trace
+repo_url: https://github.com/slaclab/trace
 
-nav:
-  - Home: index.md
-  - How To:
-      - Overview: how_to/overview.md
-      - Traces: how_to/traces.md
-      - Traces Table Menu: how_to/traces_table_menu.md
-      - Axes: how_to/axes.md
-      - Plot Config: how_to/plot_config.md
-      - Import/Export: how_to/io.md
-      - Convert Save Files: how_to/file_conversion.md
-  - API Reference:
-      - Trace: api_reference/trace.md
-      - Traces Table: api_reference/traces_table.md
-      - Axis Table: api_reference/axis_table.md
-      - Plot Config: api_reference/plot_config.md
-
+# Configuration
 theme:
   name: material
-  # custom_dir: overrides
+  favicon: images/sqwave-blwh.svg
+  logo: images/sqwave-blwh.svg
   icon:
     repo: fontawesome/brands/github
   features:
+    - content.code.copy
     - navigation.top
     - navigation.tabs
     - navigation.indexes
     - navigation.footer
+    - search.highlight
+    - search.share
+    - search.suggest
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -42,17 +38,80 @@ theme:
         icon: material/toggle-switch
         name: Switch to light mode
 
-extra:
-  generator: false
-
-markdown_extensions:
-  - pymdownx.highlight
-  - pymdownx.superfences
-
+# Plugins
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
           paths: [trace]
+  - git-revision-date-localized:
+      exclude:
+        - index.md
+      enable_creation_date: true
+      fallback_to_build_date: true
+  - git-committers:
+      exclude:
+        - index.md
+      repository: slaclab/trace
+      branch: main
 
+# Additional Configuration
+extra:
+  generator: false
+
+# Extensions
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        custom_icons:
+          - images/
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+# Page Tree
+nav:
+  - Home: index.md
+  - Getting Started:
+    - installation.md
+    - Interface Overview:
+      - overview.md
+      - Plot Section: overview/plot_section.md
+      - Configuration Section: overview/config_section.md
+      - Footer: overview/footer.md
+    - Traces: traces.md
+    - Y-Axes: y_axes.md
+    - Plot Config: plot_config.md
+    - Arguments & Macros: arguments.md
+    - Import/Export: io.md
+    - Tools:
+      - File Converter: tools/file_converter.md
+      - Archive Search: tools/search.md
+      - Formula Maker: tools/formula_maker.md
+      - Data Insight: tools/data_insight.md
+      - E-Log Entry: tools/elog_entry.md
+  - Developer Reference:
+    - reference/index.md
+    - reference/trace.md
+    - Widgets:
+      - reference/widgets/index.md
+      - Control Panel: reference/widgets/control_panel.md
+      - Settings Popups: reference/widgets/settings_popups.md
+      - Archive Search: reference/widgets/archive_search.md
+      - Data Insight Tool: reference/widgets/data_insight_tool.md
+      - E-Log Post Modal: reference/widgets/elog_post_modal.md
+      - Helper Widgets: reference/widgets/helper_widgets.md
+    - File IO:
+      - reference/file_io/index.md
+      - File Converter: reference/file_io/trace_file_convert.md
+      - File Handler: reference/file_io/file_handler.md
+      - Time Parser: reference/file_io/time_parser.md
+    - Services:
+      - reference/services/index.md
+      - E-Log Service: reference/services/elog_client.md
