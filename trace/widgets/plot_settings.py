@@ -17,8 +17,8 @@ from qtpy.QtWidgets import (
 
 from pydm.widgets import PyDMArchiverTimePlot
 
-from config import logger
-from widgets import ColorButton, SettingsTitle, SettingsRowItem
+from trace.config import logger
+from trace.widgets import ColorButton, SettingsTitle, SettingsRowItem
 
 
 class PlotSettingsModal(QWidget):

@@ -37,7 +37,7 @@ from pydm.widgets.archiver_time_plot import (
     PyDMArchiverTimePlot,
 )
 
-from widgets import FrozenTableView
+from trace.widgets import FrozenTableView
 
 TZ = datetime.now().astimezone().tzinfo
 SEVERITY_MAP = {0: "NO_ALARM", 1: "MINOR", 2: "MAJOR", 3: "INVALID"}

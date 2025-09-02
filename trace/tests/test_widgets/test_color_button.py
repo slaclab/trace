@@ -2,8 +2,8 @@ import pytest
 from qtpy.QtGui import QColor
 from qtpy.QtCore import Qt
 
-from widgets import color_button
-from widgets.color_button import ColorButton
+from trace.widgets import color_button
+from trace.widgets.color_button import ColorButton
 
 DEF_COLOR = QColor("black")
 

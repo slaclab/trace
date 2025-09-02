@@ -7,8 +7,8 @@ from qtpy.QtWidgets import QFileDialog, QMessageBox
 
 from pydm.widgets.archiver_time_plot import PyDMArchiverTimePlot
 
-from config import logger, save_file_dir
-from file_io import IOTimeParser, TraceFileConverter
+from trace.config import logger, save_file_dir
+from trace.file_io import IOTimeParser, TraceFileConverter
 
 
 class TraceFileHandler(QObject):
