@@ -3,7 +3,6 @@ import re
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
 from qtpy.QtCore import QTimer
-from PyQt5.QtWidgets import QMessageBox
 
 from pydm.widgets.baseplot import BasePlotAxisItem
 from pydm.widgets.archiver_time_plot import FormulaCurveItem, ArchivePlotCurveItem
@@ -645,16 +644,16 @@ class AxisItem(QtWidgets.QWidget):
 
     def close(self) -> bool:
         # Pop up confirming axis delete
-        dialog = QMessageBox(
+        dialog = QtWidgets.QMessageBox(
             text=str("Are you sure you want to delete the axis?"),
             parent=self,
         )
-        dialog.setIcon(QMessageBox.Information)
+        dialog.setIcon(QtWidgets.QMessageBox.Information)
         dialog.setWindowTitle("Delete Axis")
-        dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        dialog.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         result = dialog.exec_()
 
-        if result == QMessageBox.Cancel:
+        if result == QtWidgets.QMessageBox.Cancel:
             return
 
         self.clear_curves()
