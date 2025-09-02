@@ -4567,7 +4567,51 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">1027</span>
 <span class="normal">1028</span>
 <span class="normal">1029</span>
-<span class="normal">1030</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CurveItem</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
+<span class="normal">1030</span>
+<span class="normal">1031</span>
+<span class="normal">1032</span>
+<span class="normal">1033</span>
+<span class="normal">1034</span>
+<span class="normal">1035</span>
+<span class="normal">1036</span>
+<span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
+<span class="normal">1040</span>
+<span class="normal">1041</span>
+<span class="normal">1042</span>
+<span class="normal">1043</span>
+<span class="normal">1044</span>
+<span class="normal">1045</span>
+<span class="normal">1046</span>
+<span class="normal">1047</span>
+<span class="normal">1048</span>
+<span class="normal">1049</span>
+<span class="normal">1050</span>
+<span class="normal">1051</span>
+<span class="normal">1052</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span>
+<span class="normal">1055</span>
+<span class="normal">1056</span>
+<span class="normal">1057</span>
+<span class="normal">1058</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
+<span class="normal">1061</span>
+<span class="normal">1062</span>
+<span class="normal">1063</span>
+<span class="normal">1064</span>
+<span class="normal">1065</span>
+<span class="normal">1066</span>
+<span class="normal">1067</span>
+<span class="normal">1068</span>
+<span class="normal">1069</span>
+<span class="normal">1070</span>
+<span class="normal">1071</span>
+<span class="normal">1072</span>
+<span class="normal">1073</span>
+<span class="normal">1074</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CurveItem</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
     <span class="n">curve_deleted</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Signal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
 
     <span class="n">icon_disconnected</span> <span class="o">=</span> <span class="n">qta</span><span class="o">.</span><span class="n">icon</span><span class="p">(</span><span class="s2">&quot;msc.debug-disconnect&quot;</span><span class="p">)</span>
@@ -4674,6 +4718,9 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">toolTip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Formula is invalid&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span>
@@ -4748,6 +4795,8 @@ plot's curves, and set all new curves based on the provided curve data.</p>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_updating_formula&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updating_formula</span><span class="p">:</span>
             <span class="k">return</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
         <span class="n">new_formula</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">new_formula</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;f://&quot;</span><span class="p">):</span>
@@ -4797,8 +4846,13 @@ plot's curves, and set all new curves based on the provided curve data.</p>
             <span class="k">def</span><span class="w"> </span><span class="nf">delayed_update</span><span class="p">():</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_perform_formula_update</span><span class="p">(</span><span class="n">new_formula</span><span class="p">,</span> <span class="n">axis_item</span><span class="p">,</span> <span class="n">control_panel</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Formula Update Failed&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to update formula: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;formula&quot;</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">formula</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">finally</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_updating_formula&quot;</span><span class="p">):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_updating_formula</span> <span class="o">=</span> <span class="kc">False</span>
@@ -4810,22 +4864,53 @@ plot's curves, and set all new curves based on the provided curve data.</p>
             <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Formula Update Failed&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to update formula: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;formula&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">formula</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_perform_formula_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_formula</span><span class="p">,</span> <span class="n">axis_item</span><span class="p">,</span> <span class="n">control_panel</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform the actual formula update - called asynchronously to avoid segfault&quot;&quot;&quot;</span>
-        <span class="n">plot</span> <span class="o">=</span> <span class="n">control_panel</span><span class="o">.</span><span class="n">plot</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform the actual formula update with complete cleanup of the old curve.</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="ow">in</span> <span class="n">plot</span><span class="o">.</span><span class="n">_curves</span><span class="p">:</span>
-            <span class="n">plot</span><span class="o">.</span><span class="n">_curves</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
-        <span class="n">plot</span><span class="o">.</span><span class="n">plotItem</span><span class="o">.</span><span class="n">removeItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+<span class="sd">        This method is called asynchronously to avoid Qt segmentation faults during</span>
+<span class="sd">        formula curve replacement. It handles the complete lifecycle of replacing</span>
+<span class="sd">        an existing formula curve with a new one, including signal disconnection,</span>
+<span class="sd">        plot removal, dictionary cleanup, and garbage collection.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        new_formula : str</span>
+<span class="sd">            The new formula string starting with &#39;f://&#39; (e.g., &#39;f://{x1}+{x2}&#39;).</span>
+<span class="sd">        axis_item : AxisItem</span>
+<span class="sd">            The axis item widget that contains this curve item.</span>
+<span class="sd">        control_panel : ControlPanel</span>
+<span class="sd">            The control panel widget that manages curve dictionaries and plot references.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">plot</span> <span class="o">=</span> <span class="n">control_panel</span><span class="o">.</span><span class="n">plot</span>
+        <span class="n">old_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">old_source</span><span class="p">,</span> <span class="s2">&quot;formula_invalid_signal&quot;</span><span class="p">):</span>
+            <span class="n">old_source</span><span class="o">.</span><span class="n">formula_invalid_signal</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">old_source</span><span class="p">,</span> <span class="s2">&quot;channels&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">old_source</span><span class="o">.</span><span class="n">channels</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">ch</span><span class="p">:</span>
+                    <span class="n">ch</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">old_source</span> <span class="ow">in</span> <span class="n">plot</span><span class="o">.</span><span class="n">_curves</span><span class="p">:</span>
+            <span class="n">plot</span><span class="o">.</span><span class="n">_curves</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_source</span><span class="p">)</span>
+            <span class="n">plot</span><span class="o">.</span><span class="n">plotItem</span><span class="o">.</span><span class="n">removeItem</span><span class="p">(</span><span class="n">old_source</span><span class="p">)</span>
 
         <span class="n">old_key</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">control_panel</span><span class="o">.</span><span class="n">_curve_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-            <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">old_source</span><span class="p">:</span>
                 <span class="n">old_key</span> <span class="o">=</span> <span class="n">key</span>
                 <span class="k">del</span> <span class="n">control_panel</span><span class="o">.</span><span class="n">_curve_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removed old formula curve </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> from curve dictionary&quot;</span><span class="p">)</span>
                 <span class="k">break</span>
+
+        <span class="n">old_source</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">old_source</span><span class="p">,</span> <span class="s2">&quot;deleteLater&quot;</span><span class="p">):</span>
+            <span class="n">old_source</span><span class="o">.</span><span class="n">deleteLater</span><span class="p">()</span>
 
         <span class="n">var_names</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;{(.+?)}&quot;</span><span class="p">,</span> <span class="n">new_formula</span><span class="p">)</span>
         <span class="n">var_dict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -4854,18 +4939,15 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
         <span class="k">if</span> <span class="n">old_key</span> <span class="ow">and</span> <span class="n">old_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;fx&quot;</span><span class="p">):</span>
             <span class="n">control_panel</span><span class="o">.</span><span class="n">_curve_dict</span><span class="p">[</span><span class="n">old_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_formula_curve</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updated formula curve </span><span class="si">{</span><span class="n">old_key</span><span class="si">}</span><span class="s2"> in curve dictionary&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">control_panel</span><span class="o">.</span><span class="n">_generate_pv_key</span><span class="p">(</span><span class="s2">&quot;formula&quot;</span><span class="p">)</span>
             <span class="n">control_panel</span><span class="o">.</span><span class="n">_curve_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_formula_curve</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added new formula curve </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to curve dictionary&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">update_variable_name</span><span class="p">()</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-
         <span class="n">axis_item</span><span class="o">.</span><span class="n">curves_list_changed</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_updating_formula&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_updating_formula</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">control_panel</span><span class="o">.</span><span class="n">cleanup_duplicate_curves</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_parent_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the parent AxisItem by traversing up the widget hierarchy&quot;&quot;&quot;</span>
@@ -4888,6 +4970,12 @@ plot's curves, and set all new curves based on the provided curve data.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">pv</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;show_invalid_icon&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_updating_formula&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_updating_formula</span> <span class="o">=</span> <span class="kc">False</span>
+
         <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span>
         <span class="p">[</span><span class="n">ch</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span> <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">curve</span><span class="o">.</span><span class="n">channels</span><span class="p">()</span> <span class="k">if</span> <span class="n">ch</span><span class="p">]</span>
 
@@ -4982,14 +5070,14 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">970</span>
-<span class="normal">971</span>
-<span class="normal">972</span>
-<span class="normal">973</span>
-<span class="normal">974</span>
-<span class="normal">975</span>
-<span class="normal">976</span>
-<span class="normal">977</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1008</span>
+<span class="normal">1009</span>
+<span class="normal">1010</span>
+<span class="normal">1011</span>
+<span class="normal">1012</span>
+<span class="normal">1013</span>
+<span class="normal">1014</span>
+<span class="normal">1015</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the parent AxisItem by traversing up the widget hierarchy&quot;&quot;&quot;</span>
     <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span>
     <span class="k">while</span> <span class="n">parent</span><span class="p">:</span>
@@ -5019,10 +5107,7 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span>
-<span class="normal">824</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">824</span>
 <span class="normal">825</span>
 <span class="normal">826</span>
 <span class="normal">827</span>
@@ -5042,7 +5127,10 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">841</span>
 <span class="normal">842</span>
 <span class="normal">843</span>
-<span class="normal">844</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup_line_edit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup_line_edit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the line edit with appropriate behavior for formula vs regular curves&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_formula</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;formula&quot;</span><span class="p">):</span>
@@ -5114,7 +5202,10 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">772</span>
 <span class="normal">773</span>
 <span class="normal">774</span>
-<span class="normal">775</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">show_invalid_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">show_invalid_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Show or hide the invalid formula icon overlaid on the line edit&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_formula</span><span class="p">:</span>
         <span class="k">return</span>
@@ -5141,6 +5232,9 @@ plot's curves, and set all new curves based on the provided curve data.</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">invalid_action</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">toolTip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Formula is invalid&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5163,10 +5257,7 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">846</span>
-<span class="normal">847</span>
-<span class="normal">848</span>
-<span class="normal">849</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">849</span>
 <span class="normal">850</span>
 <span class="normal">851</span>
 <span class="normal">852</span>
@@ -5230,10 +5321,23 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">910</span>
 <span class="normal">911</span>
 <span class="normal">912</span>
-<span class="normal">913</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">913</span>
+<span class="normal">914</span>
+<span class="normal">915</span>
+<span class="normal">916</span>
+<span class="normal">917</span>
+<span class="normal">918</span>
+<span class="normal">919</span>
+<span class="normal">920</span>
+<span class="normal">921</span>
+<span class="normal">922</span>
+<span class="normal">923</span>
+<span class="normal">924</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle formula updates when user edits the formula text&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_updating_formula&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updating_formula</span><span class="p">:</span>
         <span class="k">return</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="n">new_formula</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
@@ -5284,8 +5388,13 @@ plot's curves, and set all new curves based on the provided curve data.</p>
         <span class="k">def</span><span class="w"> </span><span class="nf">delayed_update</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_perform_formula_update</span><span class="p">(</span><span class="n">new_formula</span><span class="p">,</span> <span class="n">axis_item</span><span class="p">,</span> <span class="n">control_panel</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Formula Update Failed&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to update formula: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;formula&quot;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">formula</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_updating_formula&quot;</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_updating_formula</span> <span class="o">=</span> <span class="kc">False</span>
@@ -5297,7 +5406,8 @@ plot's curves, and set all new curves based on the provided curve data.</p>
         <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Formula Update Failed&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to update formula: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;formula&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">formula</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_invalid_icon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
