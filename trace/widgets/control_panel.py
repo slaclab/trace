@@ -643,6 +643,19 @@ class AxisItem(QtWidgets.QWidget):
                 item.close()
 
     def close(self) -> bool:
+        # Pop up confirming axis delete
+        dialog = QtWidgets.QMessageBox(
+            text=str("Are you sure you want to delete the axis?"),
+            parent=self,
+        )
+        dialog.setIcon(QtWidgets.QMessageBox.Information)
+        dialog.setWindowTitle("Delete Axis")
+        dialog.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        result = dialog.exec_()
+
+        if result == QtWidgets.QMessageBox.Cancel:
+            return
+
         self.clear_curves()
         self.source.sigYRangeChanged.disconnect(self.handle_range_change)
         self.source.linkedView().sigRangeChangedManually.disconnect(self.disable_auto_range)
