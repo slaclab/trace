@@ -2,9 +2,9 @@ import re
 
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
-from toggle import ToggleSwitch
+from widgets.toggle import ToggleSwitch
 from qtpy.QtCore import QTimer
-from theme_manager import Theme, IconColors, ThemeManager
+from services.theme_manager import Theme, IconColors, ThemeManager
 
 from pydm.widgets.baseplot import BasePlotAxisItem
 from pydm.widgets.archiver_time_plot import FormulaCurveItem, ArchivePlotCurveItem

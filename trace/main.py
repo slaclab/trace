@@ -7,7 +7,7 @@ from datetime import datetime
 
 from qtpy.QtGui import QFont, QColor, QImage, QKeySequence
 from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice, QSettings
-from theme_manager import Theme, IconColors, ThemeManager
+from services.theme_manager import Theme, IconColors, ThemeManager
 from qtpy.QtWidgets import (
     QMenu,
     QLabel,
@@ -54,8 +54,6 @@ class TraceDisplay(Display):
 
         self.theme_manager = ThemeManager(
             app,
-            light_stylesheet_path="stylesheets/light_mode.qss",
-            dark_stylesheet_path="stylesheets/dark_mode.qss",
         )
         settings = QSettings()
         self.is_dark_mode = settings.value("isDarkTheme", False, type=bool)

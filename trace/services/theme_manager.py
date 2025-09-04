@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-
+from config import logger, light_stylesheet, dark_stylesheet
 import qtawesome as qta
 from qtpy.QtGui import QIcon, QColor, QPalette
 from qtpy.QtCore import Signal, QObject, QSettings
@@ -62,8 +62,6 @@ class ThemeManager(QObject):
         self,
         app: QApplication,
         parent: QObject | None = None,
-        light_stylesheet_path: str | None = None,
-        dark_stylesheet_path: str | None = None,
     ) -> None:
         """
         Initialize the integrated theme manager.
@@ -74,10 +72,6 @@ class ThemeManager(QObject):
             The Qt application instance to manage themes for.
         parent : QObject | None, optional
             Parent QObject for memory management, by default None.
-        light_stylesheet_path : str | None, optional
-            Path to the light theme QSS stylesheet file, by default None.
-        dark_stylesheet_path : str | None, optional
-            Path to the dark theme QSS stylesheet file, by default None.
 
         Example
         --------
@@ -88,10 +82,6 @@ class ThemeManager(QObject):
         super().__init__(parent)
         self.app = app
         self.current_theme = Theme.LIGHT
-
-        self.light_stylesheet_path = light_stylesheet_path
-        self.dark_stylesheet_path = dark_stylesheet_path
-
         self.app.setStyle(QStyleFactory.create("Fusion"))
 
         self._setup_palettes()
@@ -179,46 +169,6 @@ class ThemeManager(QObject):
             IconColors.DISABLED: "#666666",  # Dark gray for disabled
         }
 
-    def _load_stylesheet(self, stylesheet_path: str | None) -> str:
-        """
-        Load a QSS stylesheet from file.
-
-        Parameters
-        ----------
-        stylesheet_path : str | None
-            Path to the QSS stylesheet file, or None to return empty string.
-
-        Returns
-        -------
-        str
-            The stylesheet content, or empty string if file cannot be loaded.
-
-        Examples
-        --------
-        >>> stylesheet = theme_manager._load_stylesheet("styles/dark.qss")
-        """
-        if not stylesheet_path:
-            return ""
-
-        try:
-            with open(stylesheet_path, "r", encoding="utf-8") as file:
-                return file.read()
-        except FileNotFoundError:
-            print(f"Warning: Stylesheet file not found: {stylesheet_path}")
-            return ""
-        except UnicodeDecodeError:
-            print(f"Warning: Could not decode stylesheet file: {stylesheet_path}")
-            try:
-                # Try with different encoding
-                with open(stylesheet_path, "r", encoding="latin-1") as file:
-                    return file.read()
-            except Exception as e:
-                print(f"Warning: Failed to load stylesheet {stylesheet_path}: {e}")
-                return ""
-        except Exception as e:
-            print(f"Warning: Failed to load stylesheet {stylesheet_path}: {e}")
-            return ""
-
     def set_theme(self, theme: Theme) -> None:
         """
         Set the application theme.
@@ -237,12 +187,12 @@ class ThemeManager(QObject):
 
         if theme == Theme.DARK:
             self.app.setPalette(self.dark_palette)
-            stylesheet = self._load_stylesheet(self.dark_stylesheet_path)
+            stylesheet = dark_stylesheet.read_text()
         else:
             self.app.setPalette(self.light_palette)
-            stylesheet = self._load_stylesheet(self.light_stylesheet_path)
+            stylesheet = light_stylesheet.read_text()
 
-        self.app.setStyleSheet(stylesheet)
+        self.app.main_window.setStyleSheet(stylesheet)
 
         settings = QSettings()
         settings.setValue("isDarkTheme", theme == Theme.DARK)
@@ -348,44 +298,3 @@ class ThemeManager(QObject):
         """
         return self.dark_icon_colors.copy() if self.current_theme == Theme.DARK else self.light_icon_colors.copy()
 
-    def set_stylesheet_paths(self, light_path: str | None = None, dark_path: str | None = None) -> None:
-        """
-        Update the stylesheet paths and reapply current theme.
-
-        Parameters
-        ----------
-        light_path : str | None, optional
-            Path to the light theme QSS file, by default None.
-        dark_path : str | None, optional
-            Path to the dark theme QSS file, by default None.
-
-        Examples
-        --------
-        >>> theme_manager.set_stylesheet_paths(
-        ...     light_path="new_styles/light.qss",
-        ...     dark_path="new_styles/dark.qss"
-        ... )
-        """
-        if light_path is not None:
-            self.light_stylesheet_path = light_path
-        if dark_path is not None:
-            self.dark_stylesheet_path = dark_path
-
-        # Reapply current theme to load new stylesheets
-        current = self.current_theme
-        self.set_theme(current)
-
-    def get_stylesheet_paths(self) -> tuple[str | None, str | None]:
-        """
-        Get the current stylesheet paths.
-
-        Returns
-        -------
-        tuple[str | None, str | None]
-            Tuple of (light_stylesheet_path, dark_stylesheet_path).
-
-        Examples
-        --------
-        >>> light_path, dark_path = theme_manager.get_stylesheet_paths()
-        """
-        return (self.light_stylesheet_path, self.dark_stylesheet_path)
