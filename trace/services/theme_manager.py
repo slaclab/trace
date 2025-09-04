@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from enum import Enum
-from config import logger, light_stylesheet, dark_stylesheet
+
 import qtawesome as qta
 from qtpy.QtGui import QIcon, QColor, QPalette
 from qtpy.QtCore import Signal, QObject, QSettings
 from qtpy.QtWidgets import QPushButton, QApplication, QStyleFactory
+
+from config import dark_stylesheet, light_stylesheet
 
 type ColorHex = str
 type IconColorDict = dict[str, ColorHex]
@@ -297,4 +299,3 @@ class ThemeManager(QObject):
         >>> primary_color = colors[IconColors.PRIMARY]
         """
         return self.dark_icon_colors.copy() if self.current_theme == Theme.DARK else self.light_icon_colors.copy()
-

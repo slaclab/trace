@@ -2,7 +2,6 @@ import re
 
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
-from widgets.toggle import ToggleSwitch
 from qtpy.QtCore import QTimer
 from services.theme_manager import Theme, IconColors, ThemeManager
 
@@ -16,6 +15,7 @@ from widgets import (
     CurveSettingsModal,
     ArchiveSearchWidget,
 )
+from widgets.toggle import ToggleSwitch
 from widgets.formula_dialog import FormulaDialog
 from widgets.utilities.formula_validation import (
     validate_formula,

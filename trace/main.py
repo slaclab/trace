@@ -7,7 +7,6 @@ from datetime import datetime
 
 from qtpy.QtGui import QFont, QColor, QImage, QKeySequence
 from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice, QSettings
-from services.theme_manager import Theme, IconColors, ThemeManager
 from qtpy.QtWidgets import (
     QMenu,
     QLabel,
@@ -28,6 +27,7 @@ from qtpy.QtWidgets import (
 )
 from pyqtgraph.exporters import ImageExporter
 from services.elog_client import get_user, post_entry
+from services.theme_manager import Theme, IconColors, ThemeManager
 
 from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
