@@ -19,6 +19,9 @@ from widgets import (
 from services import Theme, IconColors, ThemeManager
 from utilities import validate_formula, sanitize_for_validation
 
+PV_KEY_PREFIX = "x"
+FORMULA_KEY_PREFIX = "fx"
+
 
 class ControlPanel(QtWidgets.QWidget):
     curve_list_changed = QtCore.Signal()
@@ -30,8 +33,8 @@ class ControlPanel(QtWidgets.QWidget):
         # self.setStyleSheet("background-color: white;")
 
         self._curve_dict = {}
-        self._next_pv_number = 1
-        self._next_formula_number = 1
+        self.key_gen = self._generate_curve_key()
+        next(self.key_gen)  # Prime the generator
 
         if self.theme_manager:
             self.theme_manager.theme_changed.connect(self.on_theme_changed)
@@ -160,20 +163,21 @@ class ControlPanel(QtWidgets.QWidget):
         """Return dictionary of curves with PV keys"""
         return self._curve_dict
 
-    def _generate_pv_key(self, curve_type="pv") -> str:
-        """Generate a unique PV key based on curve type"""
-        if curve_type == "formula":
-            while True:
-                key = f"fx{self._next_formula_number}"
-                self._next_formula_number += 1
-                if key not in self._curve_dict:
-                    return key
-        else:
-            while True:
-                key = f"x{self._next_pv_number}"
-                self._next_pv_number += 1
-                if key not in self._curve_dict:
-                    return key
+    def _generate_curve_key(self):
+        """Generate a unique variable name for a curve, either pv or formula."""
+        key = None
+        next_pv_num = 1
+        next_formula_num = 1
+        while True:
+            curve = yield key
+            if isinstance(curve, ArchivePlotCurveItem):
+                key = PV_KEY_PREFIX + str(next_pv_num)
+                next_pv_num += 1
+            elif isinstance(curve, FormulaCurveItem):
+                key = FORMULA_KEY_PREFIX + str(next_formula_num)
+                next_formula_num += 1
+            else:
+                key = None
 
     def add_curves(self, pvs: list[str]) -> None:
         for pv in pvs:
@@ -323,7 +327,7 @@ class ControlPanel(QtWidgets.QWidget):
 class AxisItem(QtWidgets.QWidget):
     curves_list_changed = QtCore.Signal()
 
-    def __init__(self, plot_axis_item: BasePlotAxisItem, control_panel=None, theme_manager: ThemeManager = None):
+    def __init__(self, plot_axis_item: BasePlotAxisItem, control_panel: ControlPanel = None, theme_manager: ThemeManager = None):
         super().__init__()
         self.source = plot_axis_item
         self.control_panel_ref = control_panel
@@ -426,6 +430,9 @@ class AxisItem(QtWidgets.QWidget):
         return self.source.name
 
     def add_curve(self, pv: str, channel_args: dict = None) -> "CurveItem":
+        if not self.control_panel:
+            raise RuntimeError("Could not find ControlPanel")
+
         plot = self.plot
         index = len(plot._curves)
         color = ColorButton.index_color(index)
@@ -448,14 +455,8 @@ class AxisItem(QtWidgets.QWidget):
 
         plot_curve_item = plot._curves[-1]
 
-        control_panel = self.control_panel
-        while control_panel and not hasattr(control_panel, "_curve_dict"):
-            control_panel = control_panel.parent()
-
-        variable_name = "x?"
-        if control_panel:
-            variable_name = control_panel._generate_pv_key("pv")
-            control_panel._curve_dict[variable_name] = plot_curve_item
+        variable_name = self.control_panel.key_gen.send(plot_curve_item)
+        self.control_panel._curve_dict[variable_name] = plot_curve_item
 
         curve_item = CurveItem(plot_curve_item, variable_name=variable_name, theme_manager=self.theme_manager)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
@@ -469,22 +470,18 @@ class AxisItem(QtWidgets.QWidget):
         return curve_item
 
     def add_formula_curve(self, formula):
-        control_panel = self.control_panel
-        while control_panel and not hasattr(control_panel, "_curve_dict"):
-            control_panel = control_panel.parent()
-
-        if not control_panel:
+        if not self.control_panel:
             raise RuntimeError("Could not find ControlPanel")
 
-        plot = control_panel.plot
+        plot = self.control_panel.plot
         var_names = re.findall(r"{(.+?)}", formula)
         var_dict = {}
 
         for var_name in var_names:
-            if var_name not in control_panel._curve_dict:
-                available_vars = list(control_panel._curve_dict.keys())
+            if var_name not in self.control_panel._curve_dict:
+                available_vars = list(self.control_panel._curve_dict.keys())
                 raise ValueError(f"{var_name} is an invalid variable name. Available: {available_vars}")
-            var_dict[var_name] = control_panel._curve_dict[var_name]
+            var_dict[var_name] = self.control_panel._curve_dict[var_name]
 
         expr_body = formula[4:]
         if var_names:
@@ -505,8 +502,8 @@ class AxisItem(QtWidgets.QWidget):
                 lambda: self.auto_hide_invalid_formula(formula_curve_item)
             )
 
-        variable_name = control_panel._generate_pv_key("formula")
-        control_panel._curve_dict[variable_name] = formula_curve_item
+        variable_name = self.control_panel.key_gen.send(formula_curve_item)
+        self.control_panel._curve_dict[variable_name] = formula_curve_item
 
         curve_item = CurveItem(formula_curve_item, variable_name=variable_name, theme_manager=self.theme_manager)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
@@ -563,10 +560,9 @@ class AxisItem(QtWidgets.QWidget):
 
     def handle_curve_deleted(self, curve):
         self.curves_list_changed.emit()
-        control_panel = self.control_panel
         curve_key_to_delete = None
 
-        for key, value in control_panel.curve_dict.items():
+        for key, value in self.control_panel.curve_dict.items():
             if value == curve:
                 curve_key_to_delete = key
                 break
@@ -574,7 +570,7 @@ class AxisItem(QtWidgets.QWidget):
         if curve_key_to_delete:
             dependent_formulas = []
 
-            for key, other_curve in control_panel.curve_dict.items():
+            for key, other_curve in self.control_panel.curve_dict.items():
                 if hasattr(other_curve, "pvs") and curve_key_to_delete in other_curve.pvs:
                     dependent_formulas.append(key)
 
@@ -592,7 +588,7 @@ class AxisItem(QtWidgets.QWidget):
             if dependent_formulas:
                 logger.debug(f"Hidden {len(dependent_formulas)} formulas that depended on {curve_key_to_delete}")
 
-            del control_panel.curve_dict[curve_key_to_delete]
+            del self.control_panel.curve_dict[curve_key_to_delete]
 
     def find_curve_item_for_curve(self, target_curve):
         """Find the CurveItem widget that corresponds to a given curve"""
@@ -601,9 +597,8 @@ class AxisItem(QtWidgets.QWidget):
             if hasattr(widget, "source") and widget.source == target_curve:
                 return widget
 
-        control_panel = self.control_panel
-        for i in range(control_panel.axis_list.count() - 1):  # -1 for stretch
-            axis_item = control_panel.axis_list.itemAt(i).widget()
+        for i in range(self.control_panel.axis_list.count() - 1):  # -1 for stretch
+            axis_item = self.control_panel.axis_list.itemAt(i).widget()
             if hasattr(axis_item, "layout"):
                 for j in range(axis_item.layout().count()):
                     widget = axis_item.layout().itemAt(j).widget()
