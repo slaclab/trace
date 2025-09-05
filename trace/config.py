@@ -9,6 +9,9 @@ config_file = Path(__file__).parent / "config.json"
 with config_file.open() as f:
     loaded_json = load(f)
 
+light_stylesheet = Path(__file__).parent / "stylesheets/light_mode.qss"
+dark_stylesheet = Path(__file__).parent / "stylesheets/dark_mode.qss"
+
 logger = getLogger("")
 
 datetime_pv = loaded_json["datetime_pv"]

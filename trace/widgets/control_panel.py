@@ -3,6 +3,7 @@ import re
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
 from qtpy.QtCore import QTimer
+from services.theme_manager import Theme, IconColors, ThemeManager
 
 from pydm.widgets.baseplot import BasePlotAxisItem
 from pydm.widgets.archiver_time_plot import FormulaCurveItem, ArchivePlotCurveItem
@@ -14,6 +15,7 @@ from widgets import (
     CurveSettingsModal,
     ArchiveSearchWidget,
 )
+from widgets.toggle import ToggleSwitch
 from widgets.formula_dialog import FormulaDialog
 from widgets.utilities.formula_validation import (
     validate_formula,
@@ -24,24 +26,28 @@ from widgets.utilities.formula_validation import (
 class ControlPanel(QtWidgets.QWidget):
     curve_list_changed = QtCore.Signal()
 
-    def __init__(self):
+    def __init__(self, theme_manager: ThemeManager = None):
         super().__init__()
+        self.theme_manager = theme_manager
         self.setLayout(QtWidgets.QVBoxLayout())
-        self.setStyleSheet("background-color: white;")
+        # self.setStyleSheet("background-color: white;")
 
         self._curve_dict = {}
         self._next_pv_number = 1
         self._next_formula_number = 1
 
+        if self.theme_manager:
+            self.theme_manager.theme_changed.connect(self.on_theme_changed)
+
         # Create pv plotter layout
         pv_plotter_layout = QtWidgets.QHBoxLayout()
         self.layout().addLayout(pv_plotter_layout)
-        self.search_button = QtWidgets.QPushButton("Search PV")
+        self.search_button = QtWidgets.QPushButton()
+        self.search_button.setFlat(True)
         self.search_button.clicked.connect(self.search_pv)
         pv_plotter_layout.addWidget(self.search_button)
 
         self.calc_button = QtWidgets.QPushButton()
-        self.calc_button.setIcon(qta.icon("fa6s.calculator"))
         self.calc_button.setFlat(True)
         self.calc_button.clicked.connect(self.show_formula_dialog)
         pv_plotter_layout.addWidget(self.calc_button)
@@ -72,6 +78,22 @@ class ControlPanel(QtWidgets.QWidget):
         self.formula_dialog = FormulaDialog(self)
         self.formula_dialog.formula_accepted.connect(self.handle_formula_accepted)
         self.curve_list_changed.connect(self.formula_dialog.curve_model.refresh)
+
+        self.update_icons()
+
+    def update_icons(self):
+        """Update all icons based on current theme"""
+        if self.theme_manager:
+            calc_icon = self.theme_manager.create_icon("fa6s.calculator", IconColors.PRIMARY)
+            if calc_icon:
+                self.calc_button.setIcon(calc_icon)
+            search_icon = self.theme_manager.create_icon("fa6s.magnifying-glass", IconColors.PRIMARY)
+            if search_icon:
+                self.search_button.setIcon(search_icon)
+
+    def on_theme_changed(self, theme: Theme):
+        """Handle theme changes by updating icons"""
+        self.update_icons()
 
     def minimumSizeHint(self) -> QtCore.QSize:
         inner_size = self.axis_list.minimumSize()
@@ -176,7 +198,7 @@ class ControlPanel(QtWidgets.QWidget):
     def add_axis_item(self, axis: BasePlotAxisItem) -> "AxisItem":
         """Add an existing AxisItem to the plot."""
         self.match_axis_tick_font(axis)
-        axis_item = AxisItem(axis, control_panel=self)
+        axis_item = AxisItem(axis, control_panel=self, theme_manager=self.theme_manager)
         axis_item.curves_list_changed.connect(self.curve_list_changed.emit)
         self.axis_list.insertWidget(self.axis_list.count() - 1, axis_item)
         logger.debug(f"Added axis {axis.name} to plot")
@@ -304,19 +326,22 @@ class ControlPanel(QtWidgets.QWidget):
 class AxisItem(QtWidgets.QWidget):
     curves_list_changed = QtCore.Signal()
 
-    def __init__(self, plot_axis_item: BasePlotAxisItem, control_panel=None):
+    def __init__(self, plot_axis_item: BasePlotAxisItem, control_panel=None, theme_manager: ThemeManager = None):
         super().__init__()
         self.source = plot_axis_item
         self.control_panel_ref = control_panel
+        self.theme_manager = theme_manager
         self.setLayout(QtWidgets.QVBoxLayout())
         self.setAcceptDrops(True)
+
+        if self.theme_manager:
+            self.theme_manager.theme_changed.connect(self.on_theme_changed)
 
         self.header_layout = QtWidgets.QHBoxLayout()
         self.layout().addLayout(self.header_layout)
 
         self._expanded = False
         self.expand_button = QtWidgets.QPushButton()
-        self.expand_button.setIcon(qta.icon("msc.chevron-right"))
         self.expand_button.setFlat(True)
         self.expand_button.clicked.connect(self.toggle_expand)
         self.header_layout.addWidget(self.expand_button)
@@ -331,13 +356,11 @@ class AxisItem(QtWidgets.QWidget):
         self.axis_label.returnPressed.connect(self.axis_label.clearFocus)
         self.top_settings_layout.addWidget(self.axis_label)
         self.settings_button = QtWidgets.QPushButton()
-        self.settings_button.setIcon(qta.icon("msc.settings-gear"))
         self.settings_button.setFlat(True)
         self.settings_modal = None
         self.settings_button.clicked.connect(self.show_settings_modal)
         self.top_settings_layout.addWidget(self.settings_button)
         self.delete_button = QtWidgets.QPushButton()
-        self.delete_button.setIcon(qta.icon("msc.trash"))
         self.delete_button.setFlat(True)
         self.delete_button.clicked.connect(self.close)
         self.top_settings_layout.addWidget(self.delete_button)
@@ -345,7 +368,7 @@ class AxisItem(QtWidgets.QWidget):
         layout.addLayout(self.bottom_settings_layout)
         self.auto_range_checkbox = QtWidgets.QCheckBox("Auto")
         self.auto_range_checkbox.setCheckState(QtCore.Qt.Checked if self.source.auto_range else QtCore.Qt.Unchecked)
-        self.auto_range_checkbox.stateChanged.connect(self.set_auto_range)
+        self.auto_range_checkbox.checkStateChanged.connect(self.set_auto_range)
         self.source.linkedView().sigRangeChangedManually.connect(self.disable_auto_range)
         self.bottom_settings_layout.addWidget(self.auto_range_checkbox)
         self.bottom_settings_layout.addWidget(QtWidgets.QLabel("min, max"))
@@ -362,14 +385,39 @@ class AxisItem(QtWidgets.QWidget):
         self.bottom_settings_layout.addWidget(self.max_range_line_edit)
         self.source.sigYRangeChanged.connect(self.handle_range_change)
 
-        self.active_toggle = QtWidgets.QCheckBox("Active")
+        self.active_toggle = ToggleSwitch("Active")
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
-        self.active_toggle.stateChanged.connect(self.set_active)
+        self.active_toggle.checkStateChanged.connect(self.set_active)
         self.header_layout.addWidget(self.active_toggle)
 
         self.placeholder = QtWidgets.QWidget(self)
         self.placeholder.hide()
         self.placeholder.setStyleSheet("background-color: lightgrey;")
+
+        self.update_icons()
+
+    def update_icons(self):
+        """Update all icons based on current theme"""
+        if self.theme_manager:
+            if self._expanded:
+                expand_icon = self.theme_manager.create_icon("msc.chevron-down", IconColors.PRIMARY)
+            else:
+                expand_icon = self.theme_manager.create_icon("msc.chevron-right", IconColors.PRIMARY)
+
+            if expand_icon:
+                self.expand_button.setIcon(expand_icon)
+
+            settings_icon = self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY)
+            if settings_icon:
+                self.settings_button.setIcon(settings_icon)
+
+            delete_icon = self.theme_manager.create_icon("msc.trash", IconColors.PRIMARY)
+            if delete_icon:
+                self.delete_button.setIcon(delete_icon)
+
+    def on_theme_changed(self, theme: Theme):
+        """Handle theme changes by updating icons"""
+        self.update_icons()
 
     @property
     def plot(self):
@@ -412,7 +460,7 @@ class AxisItem(QtWidgets.QWidget):
             variable_name = control_panel._generate_pv_key("pv")
             control_panel._curve_dict[variable_name] = plot_curve_item
 
-        curve_item = CurveItem(plot_curve_item, variable_name=variable_name)
+        curve_item = CurveItem(plot_curve_item, variable_name=variable_name, theme_manager=self.theme_manager)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         self.layout().addWidget(curve_item)
@@ -463,7 +511,7 @@ class AxisItem(QtWidgets.QWidget):
         variable_name = control_panel._generate_pv_key("formula")
         control_panel._curve_dict[variable_name] = formula_curve_item
 
-        curve_item = CurveItem(formula_curve_item, variable_name=variable_name)
+        curve_item = CurveItem(formula_curve_item, variable_name=variable_name, theme_manager=self.theme_manager)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
@@ -490,11 +538,9 @@ class AxisItem(QtWidgets.QWidget):
         if self._expanded:
             for index in range(1, self.layout().count()):
                 self.layout().itemAt(index).widget().hide()
-            self.expand_button.setIcon(qta.icon("msc.chevron-right"))
         else:
             for index in range(1, self.layout().count()):
                 self.layout().itemAt(index).widget().show()
-            self.expand_button.setIcon(qta.icon("msc.chevron-down"))
         self._expanded = not self._expanded
 
     def set_active(self, state: QtCore.Qt.CheckState):
@@ -682,26 +728,32 @@ class DragHandle(QtWidgets.QPushButton):
 
 class CurveItem(QtWidgets.QWidget):
     curve_deleted = QtCore.Signal(object)
+    # icon_disconnected = qta.icon("msc.debug-disconnect")
 
-    icon_disconnected = qta.icon("msc.debug-disconnect")
-
-    def __init__(self, plot_curve_item: ArchivePlotCurveItem, variable_name: str = None) -> None:
+    def __init__(
+        self, plot_curve_item: ArchivePlotCurveItem, variable_name: str = None, theme_manager: ThemeManager = None
+    ) -> None:
         super().__init__()
         self.source = plot_curve_item
         self.is_formula = self._is_formula_curve()
         self._variable_name = variable_name
+        self.theme_manager = theme_manager
         self.setLayout(QtWidgets.QHBoxLayout())
+
+        self.icon_disconnected = self.theme_manager.create_icon("msc.debug-disconnect", IconColors.PRIMARY)
+
+        if self.theme_manager:
+            self.theme_manager.theme_changed.connect(self.on_theme_changed)
 
         self.handle = DragHandle()
         self.handle.setFlat(True)
-        self.handle.setIcon(qta.icon("ph.dots-six-vertical", scale_factor=1.5))
         self.handle.setStyleSheet("border: None;")
         self.handle.setCursor(QtGui.QCursor(QtCore.Qt.OpenHandCursor))
         self.layout().addWidget(self.handle)
 
-        self.active_toggle = QtWidgets.QCheckBox("Active")
+        self.active_toggle = ToggleSwitch("Active", color=self.source.color_string)
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
-        self.active_toggle.stateChanged.connect(self.set_active)
+        self.active_toggle.checkStateChanged.connect(self.set_active)
         self.layout().addWidget(self.active_toggle)
 
         second_layout = QtWidgets.QVBoxLayout()
@@ -726,7 +778,6 @@ class CurveItem(QtWidgets.QWidget):
         self.label.returnPressed.connect(self.label.clearFocus)
         pv_settings_layout.addWidget(self.label)
         self.pv_settings_button = QtWidgets.QPushButton()
-        self.pv_settings_button.setIcon(qta.icon("msc.settings-gear"))
         self.pv_settings_button.setFlat(True)
         self.pv_settings_modal = None
         self.pv_settings_button.clicked.connect(self.show_settings_modal)
@@ -747,12 +798,38 @@ class CurveItem(QtWidgets.QWidget):
         pv_settings_layout.addWidget(self.archive_connection_status)
 
         self.delete_button = QtWidgets.QPushButton()
-        self.delete_button.setIcon(qta.icon("msc.trash"))
         self.delete_button.setFlat(True)
         self.delete_button.clicked.connect(self.close)
         pv_settings_layout.addWidget(self.delete_button)
 
         data_type_layout.addStretch()
+
+        self.update_icons()
+
+    def on_theme_changed(self, theme: Theme):
+        """Handle theme changes by updating icons"""
+        self.update_icons()
+
+    def update_icons(self):
+        """Update all icons based on current theme"""
+        if self.theme_manager:
+            self.icon_disconnected = self.theme_manager.create_icon("msc.debug-disconnect", IconColors.PRIMARY)
+
+            handle_icon = self.theme_manager.create_icon("ph.dots-six-vertical", IconColors.PRIMARY, scale_factor=1.5)
+            if handle_icon:
+                self.handle.setIcon(handle_icon)
+
+            settings_icon = self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY)
+            if settings_icon:
+                self.pv_settings_button.setIcon(settings_icon)
+
+            delete_icon = self.theme_manager.create_icon("msc.trash", IconColors.PRIMARY)
+            if delete_icon:
+                self.delete_button.setIcon(delete_icon)
+
+            if self.icon_disconnected:
+                self.live_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
+                self.archive_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
 
     def update_variable_name(self):
         """Update the variable name label"""
@@ -776,9 +853,8 @@ class CurveItem(QtWidgets.QWidget):
                     border: 2px solid #d32f2f;
                     border-radius: 4px;
                     padding: 4px;
-                    background-color: white;
                 }
-            """
+                """
             )
         else:
             if self.invalid_action is not None:
@@ -818,7 +894,19 @@ class CurveItem(QtWidgets.QWidget):
     def show_settings_modal(self):
         if self.pv_settings_modal is None:
             self.pv_settings_modal = CurveSettingsModal(self.pv_settings_button, self.plot, self.source)
+            self.pv_settings_modal.color_changed.connect(self.on_color_changed)
         self.pv_settings_modal.show()
+
+    @QtCore.Slot(object)
+    def on_color_changed(self, color):
+        """Handle color change from settings modal"""
+        self.update_color_toggle()
+
+    def update_color_toggle(self):
+        """Update the color toggle when the curve color changes"""
+        if hasattr(self, "active_toggle"):
+            curve_color = getattr(self.source, "color_string", None)
+            self.active_toggle.setColor(curve_color)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         if event.button() == QtCore.Qt.LeftButton and self.handle.geometry().contains(event.position().toPoint()):
