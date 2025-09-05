@@ -6,5 +6,7 @@ from .settings_components import SettingsTitle, SettingsRowItem, ComboBoxWrapper
 from .plot_settings import PlotSettingsModal
 from .axis_settings import AxisSettingsModal
 from .curve_settings import CurveSettingsModal
-from .control_panel import ControlPanel
 from .elog_post_modal import ElogPostModal
+from .toggle import ToggleSwitch
+from .formula_dialog import FormulaDialog
+from .control_panel import ControlPanel

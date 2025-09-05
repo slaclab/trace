@@ -3,7 +3,6 @@ import re
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
 from qtpy.QtCore import Qt, Slot, QTimer
-from services.theme_manager import Theme, IconColors, ThemeManager
 
 from pydm.widgets.baseplot import BasePlotAxisItem
 from pydm.widgets.archiver_time_plot import FormulaCurveItem, ArchivePlotCurveItem
@@ -11,16 +10,14 @@ from pydm.widgets.archiver_time_plot import FormulaCurveItem, ArchivePlotCurveIt
 from config import logger
 from widgets import (
     ColorButton,
+    ToggleSwitch,
+    FormulaDialog,
     AxisSettingsModal,
     CurveSettingsModal,
     ArchiveSearchWidget,
 )
-from widgets.toggle import ToggleSwitch
-from widgets.formula_dialog import FormulaDialog
-from widgets.utilities.formula_validation import (
-    validate_formula,
-    sanitize_for_validation,
-)
+from services import Theme, IconColors, ThemeManager
+from utilities import validate_formula, sanitize_for_validation
 
 
 class ControlPanel(QtWidgets.QWidget):
