@@ -2176,7 +2176,7 @@ black background.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="PyQt5.QtWidgets.QTableView">QTableView</span></code></p>
+              Bases: <code><span title="qtpy.QtWidgets.QTableView">QTableView</span></code></p>
 
 
         <p>QTableView with the leftmost column frozen so it always shows while the
@@ -2314,9 +2314,9 @@ https://doc.qt.io/qt-6/qtwidgets-itemviews-frozencolumn-example.html</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">frozenTableView</span><span class="o">.</span><span class="n">setVerticalScrollBarPolicy</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">ScrollBarAlwaysOff</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frozenTableView</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">updateFrozenTableGeometry</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">setHorizontalScrollMode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ScrollPerPixel</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">setVerticalScrollMode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ScrollPerPixel</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frozenTableView</span><span class="o">.</span><span class="n">setVerticalScrollMode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ScrollPerPixel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setHorizontalScrollMode</span><span class="p">(</span><span class="n">QAbstractItemView</span><span class="o">.</span><span class="n">ScrollMode</span><span class="o">.</span><span class="n">ScrollPerPixel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setVerticalScrollMode</span><span class="p">(</span><span class="n">QAbstractItemView</span><span class="o">.</span><span class="n">ScrollMode</span><span class="o">.</span><span class="n">ScrollPerPixel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frozenTableView</span><span class="o">.</span><span class="n">setVerticalScrollMode</span><span class="p">(</span><span class="n">QAbstractItemView</span><span class="o">.</span><span class="n">ScrollMode</span><span class="o">.</span><span class="n">ScrollPerPixel</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">updateSectionWidth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logicalIndex</span><span class="p">,</span> <span class="n">oldSize</span><span class="p">,</span> <span class="n">newSize</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">logicalIndex</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
