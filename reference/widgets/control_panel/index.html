@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../../../images/sqwave-blwh.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.19">
     
     
       
@@ -2704,7 +2704,10 @@
 <span class="normal">718</span>
 <span class="normal">719</span>
 <span class="normal">720</span>
-<span class="normal">721</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AxisItem</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
+<span class="normal">721</span>
+<span class="normal">722</span>
+<span class="normal">723</span>
+<span class="normal">724</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AxisItem</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
     <span class="n">curves_list_changed</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Signal</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot_axis_item</span><span class="p">:</span> <span class="n">BasePlotAxisItem</span><span class="p">,</span> <span class="n">control_panel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">theme_manager</span><span class="p">:</span> <span class="n">ThemeManager</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -2749,7 +2752,7 @@
         <span class="n">layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bottom_settings_layout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">auto_range_checkbox</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QCheckBox</span><span class="p">(</span><span class="s2">&quot;Auto&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">auto_range_checkbox</span><span class="o">.</span><span class="n">setCheckState</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Checked</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">auto_range</span> <span class="k">else</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Unchecked</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">auto_range_checkbox</span><span class="o">.</span><span class="n">checkStateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_auto_range</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto_range_checkbox</span><span class="o">.</span><span class="n">stateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_auto_range</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">linkedView</span><span class="p">()</span><span class="o">.</span><span class="n">sigRangeChangedManually</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">disable_auto_range</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bottom_settings_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">auto_range_checkbox</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bottom_settings_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;min, max&quot;</span><span class="p">))</span>
@@ -2768,7 +2771,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span> <span class="o">=</span> <span class="n">ToggleSwitch</span><span class="p">(</span><span class="s2">&quot;Active&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span><span class="o">.</span><span class="n">setCheckState</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Checked</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">isVisible</span><span class="p">()</span> <span class="k">else</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Unchecked</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span><span class="o">.</span><span class="n">checkStateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_active</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span><span class="o">.</span><span class="n">stateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_active</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">header_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">placeholder</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -2924,16 +2927,19 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_expanded</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expanded</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_active</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Unchecked</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="nd">@Slot</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_active</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">):</span>
+        <span class="n">checked</span> <span class="o">=</span> <span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Checked</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="n">checked</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span><span class="o">.</span><span class="n">active_toggle</span><span class="o">.</span><span class="n">setCheckState</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_auto_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">auto_range</span> <span class="o">=</span> <span class="n">state</span> <span class="o">==</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Checked</span>
+    <span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="nd">@Slot</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_auto_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">):</span>
+        <span class="n">checked</span> <span class="o">=</span> <span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Checked</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">auto_range</span> <span class="o">=</span> <span class="n">checked</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">disable_auto_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">auto_range_checkbox</span><span class="o">.</span><span class="n">setCheckState</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Unchecked</span><span class="p">)</span>
@@ -3193,12 +3199,12 @@
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">687</span>
 <span class="normal">688</span>
-<span class="normal">689</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clear_curves</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clear_curves</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Clear all curves from this axis item.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span>
@@ -3226,10 +3232,7 @@
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">597</span>
-<span class="normal">598</span>
-<span class="normal">599</span>
-<span class="normal">600</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">600</span>
 <span class="normal">601</span>
 <span class="normal">602</span>
 <span class="normal">603</span>
@@ -3242,7 +3245,10 @@
 <span class="normal">610</span>
 <span class="normal">611</span>
 <span class="normal">612</span>
-<span class="normal">613</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_curve_item_for_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_curve</span><span class="p">):</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_curve_item_for_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_curve</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the CurveItem widget that corresponds to a given curve&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()):</span>
         <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span>
@@ -4615,10 +4621,7 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
               <details class="quote">
                 <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 729</span>
-<span class="normal"> 730</span>
-<span class="normal"> 731</span>
-<span class="normal"> 732</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 732</span>
 <span class="normal"> 733</span>
 <span class="normal"> 734</span>
 <span class="normal"> 735</span>
@@ -5061,7 +5064,10 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">1172</span>
 <span class="normal">1173</span>
 <span class="normal">1174</span>
-<span class="normal">1175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CurveItem</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
+<span class="normal">1175</span>
+<span class="normal">1176</span>
+<span class="normal">1177</span>
+<span class="normal">1178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CurveItem</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
     <span class="n">curve_deleted</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Signal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
     <span class="c1"># icon_disconnected = qta.icon(&quot;msc.debug-disconnect&quot;)</span>
 
@@ -5088,7 +5094,7 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span> <span class="o">=</span> <span class="n">ToggleSwitch</span><span class="p">(</span><span class="s2">&quot;Active&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">color_string</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span><span class="o">.</span><span class="n">setCheckState</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Checked</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">isVisible</span><span class="p">()</span> <span class="k">else</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Unchecked</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span><span class="o">.</span><span class="n">checkStateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_active</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span><span class="o">.</span><span class="n">stateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_active</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_toggle</span><span class="p">)</span>
 
         <span class="n">second_layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QVBoxLayout</span><span class="p">()</span>
@@ -5213,11 +5219,11 @@ plot's curves, and set all new curves based on the provided curve data.</p>
             <span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">parent</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_active</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Unchecked</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="nd">@Slot</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_active</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">):</span>
+        <span class="n">checked</span> <span class="o">=</span> <span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Checked</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="n">checked</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">update_live_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connected</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">live_connection_status</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="ow">not</span> <span class="n">connected</span><span class="p">)</span>
@@ -5562,14 +5568,14 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1109</span>
-<span class="normal">1110</span>
-<span class="normal">1111</span>
-<span class="normal">1112</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1112</span>
 <span class="normal">1113</span>
 <span class="normal">1114</span>
 <span class="normal">1115</span>
-<span class="normal">1116</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">1116</span>
+<span class="normal">1117</span>
+<span class="normal">1118</span>
+<span class="normal">1119</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the parent AxisItem by traversing up the widget hierarchy&quot;&quot;&quot;</span>
     <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span>
     <span class="k">while</span> <span class="n">parent</span><span class="p">:</span>
@@ -5599,10 +5605,10 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@QtCore</span><span class="o">.</span><span class="n">Slot</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">903</span>
+<span class="normal">904</span>
+<span class="normal">905</span>
+<span class="normal">906</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@QtCore</span><span class="o">.</span><span class="n">Slot</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">on_color_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle color change from settings modal&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">update_color_toggle</span><span class="p">()</span>
@@ -5628,9 +5634,9 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">809</span>
-<span class="normal">810</span>
-<span class="normal">811</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_theme_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theme</span><span class="p">:</span> <span class="n">Theme</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_theme_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theme</span><span class="p">:</span> <span class="n">Theme</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle theme changes by updating icons&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">update_icons</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -5655,10 +5661,7 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">925</span>
-<span class="normal">926</span>
-<span class="normal">927</span>
-<span class="normal">928</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">928</span>
 <span class="normal">929</span>
 <span class="normal">930</span>
 <span class="normal">931</span>
@@ -5678,7 +5681,10 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">945</span>
 <span class="normal">946</span>
 <span class="normal">947</span>
-<span class="normal">948</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup_line_edit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">948</span>
+<span class="normal">949</span>
+<span class="normal">950</span>
+<span class="normal">951</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup_line_edit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the line edit with appropriate behavior for formula vs regular curves&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_formula</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;formula&quot;</span><span class="p">):</span>
@@ -5724,10 +5730,7 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">839</span>
-<span class="normal">840</span>
-<span class="normal">841</span>
-<span class="normal">842</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">842</span>
 <span class="normal">843</span>
 <span class="normal">844</span>
 <span class="normal">845</span>
@@ -5752,7 +5755,10 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">864</span>
 <span class="normal">865</span>
 <span class="normal">866</span>
-<span class="normal">867</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">show_invalid_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">show_invalid_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Show or hide the invalid formula icon overlaid on the line edit&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_formula</span><span class="p">:</span>
         <span class="k">return</span>
@@ -5803,11 +5809,11 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">905</span>
-<span class="normal">906</span>
-<span class="normal">907</span>
-<span class="normal">908</span>
-<span class="normal">909</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_color_toggle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">908</span>
+<span class="normal">909</span>
+<span class="normal">910</span>
+<span class="normal">911</span>
+<span class="normal">912</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_color_toggle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the color toggle when the curve color changes&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;active_toggle&quot;</span><span class="p">):</span>
         <span class="n">curve_color</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;color_string&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -5834,10 +5840,7 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 950</span>
-<span class="normal"> 951</span>
-<span class="normal"> 952</span>
-<span class="normal"> 953</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 953</span>
 <span class="normal"> 954</span>
 <span class="normal"> 955</span>
 <span class="normal"> 956</span>
@@ -5909,7 +5912,10 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">1022</span>
 <span class="normal">1023</span>
 <span class="normal">1024</span>
-<span class="normal">1025</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">1025</span>
+<span class="normal">1026</span>
+<span class="normal">1027</span>
+<span class="normal">1028</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle formula updates when user edits the formula text&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_updating_formula&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updating_formula</span><span class="p">:</span>
         <span class="k">return</span>
@@ -6007,10 +6013,7 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">813</span>
-<span class="normal">814</span>
-<span class="normal">815</span>
-<span class="normal">816</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">816</span>
 <span class="normal">817</span>
 <span class="normal">818</span>
 <span class="normal">819</span>
@@ -6026,7 +6029,10 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">829</span>
 <span class="normal">830</span>
 <span class="normal">831</span>
-<span class="normal">832</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_icons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_icons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update all icons based on current theme&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">theme_manager</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">icon_disconnected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theme_manager</span><span class="o">.</span><span class="n">create_icon</span><span class="p">(</span><span class="s2">&quot;msc.debug-disconnect&quot;</span><span class="p">,</span> <span class="n">IconColors</span><span class="o">.</span><span class="n">PRIMARY</span><span class="p">)</span>
@@ -6068,10 +6074,10 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">834</span>
-<span class="normal">835</span>
-<span class="normal">836</span>
-<span class="normal">837</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_variable_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_variable_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the variable name label&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_name</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_name_label</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_name</span><span class="p">)</span>
