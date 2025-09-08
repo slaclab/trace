@@ -2,7 +2,7 @@ import re
 
 import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
-from qtpy.QtCore import QTimer
+from qtpy.QtCore import Qt, Slot, QTimer
 from services.theme_manager import Theme, IconColors, ThemeManager
 
 from pydm.widgets.baseplot import BasePlotAxisItem
@@ -368,7 +368,7 @@ class AxisItem(QtWidgets.QWidget):
         layout.addLayout(self.bottom_settings_layout)
         self.auto_range_checkbox = QtWidgets.QCheckBox("Auto")
         self.auto_range_checkbox.setCheckState(QtCore.Qt.Checked if self.source.auto_range else QtCore.Qt.Unchecked)
-        self.auto_range_checkbox.checkStateChanged.connect(self.set_auto_range)
+        self.auto_range_checkbox.stateChanged.connect(self.set_auto_range)
         self.source.linkedView().sigRangeChangedManually.connect(self.disable_auto_range)
         self.bottom_settings_layout.addWidget(self.auto_range_checkbox)
         self.bottom_settings_layout.addWidget(QtWidgets.QLabel("min, max"))
@@ -387,7 +387,7 @@ class AxisItem(QtWidgets.QWidget):
 
         self.active_toggle = ToggleSwitch("Active")
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
-        self.active_toggle.checkStateChanged.connect(self.set_active)
+        self.active_toggle.stateChanged.connect(self.set_active)
         self.header_layout.addWidget(self.active_toggle)
 
         self.placeholder = QtWidgets.QWidget(self)
@@ -543,16 +543,19 @@ class AxisItem(QtWidgets.QWidget):
                 self.layout().itemAt(index).widget().show()
         self._expanded = not self._expanded
 
-    def set_active(self, state: QtCore.Qt.CheckState):
-        if state == QtCore.Qt.Unchecked:
-            self.source.hide()
-        else:
-            self.source.show()
+    @Slot(int)
+    @Slot(Qt.CheckState)
+    def set_active(self, state: int | Qt.CheckState):
+        checked = Qt.CheckState(state) == Qt.Checked
+        self.source.setVisible(checked)
         for i in range(1, self.layout().count()):
             self.layout().itemAt(i).widget().active_toggle.setCheckState(state)
 
-    def set_auto_range(self, state: QtCore.Qt.CheckState):
-        self.source.auto_range = state == QtCore.Qt.Checked
+    @Slot(int)
+    @Slot(Qt.CheckState)
+    def set_auto_range(self, state: int | Qt.CheckState):
+        checked = Qt.CheckState(state) == Qt.Checked
+        self.source.auto_range = checked
 
     def disable_auto_range(self):
         self.auto_range_checkbox.setCheckState(QtCore.Qt.Unchecked)
@@ -753,7 +756,7 @@ class CurveItem(QtWidgets.QWidget):
 
         self.active_toggle = ToggleSwitch("Active", color=self.source.color_string)
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
-        self.active_toggle.checkStateChanged.connect(self.set_active)
+        self.active_toggle.stateChanged.connect(self.set_active)
         self.layout().addWidget(self.active_toggle)
 
         second_layout = QtWidgets.QVBoxLayout()
@@ -878,11 +881,11 @@ class CurveItem(QtWidgets.QWidget):
             parent = parent.parent()
         return parent
 
-    def set_active(self, state: QtCore.Qt.CheckState):
-        if state == QtCore.Qt.Unchecked:
-            self.source.hide()
-        else:
-            self.source.show()
+    @Slot(int)
+    @Slot(Qt.CheckState)
+    def set_active(self, state: int | Qt.CheckState):
+        checked = Qt.CheckState(state) == Qt.Checked
+        self.source.setVisible(checked)
 
     def update_live_icon(self, connected: bool) -> None:
         self.live_connection_status.setVisible(not connected)

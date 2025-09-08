@@ -31,13 +31,13 @@ class AxisSettingsModal(QWidget):
 
         log_checkbox = QCheckBox(self)
         log_checkbox.setChecked(self.axis.log_mode)
-        log_checkbox.checkStateChanged.connect(self.set_axis_log_mode)
+        log_checkbox.stateChanged.connect(self.set_axis_log_mode)
         log_mode_row = SettingsRowItem(self, "Log Mode", log_checkbox)
         main_layout.addLayout(log_mode_row)
 
         self.grid_checkbox = QCheckBox(self)
         self.grid_checkbox.setChecked(bool(self.axis.grid))
-        self.grid_checkbox.checkStateChanged.connect(self.show_grid)
+        self.grid_checkbox.stateChanged.connect(self.show_grid)
         y_grid_row = SettingsRowItem(self, "Y Axis Gridline", self.grid_checkbox)
         main_layout.addLayout(y_grid_row)
 
@@ -68,12 +68,16 @@ class AxisSettingsModal(QWidget):
             self.axis.show()
 
     @Slot(int)
-    def set_axis_log_mode(self, checked: int):
-        self.axis.log_mode = bool(checked)
+    @Slot(Qt.CheckState)
+    def set_axis_log_mode(self, state: int | Qt.CheckState):
+        checked = Qt.CheckState(state) == Qt.Checked
+        self.axis.log_mode = checked
 
     @Slot(int)
-    def show_grid(self, visible: int):
-        if not visible:
+    @Slot(Qt.CheckState)
+    def show_grid(self, state: int | Qt.CheckState):
+        checked = Qt.CheckState(state) == Qt.Checked
+        if not checked:
             self.axis.setGrid(False)
         else:
             try:
