@@ -75,10 +75,10 @@ class CurveSettingsModal(QWidget):
         width_row = SettingsRowItem(self, "  Width", width_combo)
         main_layout.addLayout(width_row)
 
-        extention_option = QCheckBox(self)
-        extention_option.checkStateChanged.connect(lambda check: self.set_extension_option(bool(check)))
-        extention_option_row = SettingsRowItem(self, "Line Extention", extention_option)
-        main_layout.addLayout(extention_option_row)
+        extension_option = QCheckBox(self)
+        extension_option.stateChanged.connect(self.set_extension_option)
+        extension_option_row = SettingsRowItem(self, "  Line Extension", extension_option)
+        main_layout.addLayout(extension_option_row)
 
         symbol_title_label = SettingsTitle(self, "Symbol")
         main_layout.addWidget(symbol_title_label)
@@ -156,6 +156,16 @@ class CurveSettingsModal(QWidget):
     def set_curve_width(self, width: int) -> None:
         self.curve.lineWidth = width
 
+    @Slot(int)
+    @Slot(Qt.CheckState)
+    def set_extension_option(self, state: int | Qt.CheckState) -> None:
+        """Set the line extension based on the checkbox state."""
+        enable = Qt.CheckState(state) == Qt.Checked
+
+        self.curve.show_extension_line = enable
+        self.curve.getViewBox().addItem(self.curve._extension_line)
+        self.curve.redrawCurve()
+
     @Slot(object)
     def set_symbol_shape(self, shape: str) -> None:
         self.curve.symbol = shape
@@ -163,10 +173,3 @@ class CurveSettingsModal(QWidget):
     @Slot(object)
     def set_symbol_size(self, size: int) -> None:
         self.curve.symbolSize = size
-
-    @Slot(object)
-    def set_extension_option(self, enable: bool) -> None:
-        """Set the line extension based on the checkbox state."""
-        self.curve.show_extension_line = enable
-        self.curve.getViewBox().addItem(self.curve._extension_line)
-        self.curve.redrawCurve()
