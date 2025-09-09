@@ -74,6 +74,7 @@ class ControlPanel(QtWidgets.QWidget):
         self.layout().addWidget(new_axis_button)
 
         self.archive_search = ArchiveSearchWidget()
+        self.archive_search.append_PVs_requested.connect(self.add_curves)
 
         self.formula_dialog = FormulaDialog(self)
         self.formula_dialog.formula_accepted.connect(self.handle_formula_accepted)
@@ -119,8 +120,7 @@ class ControlPanel(QtWidgets.QWidget):
         self._plot = plot
 
     def search_pv(self) -> None:
-        if not hasattr(self, "archive_search") or not self.archive_search.isVisible():
-            self.archive_search.append_PVs_requested.connect(self.add_curves)
+        if not self.archive_search.isVisible():
             self.archive_search.show()
         else:
             self.archive_search.raise_()
@@ -327,7 +327,9 @@ class ControlPanel(QtWidgets.QWidget):
 class AxisItem(QtWidgets.QWidget):
     curves_list_changed = QtCore.Signal()
 
-    def __init__(self, plot_axis_item: BasePlotAxisItem, control_panel: ControlPanel = None, theme_manager: ThemeManager = None):
+    def __init__(
+        self, plot_axis_item: BasePlotAxisItem, control_panel: ControlPanel = None, theme_manager: ThemeManager = None
+    ):
         super().__init__()
         self.source = plot_axis_item
         self.control_panel_ref = control_panel
@@ -429,83 +431,12 @@ class AxisItem(QtWidgets.QWidget):
         """Get the name of the axis."""
         return self.source.name
 
-    def add_curve(self, pv: str, channel_args: dict = None) -> "CurveItem":
-        if not self.control_panel:
-            raise RuntimeError("Could not find ControlPanel")
-
-        plot = self.plot
-        index = len(plot._curves)
-        color = ColorButton.index_color(index)
-
-        args = {
-            "y_channel": pv,
-            "name": pv,
-            "color": color,
-            "useArchiveData": True,
-            "yAxisName": self.source.name,
-        }
-        if channel_args is not None:
-            args.update(channel_args)
-
-        try:
-            plot.addYChannel(**args)
-        except TypeError as e:
-            logger.error(f"Failed to add curve: {e}")
-            return None
-
-        plot_curve_item = plot._curves[-1]
-
-        variable_name = self.control_panel.key_gen.send(plot_curve_item)
+    def make_curve_widget(self, plot_curve_item: ArchivePlotCurveItem | FormulaCurveItem) -> "CurveItem":
+        # variable_name = self.control_panel.key_gen.send(plot_curve_item)
+        variable_name = "var"
         self.control_panel._curve_dict[variable_name] = plot_curve_item
 
-        curve_item = CurveItem(plot_curve_item, variable_name=variable_name, theme_manager=self.theme_manager)
-        curve_item.curve_deleted.connect(self.curves_list_changed.emit)
-        curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
-        self.layout().addWidget(curve_item)
-
-        if not self._expanded:
-            self.toggle_expand()
-
-        self.curves_list_changed.emit()
-        return curve_item
-
-    def add_formula_curve(self, formula):
-        if not self.control_panel:
-            raise RuntimeError("Could not find ControlPanel")
-
-        plot = self.control_panel.plot
-        var_names = re.findall(r"{(.+?)}", formula)
-        var_dict = {}
-
-        for var_name in var_names:
-            if var_name not in self.control_panel._curve_dict:
-                available_vars = list(self.control_panel._curve_dict.keys())
-                raise ValueError(f"{var_name} is an invalid variable name. Available: {available_vars}")
-            var_dict[var_name] = self.control_panel._curve_dict[var_name]
-
-        expr_body = formula[4:]
-        if var_names:
-            python_expr, allowed = sanitize_for_validation(expr_body)
-            validate_formula(python_expr, allowed_symbols=allowed)
-        else:
-            validate_formula(expr_body, allowed_symbols=set())
-
-        index = len(plot._curves)
-        color = ColorButton.index_color(index)
-
-        formula_curve_item = plot.addFormulaChannel(
-            formula=formula, name=formula, pvs=var_dict, color=color, useArchiveData=True, yAxisName=self.source.name
-        )
-
-        if hasattr(formula_curve_item, "formula_invalid_signal"):
-            formula_curve_item.formula_invalid_signal.connect(
-                lambda: self.auto_hide_invalid_formula(formula_curve_item)
-            )
-
-        variable_name = self.control_panel.key_gen.send(formula_curve_item)
-        self.control_panel._curve_dict[variable_name] = formula_curve_item
-
-        curve_item = CurveItem(formula_curve_item, variable_name=variable_name, theme_manager=self.theme_manager)
+        curve_item = CurveItem(self, plot_curve_item)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
@@ -518,9 +449,54 @@ class AxisItem(QtWidgets.QWidget):
 
         return curve_item
 
-    def auto_hide_invalid_formula(self, formula_curve):
+    def add_curve(self, pv: str, channel_args: dict = None) -> "CurveItem":
+        color = ColorButton.index_color(len(self.plot._curves))
+        args = {
+            "y_channel": pv,
+            "name": pv,
+            "color": color,
+            "useArchiveData": True,
+            "yAxisName": self.source.name,
+        }
+        if channel_args is not None:
+            args.update(channel_args)
+
+        plot_curve_item = self.plot.addYChannel(**args)
+
+        return self.make_curve_widget(plot_curve_item)
+
+    def add_formula_curve(self, formula: str) -> "CurveItem":
+        var_names = re.findall(r"{(.+?)}", formula)
+        var_dict = {}
+
+        for var_name in var_names:
+            if var_name not in self.control_panel._curve_dict:
+                available_vars = list(self.control_panel._curve_dict.keys())
+                raise ValueError(f"{var_name} is an invalid variable name. Available: {available_vars}")
+            var_dict[var_name] = self.control_panel._curve_dict[var_name]
+
+        expr_body = formula[4:]
+        python_expr, allowed = sanitize_for_validation(expr_body)
+        try:
+            validate_formula(python_expr, allowed_symbols=allowed)
+        except ValueError as e:
+            logger.error(f"Invalid formula '{formula}': {e}")
+            raise
+
+        color = ColorButton.index_color(len(self.plot._curves))
+        formula_curve_item = self.plot.addFormulaChannel(
+            formula=formula, name=formula, pvs=var_dict, color=color, useArchiveData=True, yAxisName=self.source.name
+        )
+        formula_curve_item.formula_invalid_signal.connect(self.auto_hide_invalid_formula)
+
+        return self.make_curve_widget(formula_curve_item)
+
+    @Slot()
+    @Slot(FormulaCurveItem)
+    def auto_hide_invalid_formula(self, formula_curve: FormulaCurveItem = None) -> None:
         """Automatically hide a formula when it becomes invalid"""
-        formula_curve.setVisible(False)
+        if formula_curve is None:
+            formula_curve = self.sender()
 
         curve_item = self.find_curve_item_for_curve(formula_curve)
         if curve_item and hasattr(curve_item, "active_toggle"):
@@ -723,71 +699,81 @@ class DragHandle(QtWidgets.QPushButton):
 
 class CurveItem(QtWidgets.QWidget):
     curve_deleted = QtCore.Signal(object)
-    # icon_disconnected = qta.icon("msc.debug-disconnect")
+    unit_changed = QtCore.Signal(str)
 
-    def __init__(
-        self, plot_curve_item: ArchivePlotCurveItem, variable_name: str = None, theme_manager: ThemeManager = None
-    ) -> None:
-        super().__init__()
-        self.source = plot_curve_item
-        self.is_formula = self._is_formula_curve()
-        self._variable_name = variable_name
-        self.theme_manager = theme_manager
-        self.setLayout(QtWidgets.QHBoxLayout())
+    def __init__(self, axis_item: AxisItem, source: ArchivePlotCurveItem | FormulaCurveItem) -> None:
+        super().__init__(axis_item)
+        self._axis_item = axis_item
+        self.source = source
+        self.control_panel = axis_item.control_panel
 
-        self.icon_disconnected = self.theme_manager.create_icon("msc.debug-disconnect", IconColors.PRIMARY)
+        self.theme_manager = axis_item.theme_manager
+        self.theme_manager.theme_changed.connect(lambda _: self.update_icons())
 
-        if self.theme_manager:
-            self.theme_manager.theme_changed.connect(self.on_theme_changed)
+        self.variable_name = self.control_panel.key_gen.send(self.source)
+        if not self.is_formula_curve:
+            self.source.unitSignal.connect(self.unit_changed.emit)
+
+        self.setup_layout()
+
+    @property
+    def plot(self):
+        return self.control_panel.plot
+
+    @property
+    def axis_item(self):
+        """Get the AxisItem that this CurveItem belongs to."""
+        parent = self.parent()
+        while not isinstance(parent, AxisItem):
+            parent = parent.parent()
+        return parent
+
+    def setup_layout(self):
+        """Setup the layout and widgets for the CurveItem."""
+        curve_layout = QtWidgets.QHBoxLayout()
+        self.setLayout(curve_layout)
 
         self.handle = DragHandle()
         self.handle.setFlat(True)
         self.handle.setStyleSheet("border: None;")
         self.handle.setCursor(QtGui.QCursor(QtCore.Qt.OpenHandCursor))
-        self.layout().addWidget(self.handle)
+        curve_layout.addWidget(self.handle)
 
         self.active_toggle = ToggleSwitch("Active", color=self.source.color_string)
         self.active_toggle.setCheckState(QtCore.Qt.Checked if self.source.isVisible() else QtCore.Qt.Unchecked)
         self.active_toggle.stateChanged.connect(self.set_active)
-        self.layout().addWidget(self.active_toggle)
+        curve_layout.addWidget(self.active_toggle)
 
         second_layout = QtWidgets.QVBoxLayout()
-        self.layout().addLayout(second_layout)
+        curve_layout.addLayout(second_layout)
+
         pv_settings_layout = QtWidgets.QHBoxLayout()
         second_layout.addLayout(pv_settings_layout)
-        data_type_layout = QtWidgets.QHBoxLayout()
-        second_layout.addLayout(data_type_layout)
 
         self.invalid_action = None
         self.variable_name_label = QtWidgets.QLabel()
         self.variable_name_label.setMinimumWidth(40)
         self.variable_name_label.setAlignment(QtCore.Qt.AlignCenter)
-        display_name = variable_name
-        self.variable_name_label.setText(display_name)
-        pv_settings_layout.addWidget(self.variable_name_label)
+        self.variable_name_label.setText(self.variable_name)
         self.variable_name_label.setToolTip("Variable name of the curve")
+        pv_settings_layout.addWidget(self.variable_name_label)
 
         self.label = QtWidgets.QLineEdit()
-        self.label.setText(self.source.name())
-        self.label.editingFinished.connect(self.set_curve_pv)
-        self.label.returnPressed.connect(self.label.clearFocus)
+        self.setup_line_edit()
         pv_settings_layout.addWidget(self.label)
+
+        self.pv_settings_modal = None
         self.pv_settings_button = QtWidgets.QPushButton()
         self.pv_settings_button.setFlat(True)
-        self.pv_settings_modal = None
         self.pv_settings_button.clicked.connect(self.show_settings_modal)
         pv_settings_layout.addWidget(self.pv_settings_button)
 
-        self.setup_line_edit()
-
         self.live_connection_status = QtWidgets.QLabel()
-        self.live_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
         self.live_connection_status.setToolTip("Not connected to live data")
         self.source.live_channel_connection.connect(self.update_live_icon)
         pv_settings_layout.addWidget(self.live_connection_status)
 
         self.archive_connection_status = QtWidgets.QLabel()
-        self.archive_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
         self.archive_connection_status.setToolTip("Not connected to archive data")
         self.source.archive_channel_connection.connect(self.update_archive_icon)
         pv_settings_layout.addWidget(self.archive_connection_status)
@@ -797,43 +783,46 @@ class CurveItem(QtWidgets.QWidget):
         self.delete_button.clicked.connect(self.close)
         pv_settings_layout.addWidget(self.delete_button)
 
-        data_type_layout.addStretch()
-
         self.update_icons()
 
-    def on_theme_changed(self, theme: Theme):
-        """Handle theme changes by updating icons"""
-        self.update_icons()
+    def setup_line_edit(self):
+        """Set up the line edit with appropriate behavior for formula vs regular curves"""
+        if self.is_formula_curve:
+            text = self.source.formula
+            placeholder = "Edit formula (f://...)"
+            self.label.editingFinished.connect(self.update_formula)
+        else:
+            text = self.source.name()
+            placeholder = "PV Name"
+            self.label.editingFinished.connect(self.set_curve_pv)
 
+        self.label.setText(text)
+        self.label.setPlaceholderText(placeholder)
+        self.label.returnPressed.connect(self.label.clearFocus)
+
+    @Slot()
     def update_icons(self):
         """Update all icons based on current theme"""
-        if self.theme_manager:
-            self.icon_disconnected = self.theme_manager.create_icon("msc.debug-disconnect", IconColors.PRIMARY)
+        handle_icon = self.theme_manager.create_icon("ph.dots-six-vertical", scale_factor=1.5)
+        self.handle.setIcon(handle_icon)
 
-            handle_icon = self.theme_manager.create_icon("ph.dots-six-vertical", IconColors.PRIMARY, scale_factor=1.5)
-            if handle_icon:
-                self.handle.setIcon(handle_icon)
+        settings_icon = self.theme_manager.create_icon("msc.settings-gear")
+        self.pv_settings_button.setIcon(settings_icon)
 
-            settings_icon = self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY)
-            if settings_icon:
-                self.pv_settings_button.setIcon(settings_icon)
+        delete_icon = self.theme_manager.create_icon("msc.trash")
+        self.delete_button.setIcon(delete_icon)
 
-            delete_icon = self.theme_manager.create_icon("msc.trash", IconColors.PRIMARY)
-            if delete_icon:
-                self.delete_button.setIcon(delete_icon)
-
-            if self.icon_disconnected:
-                self.live_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
-                self.archive_connection_status.setPixmap(self.icon_disconnected.pixmap(16, 16))
+        icon_disconnected = self.theme_manager.create_icon("msc.debug-disconnect")
+        self.live_connection_status.setPixmap(icon_disconnected.pixmap(16, 16))
+        self.archive_connection_status.setPixmap(icon_disconnected.pixmap(16, 16))
 
     def update_variable_name(self):
         """Update the variable name label"""
-        if self._variable_name:
-            self.variable_name_label.setText(self._variable_name)
+        self.variable_name_label.setText(self.variable_name)
 
     def show_invalid_icon(self, show=True):
         """Show or hide the invalid formula icon overlaid on the line edit"""
-        if not self.is_formula:
+        if not self.is_formula_curve:
             return
 
         if show:
@@ -860,18 +849,6 @@ class CurveItem(QtWidgets.QWidget):
 
             if self.label.toolTip() == "Formula is invalid":
                 self.label.setToolTip("")
-
-    @property
-    def plot(self):
-        return self.parent().plot
-
-    @property
-    def axis_item(self):
-        """Get the AxisItem that this CurveItem belongs to."""
-        parent = self.parent()
-        while not isinstance(parent, AxisItem):
-            parent = parent.parent()
-        return parent
 
     @Slot(int)
     @Slot(Qt.CheckState)
@@ -913,34 +890,9 @@ class CurveItem(QtWidgets.QWidget):
             drag.exec()
             self.show()  # show curve after drag, even if it ended outside of an axis
 
-    def _is_formula_curve(self):
+    def is_formula_curve(self):
         """Check if this is a formula curve"""
         return isinstance(self.source, FormulaCurveItem)
-
-    def setup_line_edit(self):
-        """Set up the line edit with appropriate behavior for formula vs regular curves"""
-        if self.is_formula:
-            if hasattr(self.source, "formula"):
-                self.label.setText(self.source.formula)
-            elif hasattr(self.source, "name"):
-                self.label.setText(self.source.name())
-
-            self.label.setPlaceholderText("Edit formula (f://...)")
-
-            self.label.editingFinished.disconnect()
-            self.label.returnPressed.disconnect()
-
-            self.label.returnPressed.connect(self.update_formula)
-            self.label.returnPressed.connect(self.label.clearFocus)
-        else:
-            self.label.setText(self.source.name())
-            self.label.setPlaceholderText("PV Name")
-
-            self.label.editingFinished.disconnect()
-            self.label.returnPressed.disconnect()
-
-            self.label.editingFinished.connect(self.set_curve_pv)
-            self.label.returnPressed.connect(self.label.clearFocus)
 
     def update_formula(self):
         """Handle formula updates when user edits the formula text"""
@@ -966,26 +918,12 @@ class CurveItem(QtWidgets.QWidget):
         self._updating_formula = True
 
         try:
-            axis_item = self.get_parent_axis()
-            if not axis_item:
-                raise RuntimeError("Could not find parent AxisItem")
-
-            control_panel = axis_item.control_panel_ref
-            if not control_panel:
-                widget = axis_item
-                while widget and not hasattr(widget, "_curve_dict"):
-                    widget = widget.parent()
-                control_panel = widget
-
-            if not control_panel:
-                raise RuntimeError("Could not find ControlPanel")
-
             var_names = re.findall(r"{(.+?)}", new_formula)
 
             for var_name in var_names:
-                if var_name not in control_panel._curve_dict:
+                if var_name not in self.control_panel._curve_dict:
                     raise ValueError(
-                        f"Variable '{var_name}' not found. Available: {list(control_panel._curve_dict.keys())}"
+                        f"Variable '{var_name}' not found. Available: {list(self.control_panel._curve_dict.keys())}"
                     )
 
             expr_body = new_formula[4:]
@@ -997,7 +935,7 @@ class CurveItem(QtWidgets.QWidget):
 
             def delayed_update():
                 try:
-                    self._perform_formula_update(new_formula, axis_item, control_panel)
+                    self._perform_formula_update(new_formula)
                     self.show_invalid_icon(False)
                 except Exception as e:
                     QtWidgets.QMessageBox.critical(None, "Formula Update Failed", f"Failed to update formula: {str(e)}")
@@ -1019,7 +957,7 @@ class CurveItem(QtWidgets.QWidget):
             else:
                 self.show_invalid_icon(True)
 
-    def _perform_formula_update(self, new_formula, axis_item, control_panel):
+    def _perform_formula_update(self, new_formula):
         """
         Perform the actual formula update with complete cleanup of the old curve.
 
@@ -1032,139 +970,79 @@ class CurveItem(QtWidgets.QWidget):
         ----------
         new_formula : str
             The new formula string starting with 'f://' (e.g., 'f://{x1}+{x2}').
-        axis_item : AxisItem
-            The axis item widget that contains this curve item.
-        control_panel : ControlPanel
-            The control panel widget that manages curve dictionaries and plot references.
         """
-        plot = control_panel.plot
-        old_source = self.source
+        if hasattr(self.source, "formula_invalid_signal"):
+            self.source.formula_invalid_signal.disconnect()
 
-        if hasattr(old_source, "formula_invalid_signal"):
-            old_source.formula_invalid_signal.disconnect()
+        self.plot._curves.remove(self.source)
+        self.plot.plotItem.removeItem(self.source)
+        self.source.deleteLater()
 
-        if hasattr(old_source, "channels"):
-            for ch in old_source.channels():
-                if ch:
-                    ch.disconnect()
-
-        if old_source in plot._curves:
-            plot._curves.remove(old_source)
-            plot.plotItem.removeItem(old_source)
-
-        old_key = None
-        for key, value in list(control_panel._curve_dict.items()):
-            if value == old_source:
-                old_key = key
-                del control_panel._curve_dict[key]
-                logger.debug(f"Removed old formula curve {key} from curve dictionary")
-                break
-
-        old_source.setParent(None)
-        if hasattr(old_source, "deleteLater"):
-            old_source.deleteLater()
+        del self.control_panel._curve_dict[self.variable_name]
 
         var_names = re.findall(r"{(.+?)}", new_formula)
         var_dict = {}
         for var_name in var_names:
-            if var_name not in control_panel._curve_dict:
+            if var_name not in self.control_panel._curve_dict:
                 raise ValueError(
-                    f"Variable '{var_name}' not found. Available: {list(control_panel._curve_dict.keys())}"
+                    f"Variable '{var_name}' not found. Available: {list(self.control_panel._curve_dict.keys())}"
                 )
-            var_dict[var_name] = control_panel._curve_dict[var_name]
+            var_dict[var_name] = self.control_panel._curve_dict[var_name]
 
-        index = len(plot._curves)
-        color = ColorButton.index_color(index)
+        color = ColorButton.index_color(len(self.plot._curves))
 
-        new_formula_curve = plot.addFormulaChannel(
+        new_formula_curve = self.plot.addFormulaChannel(
             formula=new_formula,
             name=new_formula,
             pvs=var_dict,
             color=color,
             useArchiveData=True,
-            yAxisName=axis_item.source.name,
+            yAxisName=self.axis_item.source.name,
         )
 
         self.source = new_formula_curve
-        self.is_formula = True
         self.label.setText(new_formula)
 
-        if old_key and old_key.startswith("fx"):
-            control_panel._curve_dict[old_key] = new_formula_curve
-            logger.debug(f"Updated formula curve {old_key} in curve dictionary")
-        else:
-            key = control_panel._generate_pv_key("formula")
-            control_panel._curve_dict[key] = new_formula_curve
-            logger.debug(f"Added new formula curve {key} to curve dictionary")
+        if not self.variable_name.startswith(FORMULA_KEY_PREFIX):
+            self.variable_name = self.control_panel.key_gen.send(new_formula_curve)
+        self.control_panel._curve_dict[self.variable_name] = new_formula_curve
 
-        self.update_variable_name()
-        axis_item.curves_list_changed.emit()
-        control_panel.cleanup_duplicate_curves()
-
-    def get_parent_axis(self):
-        """Find the parent AxisItem by traversing up the widget hierarchy"""
-        parent = self.parent()
-        while parent:
-            if hasattr(parent, "add_formula_curve"):
-                return parent
-            parent = parent.parent()
-        return None
+        self.axis_item.curves_list_changed.emit()
+        self.control_panel.cleanup_duplicate_curves()
 
     @QtCore.Slot()
     def set_curve_pv(self, pv: str = None):
         if pv is None and self.sender():
             pv = self.sender().text()
 
-        if self.is_formula:
+        if self.is_formula_curve:
             self.update_formula()
             return
 
         self.source.address = pv
 
     def close(self) -> bool:
-        if hasattr(self, "show_invalid_icon"):
-            self.show_invalid_icon(False)
+        # if hasattr(self, "show_invalid_icon"):
+        #     self.show_invalid_icon(False)
 
-        if hasattr(self, "_updating_formula"):
-            self._updating_formula = False
+        # if hasattr(self, "_updating_formula"):
+        #     self._updating_formula = False
 
         curve = self.source
         [ch.disconnect() for ch in curve.channels() if ch]
 
-        control_panel = None
-        parent = self.parent()
-        while parent:
-            if hasattr(parent, "_curve_dict"):
-                control_panel = parent
-                break
-            parent = parent.parent()
-
-        if not control_panel:
-            logger.warning("Could not find ControlPanel")
-            self.setParent(None)
-            self.deleteLater()
-            return super().close()
-
         try:
-            control_panel.plot.removeCurve(curve)
-            if hasattr(control_panel.plot, "set_needs_redraw"):
-                control_panel.plot.set_needs_redraw()
+            self.control_panel.plot.removeCurve(curve)
+            self.plot.set_needs_redraw()
 
         except ValueError as e:
             logger.debug(f"Warning: Curve already removed: {e}")
         except Exception as e:
             logger.warning(f"Error removing curve from plot: {e}")
 
-        for key, value in list(control_panel._curve_dict.items()):
-            if value == curve:
-                del control_panel._curve_dict[key]
-                control_panel.curve_list_changed.emit()
-                break
+        del self.control_panel._curve_dict[self.variable_name]
 
-        self.setParent(None)
+        self.curve_deleted.emit(curve)
         self.deleteLater()
-
-        if self.parent():
-            self.curve_deleted.emit(curve)
 
         return super().close()
