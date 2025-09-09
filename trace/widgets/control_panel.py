@@ -1,6 +1,5 @@
 import re
 
-import qtawesome as qta
 from qtpy import QtGui, QtCore, QtWidgets
 from qtpy.QtCore import Qt, Slot, QTimer
 
@@ -432,10 +431,6 @@ class AxisItem(QtWidgets.QWidget):
         return self.source.name
 
     def make_curve_widget(self, plot_curve_item: ArchivePlotCurveItem | FormulaCurveItem) -> "CurveItem":
-        # variable_name = self.control_panel.key_gen.send(plot_curve_item)
-        variable_name = "var"
-        self.control_panel._curve_dict[variable_name] = plot_curve_item
-
         curve_item = CurveItem(self, plot_curve_item)
         curve_item.curve_deleted.connect(self.curves_list_changed.emit)
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
@@ -702,7 +697,7 @@ class CurveItem(QtWidgets.QWidget):
     unit_changed = QtCore.Signal(str)
 
     def __init__(self, axis_item: AxisItem, source: ArchivePlotCurveItem | FormulaCurveItem) -> None:
-        super().__init__(axis_item)
+        super().__init__()
         self._axis_item = axis_item
         self.source = source
         self.control_panel = axis_item.control_panel
@@ -711,6 +706,7 @@ class CurveItem(QtWidgets.QWidget):
         self.theme_manager.theme_changed.connect(lambda _: self.update_icons())
 
         self.variable_name = self.control_panel.key_gen.send(self.source)
+        self.control_panel.curve_dict[self.variable_name] = self.source
         if not self.is_formula_curve:
             self.source.unitSignal.connect(self.unit_changed.emit)
 
@@ -787,7 +783,7 @@ class CurveItem(QtWidgets.QWidget):
 
     def setup_line_edit(self):
         """Set up the line edit with appropriate behavior for formula vs regular curves"""
-        if self.is_formula_curve:
+        if self.is_formula_curve():
             text = self.source.formula
             placeholder = "Edit formula (f://...)"
             self.label.editingFinished.connect(self.update_formula)
@@ -816,10 +812,6 @@ class CurveItem(QtWidgets.QWidget):
         self.live_connection_status.setPixmap(icon_disconnected.pixmap(16, 16))
         self.archive_connection_status.setPixmap(icon_disconnected.pixmap(16, 16))
 
-    def update_variable_name(self):
-        """Update the variable name label"""
-        self.variable_name_label.setText(self.variable_name)
-
     def show_invalid_icon(self, show=True):
         """Show or hide the invalid formula icon overlaid on the line edit"""
         if not self.is_formula_curve:
@@ -827,7 +819,7 @@ class CurveItem(QtWidgets.QWidget):
 
         if show:
             if self.invalid_action is None:
-                icon = qta.icon("fa6s.triangle-exclamation", color="red")
+                icon = self.theme_manager.create_icon("fa6s.triangle-exclamation", IconColors.ERROR)
                 self.invalid_action = self.label.addAction(icon, QtWidgets.QLineEdit.TrailingPosition)
                 self.invalid_action.setToolTip("Formula is invalid")
 
@@ -937,7 +929,7 @@ class CurveItem(QtWidgets.QWidget):
                 try:
                     self._perform_formula_update(new_formula)
                     self.show_invalid_icon(False)
-                except Exception as e:
+                except ValueError as e:
                     QtWidgets.QMessageBox.critical(None, "Formula Update Failed", f"Failed to update formula: {str(e)}")
                     if hasattr(self.source, "formula"):
                         self.label.setText(self.source.formula)
@@ -971,14 +963,6 @@ class CurveItem(QtWidgets.QWidget):
         new_formula : str
             The new formula string starting with 'f://' (e.g., 'f://{x1}+{x2}').
         """
-        if hasattr(self.source, "formula_invalid_signal"):
-            self.source.formula_invalid_signal.disconnect()
-
-        self.plot._curves.remove(self.source)
-        self.plot.plotItem.removeItem(self.source)
-        self.source.deleteLater()
-
-        del self.control_panel._curve_dict[self.variable_name]
 
         var_names = re.findall(r"{(.+?)}", new_formula)
         var_dict = {}
@@ -989,16 +973,22 @@ class CurveItem(QtWidgets.QWidget):
                 )
             var_dict[var_name] = self.control_panel._curve_dict[var_name]
 
-        color = ColorButton.index_color(len(self.plot._curves))
-
         new_formula_curve = self.plot.addFormulaChannel(
             formula=new_formula,
             name=new_formula,
             pvs=var_dict,
-            color=color,
-            useArchiveData=True,
+            color=self.source.color,
+            useArchiveData=self.source.use_archive_data,
             yAxisName=self.axis_item.source.name,
         )
+
+        if hasattr(self.source, "formula_invalid_signal"):
+            self.source.formula_invalid_signal.disconnect()
+
+        self.plot.removeCurve(self.source)
+        self.source.deleteLater()
+        del self.control_panel._curve_dict[self.variable_name]
+        self.plot.set_needs_redraw()
 
         self.source = new_formula_curve
         self.label.setText(new_formula)
@@ -1022,17 +1012,11 @@ class CurveItem(QtWidgets.QWidget):
         self.source.address = pv
 
     def close(self) -> bool:
-        # if hasattr(self, "show_invalid_icon"):
-        #     self.show_invalid_icon(False)
-
-        # if hasattr(self, "_updating_formula"):
-        #     self._updating_formula = False
-
         curve = self.source
         [ch.disconnect() for ch in curve.channels() if ch]
 
         try:
-            self.control_panel.plot.removeCurve(curve)
+            self.plot.removeCurve(curve)
             self.plot.set_needs_redraw()
 
         except ValueError as e:
