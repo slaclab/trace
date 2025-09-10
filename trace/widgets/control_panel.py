@@ -163,7 +163,13 @@ class ControlPanel(QtWidgets.QWidget):
         return self._curve_dict
 
     def _generate_curve_key(self):
-        """Generate a unique variable name for a curve, either pv or formula."""
+        """Generate a unique variable name for a curve, either pv or formula.
+
+        Yields
+        ------
+        key : str
+            The next unique key for the curve. Yielded when a curve is sent.
+        """
         key = None
         next_pv_num = 1
         next_formula_num = 1
@@ -318,6 +324,18 @@ class ControlPanel(QtWidgets.QWidget):
         self.axis_list.itemAt(self.axis_list.count() - 2).widget()
 
     def move_curve_to_axis(self, curve_item: "CurveItem", target_axis_name: str) -> None:
+        """Remove a given CurveItem from its current AxisItem and add it to
+        the AxisItem with the given target axis name. If no such AxisItem
+        exists, a new one will be created. Intended to be used for Axes
+        named after a curve's unit.
+
+        Parameters
+        ----------
+        curve_item : CurveItem
+            CurveItem to be moved to a new axis.
+        target_axis_name : str
+            Name of the target axis to move the CurveItem to.
+        """
         axis_item = self.get_axis_item(target_axis_name)
         if axis_item is None:
             axis_item = self.add_empty_axis(target_axis_name)
@@ -444,6 +462,19 @@ class AxisItem(QtWidgets.QWidget):
         return self.source.name
 
     def make_curve_widget(self, plot_curve_item: ArchivePlotCurveItem | FormulaCurveItem) -> "CurveItem":
+        """Create a CurveItem widget for the given plot curve item and add
+        it to this AxisItem.
+
+        Parameters
+        ----------
+        plot_curve_item : ArchivePlotCurveItem | FormulaCurveItem
+            The plot curve item to create a CurveItem for.
+
+        Returns
+        -------
+        CurveItem
+            The created CurveItem widget.
+        """
         curve_item = CurveItem(self, plot_curve_item)
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
@@ -457,6 +488,22 @@ class AxisItem(QtWidgets.QWidget):
         return curve_item
 
     def add_curve(self, pv: str, channel_args: dict = None) -> "CurveItem":
+        """Create a new ArchivePlotCurveItem for the given PV and add it
+        to this AxisItem. Also creates a CurveItem widget for it.
+
+        Parameters
+        ----------
+        pv : str
+            The process variable name to create the curve for.
+        channel_args : dict, optional
+            The arguments to pass to the ArchivePlotCurveItem constructor,
+            by default None
+
+        Returns
+        -------
+        CurveItem
+            The created CurveItem widget.
+        """
         color = ColorButton.index_color(len(self.plot._curves))
         args = {
             "y_channel": pv,
@@ -473,6 +520,19 @@ class AxisItem(QtWidgets.QWidget):
         return self.make_curve_widget(plot_curve_item)
 
     def add_formula_curve(self, formula: str) -> "CurveItem":
+        """Create a new FormulaCurveItem for the given formula and add it
+        to this AxisItem. Also creates a CurveItem widget for it.
+
+        Parameters
+        ----------
+        formula : str
+            The formula to create the curve for. Must start with "f://".
+
+        Returns
+        -------
+        CurveItem
+            The created CurveItem widget.
+        """
         var_names = re.findall(r"{(.+?)}", formula)
         var_dict = {}
 
@@ -761,6 +821,7 @@ class CurveItem(QtWidgets.QWidget):
 
     @property
     def plot(self):
+        """Get the PlotWidget that this CurveItem belongs to."""
         return self.control_panel.plot
 
     @property
