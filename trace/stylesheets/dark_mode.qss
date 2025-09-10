@@ -83,7 +83,6 @@ QPushButton:disabled, PyDMPushButton:disabled {
     background-color: #2F2F2F;
     color: #7A7A7A;
     border: 1px solid #444444;
-    cursor: not-allowed;
 }
 
 /* Flat Icon Buttons */
