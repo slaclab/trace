@@ -191,7 +191,7 @@ class ControlPanel(QtWidgets.QWidget):
 
         self.plot.addAxis(plot_data_item=None, name=name, orientation="left", label=name)
         new_axis = self.plot._axes[-1]
-        new_axis.setLabel(name, color="black")
+        new_axis.setLabel(name, color=self.theme_manager.get_icon_color())
 
         return self.add_axis_item(new_axis)
 
@@ -430,6 +430,10 @@ class AxisItem(QtWidgets.QWidget):
         """Handle theme changes by updating icons"""
         self.update_icons()
 
+        # Change axis label color to match theme
+        label_text = self.source.labelText
+        self.source.setLabel(label_text, color=self.theme_manager.get_icon_color())
+
     @property
     def plot(self):
         return self.parent().parent().parent().parent().plot
@@ -441,7 +445,6 @@ class AxisItem(QtWidgets.QWidget):
 
     def make_curve_widget(self, plot_curve_item: ArchivePlotCurveItem | FormulaCurveItem) -> "CurveItem":
         curve_item = CurveItem(self, plot_curve_item)
-        curve_item.curve_deleted.connect(self.curves_list_changed.emit)
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
 
