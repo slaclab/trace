@@ -317,6 +317,15 @@ class ControlPanel(QtWidgets.QWidget):
         self.plot.redrawPlot()
         self.axis_list.itemAt(self.axis_list.count() - 2).widget()
 
+    def move_curve_to_axis(self, curve_item: "CurveItem", target_axis_name: str) -> None:
+        axis_item = self.get_axis_item(target_axis_name)
+        if axis_item is None:
+            axis_item = self.add_empty_axis(target_axis_name)
+
+        old_axis_item = curve_item.axis_item
+        old_axis_item.remove_curve_item(curve_item)
+        axis_item.add_curve_item(curve_item)
+
     def closeEvent(self, a0: QtGui.QCloseEvent):
         for axis_item in range(self.axis_list.count()):
             axis_item.close()
@@ -620,29 +629,64 @@ class AxisItem(QtWidgets.QWidget):
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent):
         item = self.childAt(event.position().toPoint())
         if item != self.placeholder:
-            self.layout().removeWidget(self.placeholder)
             index = self.layout().indexOf(item) + 1  # drop below target row
             index = max(1, index)  # don't drop above axis detail row
             self.layout().insertWidget(index, self.placeholder)
 
     def dragLeaveEvent(self, event: QtGui.QDragLeaveEvent):
         event.accept()
-        self.layout().removeWidget(self.placeholder)
         self.placeholder.hide()
 
     def dropEvent(self, event: QtGui.QDropEvent):
         event.accept()
         curve_item = event.source()
-        curve_item.curve_deleted.disconnect()
-        curve_item.curve_deleted.connect(self.curves_list_changed.emit)
-        curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
+        self.control_panel.move_curve_to_axis(curve_item, self.source.name)
+        self.placeholder.hide()
+        if not self._expanded:
+            self.toggle_expand()
+        self.curves_list_changed.emit()
+
+    def remove_curve_item(self, curve_item: "CurveItem", delete_curve: bool = False) -> None:
+        """Removes the given CurveItem from the AxisItem and plot's axis.
+        This is required for moving a CurveItem to a new AxisItem. Can
+        delete the CurveItem and curve if specified. This will remove it
+        from the plot.
+
+        Parameters
+        ----------
+        curve_item : CurveItem
+            The CurveItem to be removed from the axis.
+        delete_curve : bool, optional
+            If True, the CurveItem will be deleted and the curve removed
+            from the plot entirely. If False, it will just be unlinked
+            from this axis., by default False.
+        """
         self.plot.plotItem.unlinkDataFromAxis(curve_item.source)
-        self.plot.plotItem.linkDataToAxis(curve_item.source, self.source.name)
+        curve_item.curve_deleted.disconnect()
+        self.layout().removeWidget(curve_item)
+
+        if delete_curve:
+            curve_item.close()
+        self.curves_list_changed.emit()
+
+    def add_curve_item(self, curve_item: "CurveItem") -> None:
+        """Add an existing CurveItem to this AxisItem.
+
+        Parameters
+        ----------
+        curve_item : CurveItem
+            The CurveItem to be added to this axis.
+        """
         curve_item.source.y_axis_name = self.source.name
+        self.plot.plotItem.linkDataToAxis(curve_item.source, self.source.name)
+
+        curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
+        curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
 
         self.layout().removeWidget(curve_item)  # in case we're reordering within an AxisItem
-        self.layout().replaceWidget(self.placeholder, curve_item)
-        self.placeholder.hide()
+        idx = self.layout().indexOf(self.placeholder)
+        self.layout().insertWidget(idx, curve_item)
+
         if not self._expanded:
             self.toggle_expand()
         self.curves_list_changed.emit()
@@ -652,7 +696,7 @@ class AxisItem(QtWidgets.QWidget):
         for i in range(self.layout().count() - 1, -1, -1):
             item = self.layout().itemAt(i).widget()
             if isinstance(item, CurveItem):
-                item.close()
+                self.remove_curve_item(item, delete_curve=True)
 
     def close(self) -> bool:
         # Pop up confirming axis delete
@@ -707,8 +751,8 @@ class CurveItem(QtWidgets.QWidget):
 
         self.variable_name = self.control_panel.key_gen.send(self.source)
         self.control_panel.curve_dict[self.variable_name] = self.source
-        if not self.is_formula_curve:
-            self.source.unitSignal.connect(self.unit_changed.emit)
+        if not self.is_formula_curve():
+            self.source.unitSignal.connect(lambda unit: self.control_panel.move_curve_to_axis(self, unit))
 
         self.setup_layout()
 
