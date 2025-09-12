@@ -1,5 +1,5 @@
 from qtpy.QtCore import Qt, Slot, Signal
-from qtpy.QtWidgets import QWidget, QCheckBox, QComboBox, QVBoxLayout, QPushButton
+from qtpy.QtWidgets import QWidget, QCheckBox, QComboBox, QPushButton, QVBoxLayout
 
 from pydm.display import Display
 from pydm.widgets import PyDMArchiverTimePlot
@@ -12,6 +12,7 @@ from widgets.curve_color_palette_modal import CurveColorPaletteModal
 
 class AxisSettingsModal(QWidget):
     sig_curve_palette_changed = Signal(str, bool)
+
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot, axis: BasePlotAxisItem):
         super().__init__(parent)
         self.setWindowFlag(Qt.Popup)

@@ -10,10 +10,10 @@ from qtpy.QtWidgets import (
     QCheckBox,
     QComboBox,
     QLineEdit,
+    QPushButton,
     QSizePolicy,
     QVBoxLayout,
     QDateTimeEdit,
-    QPushButton,
 )
 
 from pydm.widgets import PyDMArchiverTimePlot

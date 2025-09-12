@@ -1,5 +1,12 @@
 from qtpy.QtCore import Qt, Signal
-from qtpy.QtWidgets import QWidget, QVBoxLayout, QComboBox, QHBoxLayout, QPushButton, QLabel
+from qtpy.QtWidgets import (
+    QLabel,
+    QWidget,
+    QComboBox,
+    QHBoxLayout,
+    QPushButton,
+    QVBoxLayout,
+)
 
 from config import color_palette
 from widgets import SettingsTitle, SettingsRowItem
