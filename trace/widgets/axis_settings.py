@@ -1,5 +1,5 @@
-from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import QWidget, QCheckBox, QComboBox, QVBoxLayout
+from qtpy.QtCore import Qt, Slot, Signal
+from qtpy.QtWidgets import QWidget, QCheckBox, QComboBox, QVBoxLayout, QPushButton
 
 from pydm.display import Display
 from pydm.widgets import PyDMArchiverTimePlot
@@ -7,9 +7,11 @@ from pydm.widgets.baseplot import BasePlotAxisItem
 
 from config import logger
 from widgets import SettingsTitle, SettingsRowItem
+from widgets.curve_color_palette_modal import CurveColorPaletteModal
 
 
 class AxisSettingsModal(QWidget):
+    sig_curve_palette_changed = Signal(str, bool)
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot, axis: BasePlotAxisItem):
         super().__init__(parent)
         self.setWindowFlag(Qt.Popup)
@@ -40,6 +42,13 @@ class AxisSettingsModal(QWidget):
         self.grid_checkbox.checkStateChanged.connect(self.show_grid)
         y_grid_row = SettingsRowItem(self, "Y Axis Gridline", self.grid_checkbox)
         main_layout.addLayout(y_grid_row)
+
+        self.palette_modal = CurveColorPaletteModal(self)
+        self.curve_palette_button = QPushButton("Select")
+        self.curve_palette_button.clicked.connect(self.palette_modal.show)
+        self.palette_modal.sig_palette_changed.connect(self.sig_curve_palette_changed.emit)
+        palette_row = SettingsRowItem(self, "  Curve Palette", self.curve_palette_button)
+        main_layout.addLayout(palette_row)
 
         self.trace_display = self.parent()
         while self.trace_display is not None and not isinstance(self.trace_display, Display):
