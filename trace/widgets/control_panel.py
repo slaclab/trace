@@ -922,7 +922,7 @@ class CurveItem(QtWidgets.QWidget):
 
     def show_invalid_icon(self, show=True):
         """Show or hide the invalid formula icon overlaid on the line edit"""
-        if not self.is_formula_curve:
+        if not self.is_formula_curve():
             return
 
         if show:
@@ -1113,7 +1113,7 @@ class CurveItem(QtWidgets.QWidget):
         if pv is None and self.sender():
             pv = self.sender().text()
 
-        if self.is_formula_curve:
+        if self.is_formula_curve():
             self.update_formula()
             return
 
