@@ -728,22 +728,22 @@ class AxisItem(QtWidgets.QWidget):
             from this axis., by default False.
         """
         old_axis_name = self.source.name
-        
+
         unlink_method = self.plot.plotItem.unlinkDataFromAxis
-        
+
         signature = inspect.signature(unlink_method)
-        
+
         if len(signature.parameters) > 1:
             self.plot.plotItem.unlinkDataFromAxis(curve_item.source, old_axis_name)
         else:
             self.plot.plotItem.unlinkDataFromAxis(curve_item.source)
-        
+
         axis = self.plot.plotItem.getAxis(old_axis_name)
         if axis is not None:
             old_view = axis.linkedView()
-            if old_view is not None and hasattr(old_view, 'removeItem'):
+            if old_view is not None and hasattr(old_view, "removeItem"):
                 old_view.removeItem(curve_item.source)
-        
+
         if self.layout().indexOf(curve_item) != -1:
             self.layout().removeWidget(curve_item)
         curve_item.setParent(None)
@@ -764,21 +764,21 @@ class AxisItem(QtWidgets.QWidget):
         if current_axis and current_axis != self.source.name:
             unlink_method = self.plot.plotItem.unlinkDataFromAxis
             signature = inspect.signature(unlink_method)
-            
-            if len(signature.parameters) > 1 and hasattr(self.plot.plotItem, 'unlinkDataFromAxis'):
+
+            if len(signature.parameters) > 1 and hasattr(self.plot.plotItem, "unlinkDataFromAxis"):
                 self.plot.plotItem.unlinkDataFromAxis(curve_item.source, current_axis)
 
-        if hasattr(self.plot.plotItem, 'linkDataToAxis'):
+        if hasattr(self.plot.plotItem, "linkDataToAxis"):
             self.plot.plotItem.linkDataToAxis(curve_item.source, self.source.name)
-        
+
         curve_item.source.y_axis_name = self.source.name
-        
+
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
 
         if self.layout().indexOf(curve_item) != -1:
             self.layout().removeWidget(curve_item)
-        
+
         idx = self.layout().indexOf(self.placeholder)
         self.layout().insertWidget(idx, curve_item)
 
