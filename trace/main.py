@@ -79,6 +79,7 @@ class TraceDisplay(Display):
         return QSize(700, 350)
 
     def build_ui(self) -> None:
+        """Set up the main UI for the application."""
         # Set window title
         self.setWindowTitle("Trace")
         # Create main layout
@@ -106,7 +107,20 @@ class TraceDisplay(Display):
         footer_widget = self.build_footer(self)
         main_layout.addWidget(footer_widget)
 
-    def build_plot_side(self, parent):
+    def build_plot_side(self, parent: QWidget) -> QWidget:
+        """Build the plot side of the application, including the toolbar
+        and plot widget.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget for the plot side.
+
+        Returns
+        -------
+        QWidget
+            Returns the plot side widget.
+        """
         plot_side_widget = QWidget(parent)
         plot_side_layout = QVBoxLayout()
         plot_side_layout.setContentsMargins(0, 0, 8, 0)
@@ -146,7 +160,20 @@ class TraceDisplay(Display):
 
         return plot_side_widget
 
-    def build_toolbar(self, parent):
+    def build_toolbar(self, parent: QWidget) -> QWidget:
+        """Build the toolbar for the plotting section of the application. This
+        includes buttons for setting the autoscroll timespan.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget for the toolbar.
+
+        Returns
+        -------
+        QWidget
+            Returns the toolbar widget.
+        """
         toolbar_widget = QWidget(parent)
         # Create tool layout
         tool_layout = QHBoxLayout()
@@ -161,7 +188,20 @@ class TraceDisplay(Display):
 
         return toolbar_widget
 
-    def build_timespan_buttons(self, parent: QWidget):
+    def build_timespan_buttons(self, parent: QWidget) -> QWidget:
+        """Build the timespan buttons for the toolbar. This includes buttons
+        for users to set enable autoscrolling for various timespans.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget for the timespan buttons.
+
+        Returns
+        -------
+        QWidget
+            Returns the timespan buttons widget.
+        """
         timespan_button_widget = QWidget(parent)
         timespan_button_layout = QHBoxLayout()
         timespan_button_layout.setContentsMargins(0, 0, 0, 0)
@@ -193,7 +233,21 @@ class TraceDisplay(Display):
 
         return timespan_button_widget
 
-    def build_footer(self, parent: QWidget):
+    def build_footer(self, parent: QWidget) -> QWidget:
+        """Build the footer for the application. This displays the name
+        of the server the application is running on, the archiver URL,
+        and a timestamp PV.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget for the footer.
+
+        Returns
+        -------
+        QWidget
+            The footer widget to be added to a layout.
+        """
         self.footer_label_font = QFont()
         self.footer_label_font.setPointSize(8)
 
@@ -234,8 +288,15 @@ class TraceDisplay(Display):
 
         return footer_widget
 
+    @Slot(str)
     def set_file_indicator(self, file_path: str) -> None:
-        """Set the file indicator label to the given file path."""
+        """Set the file indicator label to the given file path.
+
+        Parameters
+        ----------
+        file_path : str
+            The file path to set the label to.
+        """
         if not file_path:
             return
         filename = os.path.basename(file_path)
@@ -248,12 +309,18 @@ class TraceDisplay(Display):
             self.file_label.setToolTip("Currently loaded file")
             self.footer_info_widget.layout().addWidget(self.file_label)
 
-    def setup_icons(self):
+    def setup_icons(self) -> None:
         """Set up all icons after theme manager is initialized"""
         self.settings_button.setIcon(self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY))
 
-    def on_theme_changed(self, theme: Theme):
-        """Handle theme changes - update icons and button text"""
+    def on_theme_changed(self, theme: Theme) -> None:
+        """Handle theme changes - update icons and button text
+
+        Parameters
+        ----------
+        theme : Theme
+            The new theme that was set.
+        """
         if theme == Theme.DARK:
             self.theme_toggle_button.setText("Light Mode")
             icon = self.theme_manager.create_icon("fa.sun-o", IconColors.PRIMARY)
