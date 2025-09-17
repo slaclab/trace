@@ -65,11 +65,18 @@ class CAGetThread(QThread):
         self.stop_flag = False
 
     def run(self) -> None:
-        value = epics.caget(self.address)
+        """Get the value for the given address. Interruptable via the
+        stop_flag. Does not attempt to emit the PV Value if interrupted.
+        """
+        pv = epics.PV(self.address)
 
         if self.stop_flag:
             return
-        self.result_ready.emit(value)
+
+        try:
+            self.result_ready.emit(pv.value)
+        except epics.ca.ChannelAccessException as e:
+            logger.warning(f"Channel Access error: {e}")
 
     def stop(self) -> None:
         """Set the stop flag"""
