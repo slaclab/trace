@@ -15,7 +15,6 @@
 ## Pre-merge checklist
 
 - [ ] Code works interactively
-<!-- - [ ] Code follows the style guide -->
 - [ ] Code contains descriptive docstrings
 - [ ] New/changed functions and methods are covered in the test suite where possible
 - [ ] Test suite passes locally
