@@ -586,7 +586,9 @@ class AxisItem(QtWidgets.QWidget):
         checked = Qt.CheckState(state) == Qt.Checked
         self.source.setVisible(checked)
         for i in range(1, self.layout().count()):
-            self.layout().itemAt(i).widget().active_toggle.setCheckState(state)
+            widget = self.layout().itemAt(i).widget()
+            if isinstance(widget, CurveItem):
+                widget.active_toggle.setCheckState(state)
 
     @Slot(int)
     @Slot(Qt.CheckState)
@@ -724,9 +726,9 @@ class AxisItem(QtWidgets.QWidget):
             from the plot entirely. If False, it will just be unlinked
             from this axis., by default False.
         """
-        self.plot.plotItem.unlinkDataFromAxis(curve_item.source)
         curve_item.curve_deleted.disconnect()
         self.layout().removeWidget(curve_item)
+        self.plot.plotItem.unlinkDataFromAxis(curve_item.source)
 
         if delete_curve:
             curve_item.close()
@@ -740,13 +742,16 @@ class AxisItem(QtWidgets.QWidget):
         curve_item : CurveItem
             The CurveItem to be added to this axis.
         """
-        curve_item.source.y_axis_name = self.source.name
-        self.plot.plotItem.linkDataToAxis(curve_item.source, self.source.name)
+        # Need to link curve to axis before setting y_axis_name on curve
+        self.plot.plotItem.linkDataToAxis(curve_item.source, self.name)
+        curve_item.source.y_axis_name = self.name
 
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
 
-        self.layout().removeWidget(curve_item)  # in case we're reordering within an AxisItem
+        if self.layout().indexOf(curve_item) != -1:
+            self.layout().removeWidget(curve_item)
+
         idx = self.layout().indexOf(self.placeholder)
         self.layout().insertWidget(idx, curve_item)
 
