@@ -33,15 +33,17 @@ class CurveSettingsModal(QWidget):
         color_row = SettingsRowItem(self, "Color", color_button)
         main_layout.addLayout(color_row)
 
-        self.bin_count_line_edit = bin_count_line_edit = QLineEdit()
-        bin_count_line_edit.setMaximumWidth(65)
-        bin_count_line_edit.returnPressed.connect(self.set_curve_data_bins)
-        optimized_bin_count = SettingsRowItem(self, "Optimized bin count", bin_count_line_edit)
-        bin_count = curve.optimized_data_bins
-        if not bin_count:
-            bin_count = plot.optimized_data_bins
-        bin_count_line_edit.setPlaceholderText(str(bin_count))
-        main_layout.addLayout(optimized_bin_count)
+        self.bin_count_line_edit = None
+        if hasattr(curve, "setOptimizedDataBins"):
+            self.bin_count_line_edit = bin_count_line_edit = QLineEdit()
+            bin_count_line_edit.setMaximumWidth(65)
+            bin_count_line_edit.returnPressed.connect(self.set_curve_data_bins)
+            optimized_bin_count = SettingsRowItem(self, "Optimized bin count", bin_count_line_edit)
+            bin_count = curve.optimized_data_bins
+            if not bin_count:
+                bin_count = plot.optimized_data_bins
+            bin_count_line_edit.setPlaceholderText(str(bin_count))
+            main_layout.addLayout(optimized_bin_count)
 
         self.live_toggle = QCheckBox("")
         self.live_toggle.setCheckState(Qt.Checked if self.curve.liveData else Qt.Unchecked)
@@ -116,11 +118,14 @@ class CurveSettingsModal(QWidget):
         self.curve.use_archive_data = state == Qt.Checked
 
     def show(self):
+        # Reset Bin Count LineEdit if it exists
+        if self.bin_count_line_edit:
+            self.bin_count_line_edit.setStyleSheet("")
+            self.bin_count_line_edit.setText("")
+
         parent_pos = self.parent().rect().bottomRight()
         global_pos = self.parent().mapToGlobal(parent_pos)
         self.move(global_pos)
-        self.bin_count_line_edit.setStyleSheet("")
-        self.bin_count_line_edit.setText("")
         super().show()
 
     @Slot()
