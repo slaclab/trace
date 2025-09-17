@@ -3117,7 +3117,12 @@ triggered on QDateTimeEdit value change.</p>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
-<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CurveSettingsModal</span><span class="p">(</span><span class="n">QWidget</span><span class="p">):</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CurveSettingsModal</span><span class="p">(</span><span class="n">QWidget</span><span class="p">):</span>
     <span class="n">color_changed</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">QWidget</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="n">PyDMArchiverTimePlot</span><span class="p">,</span> <span class="n">curve</span><span class="p">:</span> <span class="n">TimePlotCurveItem</span><span class="p">):</span>
@@ -3142,15 +3147,17 @@ triggered on QDateTimeEdit value change.</p>
         <span class="n">color_row</span> <span class="o">=</span> <span class="n">SettingsRowItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Color&quot;</span><span class="p">,</span> <span class="n">color_button</span><span class="p">)</span>
         <span class="n">main_layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="n">color_row</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">bin_count_line_edit</span> <span class="o">=</span> <span class="n">bin_count_line_edit</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
-        <span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">setMaximumWidth</span><span class="p">(</span><span class="mi">65</span><span class="p">)</span>
-        <span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">returnPressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_curve_data_bins</span><span class="p">)</span>
-        <span class="n">optimized_bin_count</span> <span class="o">=</span> <span class="n">SettingsRowItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Optimized bin count&quot;</span><span class="p">,</span> <span class="n">bin_count_line_edit</span><span class="p">)</span>
-        <span class="n">bin_count</span> <span class="o">=</span> <span class="n">curve</span><span class="o">.</span><span class="n">optimized_data_bins</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">bin_count</span><span class="p">:</span>
-            <span class="n">bin_count</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">optimized_data_bins</span>
-        <span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">bin_count</span><span class="p">))</span>
-        <span class="n">main_layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="n">optimized_bin_count</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bin_count_line_edit</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">curve</span><span class="p">,</span> <span class="s2">&quot;setOptimizedDataBins&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bin_count_line_edit</span> <span class="o">=</span> <span class="n">bin_count_line_edit</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
+            <span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">setMaximumWidth</span><span class="p">(</span><span class="mi">65</span><span class="p">)</span>
+            <span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">returnPressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_curve_data_bins</span><span class="p">)</span>
+            <span class="n">optimized_bin_count</span> <span class="o">=</span> <span class="n">SettingsRowItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Optimized bin count&quot;</span><span class="p">,</span> <span class="n">bin_count_line_edit</span><span class="p">)</span>
+            <span class="n">bin_count</span> <span class="o">=</span> <span class="n">curve</span><span class="o">.</span><span class="n">optimized_data_bins</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">bin_count</span><span class="p">:</span>
+                <span class="n">bin_count</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">optimized_data_bins</span>
+            <span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">bin_count</span><span class="p">))</span>
+            <span class="n">main_layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="n">optimized_bin_count</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">live_toggle</span> <span class="o">=</span> <span class="n">QCheckBox</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">live_toggle</span><span class="o">.</span><span class="n">setCheckState</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">Checked</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">curve</span><span class="o">.</span><span class="n">liveData</span> <span class="k">else</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Unchecked</span><span class="p">)</span>
@@ -3225,11 +3232,14 @@ triggered on QDateTimeEdit value change.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">curve</span><span class="o">.</span><span class="n">use_archive_data</span> <span class="o">=</span> <span class="n">state</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Checked</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Reset Bin Count LineEdit if it exists</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_count_line_edit</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
         <span class="n">parent_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">rect</span><span class="p">()</span><span class="o">.</span><span class="n">bottomRight</span><span class="p">()</span>
         <span class="n">global_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">mapToGlobal</span><span class="p">(</span><span class="n">parent_pos</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">global_pos</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bin_count_line_edit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
     <span class="nd">@Slot</span><span class="p">()</span>
@@ -3314,15 +3324,15 @@ triggered on QDateTimeEdit value change.</p>
 
             <details class="quote">
               <summary>Source code in <code>trace/widgets/curve_settings.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
-<span class="normal">167</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="nd">@Slot</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">set_extension_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">CheckState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the line extension based on the checkbox state.&quot;&quot;&quot;</span>
