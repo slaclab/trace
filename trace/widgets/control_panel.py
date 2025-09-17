@@ -1,5 +1,4 @@
 import re
-import inspect
 
 from qtpy import QtGui, QtCore, QtWidgets
 from qtpy.QtCore import Qt, Slot, QTimer
@@ -727,26 +726,9 @@ class AxisItem(QtWidgets.QWidget):
             from the plot entirely. If False, it will just be unlinked
             from this axis., by default False.
         """
-        old_axis_name = self.source.name
-
-        unlink_method = self.plot.plotItem.unlinkDataFromAxis
-
-        signature = inspect.signature(unlink_method)
-
-        if len(signature.parameters) > 1:
-            self.plot.plotItem.unlinkDataFromAxis(curve_item.source, old_axis_name)
-        else:
-            self.plot.plotItem.unlinkDataFromAxis(curve_item.source)
-
-        axis = self.plot.plotItem.getAxis(old_axis_name)
-        if axis is not None:
-            old_view = axis.linkedView()
-            if old_view is not None and hasattr(old_view, "removeItem"):
-                old_view.removeItem(curve_item.source)
-
-        if self.layout().indexOf(curve_item) != -1:
-            self.layout().removeWidget(curve_item)
-        curve_item.setParent(None)
+        curve_item.curve_deleted.disconnect()
+        self.layout().removeWidget(curve_item)
+        self.plot.plotItem.unlinkDataFromAxis(curve_item.source)
 
         if delete_curve:
             curve_item.close()
@@ -760,18 +742,9 @@ class AxisItem(QtWidgets.QWidget):
         curve_item : CurveItem
             The CurveItem to be added to this axis.
         """
-        current_axis = getattr(curve_item.source, "y_axis_name", None)
-        if current_axis and current_axis != self.source.name:
-            unlink_method = self.plot.plotItem.unlinkDataFromAxis
-            signature = inspect.signature(unlink_method)
-
-            if len(signature.parameters) > 1 and hasattr(self.plot.plotItem, "unlinkDataFromAxis"):
-                self.plot.plotItem.unlinkDataFromAxis(curve_item.source, current_axis)
-
-        if hasattr(self.plot.plotItem, "linkDataToAxis"):
-            self.plot.plotItem.linkDataToAxis(curve_item.source, self.source.name)
-
-        curve_item.source.y_axis_name = self.source.name
+        # Need to link curve to axis before setting y_axis_name on curve
+        self.plot.plotItem.linkDataToAxis(curve_item.source, self.name)
+        curve_item.source.y_axis_name = self.name
 
         curve_item.curve_deleted.connect(lambda curve: self.handle_curve_deleted(curve))
         curve_item.active_toggle.setCheckState(self.active_toggle.checkState())
