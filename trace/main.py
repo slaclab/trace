@@ -335,8 +335,15 @@ class TraceDisplay(Display):
         if settings_icon:
             self.settings_button.setIcon(settings_icon)
 
-    def configure_app(self, app):
-        """UI changes to be made to the PyDMApplication"""
+    def configure_app(self, app: QApplication) -> None:
+        """UI changes to be made to the PyDMApplication. Hides navigation
+        & status bars, sets up file IO, sets up shortcuts & menus.
+
+        Parameters
+        ----------
+        app : QApplication
+            The instance of the QApplication.
+        """
         # Hide navigation bar by default (can be shown in menu bar)
         app.main_window.toggle_nav_bar(False)
         app.main_window.ui.actionShow_Navigation_Bar.setChecked(False)
@@ -366,7 +373,19 @@ class TraceDisplay(Display):
         menu_bar.insertMenu(first_menu, trace_menu)
 
     def construct_trace_menu(self, parent: QMenuBar) -> QMenu:
-        """Create the menu for the application."""
+        """Create the menu for the application. This includes actions for
+        file IO, saving to the E-Log, opening tools, and setting the app theme.
+
+        Parameters
+        ----------
+        parent : QMenuBar
+            The menu bar that the Trace menu will be a part of.
+
+        Returns
+        -------
+        QMenu
+            The Trace menu consisting of actions for configuring the app.
+        """
         menu = QMenu("Trace", parent)
         save = menu.addAction("Save", self.file_handler.save_file)
         save.setShortcut(QKeySequence("Ctrl+S"))
@@ -440,7 +459,11 @@ class TraceDisplay(Display):
     def elog_button_clicked(self) -> bool:
         """Takes a snapshot of the plot and posts it to the Elog API.
 
-        :return: True if the post was successful, False otherwise."""
+        Returns
+        -------
+        bool
+            True if the post was successful, False otherwise.
+        """
         # Test if API is reachable
         status_code, _ = get_user()
         if status_code != 200:
@@ -513,7 +536,14 @@ class TraceDisplay(Display):
 
     @Slot(tuple)
     def set_plot_timerange(self, timerange: tuple[float, float]) -> None:
-        """Set the plot's timerange to the given start and end datetimes."""
+        """Set the plot's timerange to the given start and end datetimes.
+
+        Parameters
+        ----------
+        timerange : tuple[float, float]
+            The new time range for the plot to show. Index 0 is the
+            timestamp on the left side of the plot, index 1 on the right.
+        """
         self.disable_auto_scroll_button.click()
         self.plot.setXRange(*timerange)
         logger.debug(f"Plot timerange set to {timerange[0]} - {timerange[1]}")
