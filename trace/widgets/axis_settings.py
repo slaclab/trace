@@ -48,7 +48,7 @@ class AxisSettingsModal(QWidget):
         self.curve_palette_button = QPushButton("Select")
         self.curve_palette_button.clicked.connect(self.palette_modal.show)
         self.palette_modal.sig_palette_changed.connect(self.sig_curve_palette_changed.emit)
-        palette_row = SettingsRowItem(self, "  Curve Palette", self.curve_palette_button)
+        palette_row = SettingsRowItem(self, "Curve Palette", self.curve_palette_button)
         main_layout.addLayout(palette_row)
 
         self.trace_display = self.parent()
