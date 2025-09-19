@@ -19,8 +19,7 @@ from qtpy.QtWidgets import (
 from pydm.widgets import PyDMArchiverTimePlot
 
 from config import logger
-from widgets import ColorButton, SettingsTitle, SettingsRowItem
-from widgets.curve_color_palette_modal import CurveColorPaletteModal
+from widgets import ColorButton, SettingsTitle, SettingsRowItem, CurveColorPaletteModal
 
 
 class PlotSettingsModal(QWidget):

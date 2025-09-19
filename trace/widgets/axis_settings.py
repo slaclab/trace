@@ -6,8 +6,7 @@ from pydm.widgets import PyDMArchiverTimePlot
 from pydm.widgets.baseplot import BasePlotAxisItem
 
 from config import logger
-from widgets import SettingsTitle, SettingsRowItem
-from widgets.curve_color_palette_modal import CurveColorPaletteModal
+from widgets import SettingsTitle, SettingsRowItem, CurveColorPaletteModal
 
 
 class AxisSettingsModal(QWidget):
