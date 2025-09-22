@@ -47,6 +47,7 @@ class TraceDisplay(Display):
     posting.
 
     """
+
     gridline_opacity_change = Signal(int)
     set_all_y_axis_gridlines = Signal(bool)
 
@@ -858,6 +859,7 @@ class BreakerLabel(QLabel):
     Displays a bold vertical bar character to separate adjacent labels.
 
     """
+
     breaker_font = QFont()
     breaker_font.setBold(True)
     breaker_font.setPointSize(12)
