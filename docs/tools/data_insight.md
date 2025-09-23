@@ -3,8 +3,6 @@
 ### Overview
 The Data Insight Tool (DIT) lets you inspect and export all data for a single curve on the current plot within the plot's time range. It aggregates both live samples already shown on the plot and archived samples fetched from the Archiver Appliance for the same time window.
 
-The tool is implemented in `trace/widgets/data_insight_tool.py` and appears as a separate window attached to a `PyDMArchiverTimePlot`.
-
 ### What you can do
 - **View data**: See a combined table of timestamps, values, severities, and whether each row came from Live or Archive.
 - **Inspect metadata**: See the curve's unit and description (fetched from `<PV>.EGU` and `<PV>.DESC`).
@@ -16,7 +14,7 @@ The tool is implemented in `trace/widgets/data_insight_tool.py` and appears as a
 - To fetch archived data, set the environment variable `PYDM_ARCHIVER_URL` to your Archiver Appliance URL (for example, `http://lcls-archapp.slac.stanford.edu`). Without this, only live data already in the plot will be shown.
 
 ### Open the tool
-Open the Data Insight Tool from the application UI when a plot is present (for example, via a Tools menu) so it attaches to the active `PyDMArchiverTimePlot`. The window will appear with:
+The tool can be opened with from the Trace menu or with `Ctrl+D`. It appears as a separate window alongside Trace. The tool has these features:
 
 - A PV selection dropdown
 - A loading indicator
