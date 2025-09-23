@@ -27,6 +27,8 @@ jobs:
           pip install -r docs-requirements.txt
 
       - name: Build Docs
+        env:
+          MKDOCS_GIT_COMMITTERS_APIKEY: ${{ secrets.GITHUB_TOKEN }}
         run: mkdocs build --strict --verbose
 
       - name: Deploy to gh-pages
