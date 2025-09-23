@@ -79,6 +79,7 @@ markdown_extensions:
           - images/
   - pymdownx.highlight
   - pymdownx.superfences
+  - pymdownx.blocks.caption
 
 # Page Tree
 nav:

@@ -39,9 +39,9 @@ The tool can be opened with from the Trace menu or with `Ctrl+D`. It appears as 
 <figure markdown="span">
   ![Data Insight Tool populated](../images/dit_data.png){ width=500 }
 </figure>
-<p style="text-align:center; font-style:italic;">
-  DIT with data loaded
-</p>
+/// caption
+DIT with data loaded
+///
 
 ### Exporting data
 Click **Export to File** to save the displayed dataset. Choose a filename and one of the formats:
@@ -54,9 +54,9 @@ Click **Export to File** to save the displayed dataset. Choose a filename and on
 <figure markdown="span">
   ![Export dialog](../images/dit_export.png){ width=500 }
 </figure>
-<p style="text-align:center; font-style:italic;">
-  Export dialog with format options
-</p>
+/// caption
+Export dialog with format options
+///
 
 Export behavior:
 

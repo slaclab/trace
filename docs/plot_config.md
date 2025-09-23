@@ -7,10 +7,9 @@ Access the Plot Settings by clicking the gear icon (:octicons-gear-16:) in the t
 <figure markdown="span">
   ![Plot Settings Modal](images/plot_settings_modal.png){ width=300 }
 </figure>
-
-<p style="text-align:center; font-style:italic;">
-  The Plot Settings modal showing all available configuration options
-</p>
+/// caption
+The Plot Settings modal showing all available configuration options
+///
 
 ## Basic Settings
 
