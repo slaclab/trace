@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 from qtpy.QtGui import QKeyEvent
 from qtpy.QtCore import Qt, Slot, Signal, QObject, QModelIndex, QAbstractTableModel
@@ -17,14 +18,23 @@ from qtpy.QtWidgets import (
 
 
 class FormulaDialog(QDialog):
-    """Formula Dialog - when a user right clicks on a row in the list of
-    curves, they have the option to input a formula. They could opt to type it
-    instead, but this opens a box that is a nicer UI for inputting a formula.
+    """Dialog for creating and editing formula curves.
+
+    This dialog provides a user-friendly interface for creating mathematical
+    formulas using existing curves as variables. It includes a calculator-style
+    button layout and a table showing available curve variables.
     """
 
     formula_accepted = Signal(str)
 
-    def __init__(self, parent: QObject) -> None:
+    def __init__(self, parent: QObject):
+        """Initialize the formula dialog.
+
+        Parameters
+        ----------
+        parent : QObject
+            The parent object
+        """
         super().__init__(parent)
         self.setWindowTitle("Formula Input")
 
@@ -91,8 +101,12 @@ class FormulaDialog(QDialog):
         layout.addWidget(ok_button)
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        """Special key press tracker. If enter or return is pressed the formula
-        dialog submits the formula.
+        """Handle key press events for formula submission.
+
+        Parameters
+        ----------
+        e : QKeyEvent
+            The key press event
         """
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.accept_formula()
@@ -109,9 +123,7 @@ class FormulaDialog(QDialog):
 
     @Slot()
     def accept_formula(self) -> None:
-        """Set the curve in the curve model to use the entered formula. If the
-        formula is invalid, then the dialog box is closed.
-        """
+        """Accept the entered formula and emit the formula_accepted signal."""
         formula = "f://" + self.field.text()
         formula = re.sub(r"\s+", "", formula)
 
@@ -120,8 +132,14 @@ class FormulaDialog(QDialog):
         self.accept()
 
     @Slot(QModelIndex)
-    def insert_pv_key(self, index):
-        """Insert the variable name into the formula field when a row is double-clicked"""
+    def insert_pv_key(self, index: QModelIndex) -> None:
+        """Insert the variable name into the formula field when a row is double-clicked.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The index of the double-clicked row
+        """
         if index.isValid():
             key = self.curve_model.row_to_key(index.row())
             if key:
@@ -135,22 +153,51 @@ class FormulaDialog(QDialog):
 
 
 class CurveModel(QAbstractTableModel):
+    """Table model for displaying available curves in the formula dialog.
+
+    This model provides a two-column view of available curves with their
+    variable names and curve names for use in formula creation.
+    """
+
     curve_deleted = Signal(object)
 
     def __init__(self, control_panel):
+        """Initialize the curve model.
+
+        Parameters
+        ----------
+        control_panel : ControlPanel
+            The control panel containing the curve dictionary
+        """
         super().__init__()
         self.control_panel = control_panel
         self._headers = ["Variable Name", "Curve Name"]
 
-    def rowCount(self, parent=QModelIndex()):
+    def rowCount(self, parent=QModelIndex()) -> int:
+        """Return the number of rows in the model."""
         if hasattr(self.control_panel, "curve_dict"):
             return len(self.control_panel.curve_dict)
         return 0
 
-    def columnCount(self, parent=QModelIndex()):
+    def columnCount(self, parent=QModelIndex()) -> int:
+        """Return the number of columns in the model."""
         return len(self._headers)
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole) -> Any:
+        """Return the data for the given index and role.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            The model index
+        role : int
+            The data role
+
+        Returns
+        -------
+        Any
+            The data for the given index and role
+        """
         if not index.isValid():
             return None
 
@@ -182,18 +229,39 @@ class CurveModel(QAbstractTableModel):
                 return str(curve)
         return None
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
+    def headerData(self, section, orientation, role=Qt.DisplayRole) -> Any:
+        """Return the header data for the given section.
+
+        Parameters
+        ----------
+        section : int
+            The section index
+        orientation : Qt.Orientation
+            The orientation (horizontal or vertical)
+        role : int
+            The data role
+
+        Returns
+        -------
+        Any
+            The header data
+        """
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._headers[section]
         return None
 
     def row_to_key(self, row: int) -> str:
-        """If the given row index is valid, return the key for that row.
+        """Get the variable key for the given row index.
 
         Parameters
         ----------
         row : int
             Row index for the requested key.
+
+        Returns
+        -------
+        str or None
+            The variable key for the row, or None if invalid
         """
         if not (0 <= row < self.rowCount()):
             return None
@@ -202,7 +270,7 @@ class CurveModel(QAbstractTableModel):
         keys = list(curve_dict.keys())
         return keys[row]
 
-    def refresh(self):
-        """Force a refresh of the model data"""
+    def refresh(self) -> None:
+        """Force a refresh of the model data."""
         self.beginResetModel()
         self.endResetModel()
