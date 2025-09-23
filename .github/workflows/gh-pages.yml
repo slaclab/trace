@@ -1,6 +1,6 @@
 # This workflow will publish a new version of the documentation to the gh-pages branch
 
-name: Publish Documentation
+name: Build Documentation
 
 on:
   pull_request:

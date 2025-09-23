@@ -50,7 +50,7 @@ plugins:
             docstring_options:
               ignore_init_summary: true
             merge_init_into_class: true
-  # - git-revision-date-localized:
+  - git-revision-date-localized:
       exclude:
         - index.md
       enable_creation_date: true
