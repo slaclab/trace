@@ -3,9 +3,10 @@
 name: Publish Documentation
 
 on:
+  pull_request:
+    branches: [ "main" ]
   push:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
   deploy:
@@ -26,9 +27,10 @@ jobs:
           pip install -r docs-requirements.txt
 
       - name: Build Docs
-        run: mkdocs build
+        run: mkdocs build --strict --verbose
 
       - name: Deploy to gh-pages
+        if: github.event_name == 'push'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
