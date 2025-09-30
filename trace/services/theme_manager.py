@@ -34,11 +34,9 @@ class IconColors:
 
 
 class ThemeManager(QObject):
-    """
-    theme manager for Qt applications with icon support.
-
-    Manages both Qt palette themes and icon colors, providing a unified
-    interface for light/dark mode switching with persistent settings.
+    """Theme manager for Qt applications with icon support. It manages
+    both Qt palette themes and icon colors, providing a unified interface
+    for light/dark mode switching with persistent settings.
 
     Attributes
     ----------

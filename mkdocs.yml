@@ -111,6 +111,7 @@ nav:
     - Widgets:
       - Control Panel: reference/widgets/control_panel.md
       - Settings Popups: reference/widgets/settings_popups.md
+      - Formula Dialog: reference/widgets/formula_dialog.md
       - Archive Search: reference/widgets/archive_search.md
       - Data Insight Tool: reference/widgets/data_insight_tool.md
       - E-Log Post Modal: reference/widgets/elog_post_modal.md
@@ -122,3 +123,4 @@ nav:
     - Services:
       - E-Log Service: reference/services/elog_client.md
       - Theme Manager: reference/services/theme_manager.md
+      - Formula Validation: reference/services/formula_validation.md

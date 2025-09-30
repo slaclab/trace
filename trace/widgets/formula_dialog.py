@@ -18,11 +18,10 @@ from qtpy.QtWidgets import (
 
 
 class FormulaDialog(QDialog):
-    """Dialog for creating and editing formula curves.
-
-    This dialog provides a user-friendly interface for creating mathematical
-    formulas using existing curves as variables. It includes a calculator-style
-    button layout and a table showing available curve variables.
+    """A QDialog that provides a user-friendly interface for creating
+    mathematical formulas using existing curves as variables. It includes
+    a calculator-style button layout and a table showing available curve
+    variables.
     """
 
     formula_accepted = Signal(str)
@@ -154,8 +153,7 @@ class FormulaDialog(QDialog):
 
 class CurveModel(QAbstractTableModel):
     """Table model for displaying available curves in the formula dialog.
-
-    This model provides a two-column view of available curves with their
+    It provides a two-column view of available curves with their
     variable names and curve names for use in formula creation.
     """
 
