@@ -75,7 +75,7 @@ class ThemeManager(QObject):
         parent : QObject | None, optional
             Parent QObject for memory management, by default None.
 
-        Example
+        Examples
         --------
         >>> app = QApplication(sys.argv)
         >>> theme_manager = IntegratedThemeManager(app)
@@ -208,7 +208,7 @@ class ThemeManager(QObject):
         Switches from light to dark or dark to light, whichever is opposite
         to the current theme.
 
-        Example
+        Examples
         --------
         >>> theme_manager.toggle_theme()  # Switches to opposite theme
         """
@@ -241,7 +241,7 @@ class ThemeManager(QObject):
         ColorHex
             Hex color string (e.g., '#ffffff') appropriate for the current theme.
 
-        Example
+        Examples
         --------
         >>> color = theme_manager.get_icon_color(IconColors.PRIMARY)
         >>> warning_color = theme_manager.get_icon_color(IconColors.WARNING)
@@ -275,7 +275,7 @@ class ThemeManager(QObject):
         QIcon | None
             The created icon, or None if qtawesome is not available.
 
-        Example
+        Examples
         --------
         >>> icon = theme_manager.create_icon('fa.home')
         >>> warning_icon = theme_manager.create_icon('fa.exclamation-triangle', IconColors.WARNING)
@@ -293,7 +293,7 @@ class ThemeManager(QObject):
         IconColorDict
             Dictionary mapping color type names to hex color strings.
 
-        Example
+        Examples
         --------
         >>> colors = theme_manager.get_all_icon_colors()
         >>> primary_color = colors[IconColors.PRIMARY]

@@ -121,3 +121,4 @@ nav:
       - Time Parser: reference/file_io/time_parser.md
     - Services:
       - E-Log Service: reference/services/elog_client.md
+      - Theme Manager: reference/services/theme_manager.md
