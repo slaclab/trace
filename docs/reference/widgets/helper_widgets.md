@@ -11,6 +11,13 @@ Right-clicking the button will reset the button's color to its "default" color, 
 ::: widgets.color_button
 
 
+## Toggle Switch
+
+The Toggle is a widget that works the same as a checkbox, but is represented as a switch. This looks a bit nicer for the UI.
+
+::: widgets.toggle
+
+
 ## Frozen Table View
 
 The Frozen Table View is an object that will display tabular data while keeping the leftmost column visible on the table at all times. This prevents users from scrolling left-right and hiding the leftmost column.
