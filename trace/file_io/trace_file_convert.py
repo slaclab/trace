@@ -38,6 +38,17 @@ class TraceFileConverter:
     time_re = compile(r"(?:[01]\d|2[0-3])(?::[0-5]\d)(?::[0-5]\d(?:.\d*)?)?")
 
     def __init__(self, input_file: str | Path = "", output_file: str | Path = "") -> None:
+        """Initialize a new converter with optional input and output files.
+
+        Parameters
+        ----------
+        input_file : str | pathlib.Path, optional
+            Path to the file to import/convert. Can be set later via
+            `import_file`. Defaults to an empty string (unset).
+        output_file : str | pathlib.Path, optional
+            Path to the destination Trace file for export. Can be set later via
+            `export_file`. Defaults to an empty string (unset).
+        """
         self.input_file = input_file
         self.output_file = output_file
 
