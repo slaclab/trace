@@ -47,12 +47,18 @@ class ColorButton(QPushButton):
 
     @property
     def color(self) -> QColor:
-        """Return the current color."""
+        """The current color as a QColor."""
         return self._color
 
     @color.setter
     def color(self, color: QColor) -> None:
-        """Set the background color of the button to the selected color."""
+        """Set the background color of the button to the selected color.
+
+        Parameters
+        ----------
+        color : QColor
+            The color to set the button to
+        """
         if color == self._color:
             return
 
@@ -73,8 +79,13 @@ class ColorButton(QPushButton):
     @staticmethod
     def random_color() -> QColor:
         """Pick a random color for the default color of each PV. This
-        function ensures that the color is bright, since it will be on a
-        black background."""
+        function ensures that the color is bright.
+
+        Returns
+        -------
+        QColor
+            A random color that is guaranteed to be "bright"
+        """
         hue = int(360 * random())
         saturation = int(256 * (0.5 + random() / 2.0))
         lightness = int(256 * (0.4 + random() / 5.0))
@@ -84,7 +95,15 @@ class ColorButton(QPushButton):
 
     @staticmethod
     def index_color(index: int) -> QColor:
-        """Returns the color in the color palette at index."""
+        """Returns the color in the color palette at index. If the
+        requested index is larger than the size of the color palette, then
+        the palette is cycled through again, but darker by a factor of 35%.
+
+        Parameters
+        ----------
+        index : int
+            Requested index of color palette
+        """
         modded_index = index % len(color_palette)
         color = color_palette[modded_index]
 
