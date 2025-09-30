@@ -1,5 +1,5 @@
-from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QTableView, QHeaderView, QModelIndex, QAbstractItemView
+from qtpy.QtCore import Qt, QModelIndex
+from qtpy.QtWidgets import QTableView, QHeaderView, QAbstractItemView
 
 
 class FrozenTableView(QTableView):
