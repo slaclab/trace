@@ -47,6 +47,9 @@ plugins:
           paths: [trace]
           options:
             docstring_style: numpy
+            members_order: source
+            show_root_toc_entry: false
+            show_symbol_type_toc: true
             docstring_options:
               ignore_init_summary: true
             merge_init_into_class: true
