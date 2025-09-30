@@ -119,9 +119,9 @@ nav:
     - File IO:
       - File Converter: reference/file_io/trace_file_convert.md
       - File Handler: reference/file_io/file_handler.md
-      - Time Parser: reference/file_io/time_parser.md
     - Services:
       - E-Log Service: reference/services/elog_client.md
       - Theme Manager: reference/services/theme_manager.md
     - Utilities:
       - Formula Validation: reference/utilities/formula_validation.md
+      - Time Parser: reference/utilities/time_parser.md
