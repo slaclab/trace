@@ -35,8 +35,8 @@ class ControlPanel(QtWidgets.QWidget):
         self._curve_dict = {}
         self._next_pv_number = 1
         self._next_formula_number = 1
-        self.curve_palette = "default"
 
+        self.curve_palette = "default"
         if self.theme_manager:
             self.theme_manager.theme_changed.connect(self.on_theme_changed)
 
@@ -533,9 +533,7 @@ class AxisItem(QtWidgets.QWidget):
         else:
             validate_formula(expr_body, allowed_symbols=set())
 
-        index = len(plot._curves)
-        color = ColorButton.index_color(index, palette=self.control_panel.curve_palette)
-
+        color = ColorButton.index_color((len(self.plot._curves)), palette=self.control_panel.curve_palette)
         formula_curve_item = plot.addFormulaChannel(
             formula=formula, name=formula, pvs=var_dict, color=color, useArchiveData=True, yAxisName=self.source.name
         )
@@ -1127,14 +1125,11 @@ class CurveItem(QtWidgets.QWidget):
                 )
             var_dict[var_name] = control_panel._curve_dict[var_name]
 
-        index = len(plot._curves)
-        color = ColorButton.index_color(index, palette=self.control_panel.curve_palette)
-
         new_formula_curve = plot.addFormulaChannel(
             formula=new_formula,
             name=new_formula,
             pvs=var_dict,
-            color=color,
+            color=self.source.color,
             useArchiveData=True,
             yAxisName=axis_item.source.name,
         )
