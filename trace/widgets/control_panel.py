@@ -4,7 +4,11 @@ from qtpy import QtGui, QtCore, QtWidgets
 from qtpy.QtCore import Qt, Slot, QTimer
 
 from pydm.widgets.baseplot import BasePlotAxisItem
-from pydm.widgets.archiver_time_plot import FormulaCurveItem, ArchivePlotCurveItem
+from pydm.widgets.archiver_time_plot import (
+    FormulaCurveItem,
+    ArchivePlotCurveItem,
+    PyDMArchiverTimePlot,
+)
 
 from config import logger
 from widgets import (
@@ -23,9 +27,23 @@ FORMULA_KEY_PREFIX = "fx"
 
 
 class ControlPanel(QtWidgets.QWidget):
+    """Main control panel widget for managing plot axes and curves.
+
+    This widget provides the primary interface for adding, configuring, and
+    managing plot axes and their associated curves. It includes functionality
+    for PV search, formula creation, and curve management.
+    """
+
     curve_list_changed = QtCore.Signal()
 
     def __init__(self, theme_manager: ThemeManager = None):
+        """Initialize the control panel.
+
+        Parameters
+        ----------
+        theme_manager : ThemeManager, optional
+            The theme manager for handling UI theming
+        """
         super().__init__()
         self.theme_manager = theme_manager
         self.setLayout(QtWidgets.QVBoxLayout())
@@ -81,8 +99,8 @@ class ControlPanel(QtWidgets.QWidget):
 
         self.update_icons()
 
-    def update_icons(self):
-        """Update all icons based on current theme"""
+    def update_icons(self) -> None:
+        """Update all icons based on current theme."""
         if self.theme_manager:
             calc_icon = self.theme_manager.create_icon("fa6s.calculator", IconColors.PRIMARY)
             if calc_icon:
@@ -91,22 +109,31 @@ class ControlPanel(QtWidgets.QWidget):
             if search_icon:
                 self.search_button.setIcon(search_icon)
 
-    def on_theme_changed(self, theme: Theme):
-        """Handle theme changes by updating icons"""
+    def on_theme_changed(self, theme: Theme) -> None:
+        """Handle theme changes by updating icons.
+
+        Parameters
+        ----------
+        theme : Theme
+            The new theme, unused
+        """
         self.update_icons()
 
     def minimumSizeHint(self) -> QtCore.QSize:
+        """Return the minimum size hint for the control panel."""
         inner_size = self.axis_list.minimumSize()
         buffer = self.pv_line_edit.font().pointSize() * 3
         return QtCore.QSize(inner_size.width() + buffer, inner_size.height())
 
     def add_curve_from_line_edit(self) -> None:
+        """Add a curve from the PV line edit input."""
         pv = self.pv_line_edit.text()
         self.add_curve(pv)
         self.pv_line_edit.clear()
 
     @property
-    def plot(self):
+    def plot(self) -> PyDMArchiverTimePlot:
+        """Get the associated plot widget."""
         if not self._plot:
             parent = self.parent()
             while not hasattr(parent, "plot"):
@@ -115,10 +142,18 @@ class ControlPanel(QtWidgets.QWidget):
         return self._plot
 
     @plot.setter
-    def plot(self, plot):
+    def plot(self, plot: PyDMArchiverTimePlot) -> None:
+        """Set the associated plot widget.
+
+        Parameters
+        ----------
+        plot : PyDMArchiverTimePlot
+            The plot widget to associate with this control panel
+        """
         self._plot = plot
 
     def search_pv(self) -> None:
+        """Show or activate the PV search widget."""
         if not self.archive_search.isVisible():
             self.archive_search.show()
         else:
@@ -135,12 +170,18 @@ class ControlPanel(QtWidgets.QWidget):
 
     @QtCore.Slot(str)
     def handle_formula_accepted(self, formula: str) -> None:
-        """Handle the formula accepted from the formula dialog."""
+        """Handle the formula accepted from the formula dialog.
+
+        Parameters
+        ----------
+        formula : str
+            The accepted formula string
+        """
         self.add_curve(formula)
         self.cleanup_duplicate_curves()
 
-    def cleanup_duplicate_curves(self):
-        """Remove duplicate entries in curve dictionary"""
+    def cleanup_duplicate_curves(self) -> None:
+        """Remove duplicate entries in curve dictionary."""
         seen_curves = {}
         to_remove = []
 
@@ -158,8 +199,8 @@ class ControlPanel(QtWidgets.QWidget):
             self.curve_list_changed.emit()
 
     @property
-    def curve_dict(self):
-        """Return dictionary of curves with PV keys"""
+    def curve_dict(self) -> dict:
+        """Return dictionary of curves with PV keys."""
         return self._curve_dict
 
     def _generate_curve_key(self):
@@ -185,6 +226,13 @@ class ControlPanel(QtWidgets.QWidget):
                 key = None
 
     def add_curves(self, pvs: list[str]) -> None:
+        """Add multiple curves from a list of PV names.
+
+        Parameters
+        ----------
+        pvs : list[str]
+            List of PV names to add as curves
+        """
         for pv in pvs:
             self.add_curve(pv)
 
@@ -351,11 +399,29 @@ class ControlPanel(QtWidgets.QWidget):
 
 
 class AxisItem(QtWidgets.QWidget):
+    """Widget for managing a single plot axis and its associated curves.
+
+    This widget provides controls for axis configuration including name, range,
+    auto-scaling, and curve management. It supports drag-and-drop for curve
+    reordering and moving curves between axes.
+    """
+
     curves_list_changed = QtCore.Signal()
 
     def __init__(
         self, plot_axis_item: BasePlotAxisItem, control_panel: ControlPanel = None, theme_manager: ThemeManager = None
     ):
+        """Initialize the axis item widget.
+
+        Parameters
+        ----------
+        plot_axis_item : BasePlotAxisItem
+            The plot axis item to manage
+        control_panel : ControlPanel, optional
+            Reference to the parent control panel
+        theme_manager : ThemeManager, optional
+            The theme manager for UI theming
+        """
         super().__init__()
         self.source = plot_axis_item
         self.control_panel_ref = control_panel
@@ -805,10 +871,26 @@ class DragHandle(QtWidgets.QPushButton):
 
 
 class CurveItem(QtWidgets.QWidget):
+    """Widget for managing a single curve on the plot.
+
+    This widget provides controls for curve configuration including name, color,
+    visibility, and connection status. It supports drag-and-drop for moving
+    curves between axes and formula editing for formula curves.
+    """
+
     curve_deleted = QtCore.Signal(object)
     unit_changed = QtCore.Signal(str)
 
-    def __init__(self, axis_item: AxisItem, source: ArchivePlotCurveItem | FormulaCurveItem) -> None:
+    def __init__(self, axis_item: AxisItem, source: ArchivePlotCurveItem | FormulaCurveItem):
+        """Initialize the curve item widget.
+
+        Parameters
+        ----------
+        axis_item : AxisItem
+            The parent axis item
+        source : ArchivePlotCurveItem or FormulaCurveItem
+            The plot curve item to manage
+        """
         super().__init__()
         self._axis_item = axis_item
         self.source = source
@@ -995,12 +1077,18 @@ class CurveItem(QtWidgets.QWidget):
             drag.exec()
             self.show()  # show curve after drag, even if it ended outside of an axis
 
-    def is_formula_curve(self):
-        """Check if this is a formula curve"""
+    def is_formula_curve(self) -> bool:
+        """Check if this is a formula curve.
+
+        Returns
+        -------
+        bool
+            True if this is a formula curve, False otherwise
+        """
         return isinstance(self.source, FormulaCurveItem)
 
-    def update_formula(self):
-        """Handle formula updates when user edits the formula text"""
+    def update_formula(self) -> None:
+        """Handle formula updates when user edits the formula text."""
         if hasattr(self, "_updating_formula") and self._updating_formula:
             return
 

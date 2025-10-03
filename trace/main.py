@@ -40,10 +40,34 @@ DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as in
 
 
 class TraceDisplay(Display):
+    """Main display widget for the Trace application.
+
+    This class builds and manages the user interface, including the plot, control
+    panel, menus, theme handling, and interactions such as file I/O and E-Log
+    posting.
+
+    """
+
     gridline_opacity_change = Signal(int)
     set_all_y_axis_gridlines = Signal(bool)
 
     def __init__(self, parent=None, args=None, macros=None) -> None:
+        """Initialize the Trace display and construct the UI.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            The parent widget, by default None.
+        args : list[str] | None, optional
+            Command-line style arguments passed in by the host application.
+        macros : dict | None, optional
+            PyDM-style macro substitutions that can influence startup behavior.
+
+        Returns
+        -------
+        None
+            This method initializes the widget in place.
+        """
         super(TraceDisplay, self).__init__(parent=parent, args=args, macros=macros, ui_filename=None)
 
         app = QApplication.instance()
@@ -72,13 +96,33 @@ class TraceDisplay(Display):
 
     @property
     def gridline_opacity(self) -> int:
-        """Get the current gridline opacity value from the plot settings"""
+        """Get the current gridline opacity value from the plot settings.
+
+        Returns
+        -------
+        int
+            The alpha value (0-255) used for y-axis gridline opacity.
+        """
         return self.plot_settings.gridline_opacity
 
-    def minimumSizeHint(self):
+    def minimumSizeHint(self) -> QSize:
+        """Return the minimum recommended size for the widget.
+
+        Returns
+        -------
+        QSize
+            The minimum size hint used by Qt layouts.
+        """
         return QSize(700, 350)
 
     def build_ui(self) -> None:
+        """Set up the main UI for the application.
+
+        Returns
+        -------
+        None
+            Constructs and lays out child widgets.
+        """
         # Set window title
         self.setWindowTitle("Trace")
         # Create main layout
@@ -106,7 +150,20 @@ class TraceDisplay(Display):
         footer_widget = self.build_footer(self)
         main_layout.addWidget(footer_widget)
 
-    def build_plot_side(self, parent):
+    def build_plot_side(self, parent: QWidget) -> QWidget:
+        """Build the plot side of the application, including the toolbar
+        and plot widget.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget for the plot side.
+
+        Returns
+        -------
+        QWidget
+            Returns the plot side widget.
+        """
         plot_side_widget = QWidget(parent)
         plot_side_layout = QVBoxLayout()
         plot_side_layout.setContentsMargins(0, 0, 8, 0)
@@ -146,7 +203,20 @@ class TraceDisplay(Display):
 
         return plot_side_widget
 
-    def build_toolbar(self, parent):
+    def build_toolbar(self, parent: QWidget) -> QWidget:
+        """Build the toolbar for the plotting section of the application. This
+        includes buttons for setting the autoscroll timespan.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget for the toolbar.
+
+        Returns
+        -------
+        QWidget
+            Returns the toolbar widget.
+        """
         toolbar_widget = QWidget(parent)
         # Create tool layout
         tool_layout = QHBoxLayout()
@@ -161,7 +231,20 @@ class TraceDisplay(Display):
 
         return toolbar_widget
 
-    def build_timespan_buttons(self, parent: QWidget):
+    def build_timespan_buttons(self, parent: QWidget) -> QWidget:
+        """Build the timespan buttons for the toolbar. This includes buttons
+        for users to set enable autoscrolling for various timespans.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget for the timespan buttons.
+
+        Returns
+        -------
+        QWidget
+            Returns the timespan buttons widget.
+        """
         timespan_button_widget = QWidget(parent)
         timespan_button_layout = QHBoxLayout()
         timespan_button_layout.setContentsMargins(0, 0, 0, 0)
@@ -193,7 +276,21 @@ class TraceDisplay(Display):
 
         return timespan_button_widget
 
-    def build_footer(self, parent: QWidget):
+    def build_footer(self, parent: QWidget) -> QWidget:
+        """Build the footer for the application. This displays the name
+        of the server the application is running on, the archiver URL,
+        and a timestamp PV.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget for the footer.
+
+        Returns
+        -------
+        QWidget
+            The footer widget to be added to a layout.
+        """
         self.footer_label_font = QFont()
         self.footer_label_font.setPointSize(8)
 
@@ -234,8 +331,20 @@ class TraceDisplay(Display):
 
         return footer_widget
 
+    @Slot(str)
     def set_file_indicator(self, file_path: str) -> None:
-        """Set the file indicator label to the given file path."""
+        """Set the file indicator label to the given file path.
+
+        Parameters
+        ----------
+        file_path : str
+            The file path to set the label to.
+
+        Returns
+        -------
+        None
+            Updates the footer to indicate the currently loaded file.
+        """
         if not file_path:
             return
         filename = os.path.basename(file_path)
@@ -248,12 +357,29 @@ class TraceDisplay(Display):
             self.file_label.setToolTip("Currently loaded file")
             self.footer_info_widget.layout().addWidget(self.file_label)
 
-    def setup_icons(self):
-        """Set up all icons after theme manager is initialized"""
+    def setup_icons(self) -> None:
+        """Set up all icons after the theme manager is initialized.
+
+        Returns
+        -------
+        None
+            Updates icon assets for current theme.
+        """
         self.settings_button.setIcon(self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY))
 
-    def on_theme_changed(self, theme: Theme):
-        """Handle theme changes - update icons and button text"""
+    def on_theme_changed(self, theme: Theme) -> None:
+        """Handle theme changes - update icons and button text
+
+        Parameters
+        ----------
+        theme : Theme
+            The new theme that was set.
+
+        Returns
+        -------
+        None
+            Applies UI updates relevant to the selected theme.
+        """
         if theme == Theme.DARK:
             self.theme_toggle_button.setText("Light Mode")
             icon = self.theme_manager.create_icon("fa.sun-o", IconColors.PRIMARY)
@@ -268,8 +394,20 @@ class TraceDisplay(Display):
         if settings_icon:
             self.settings_button.setIcon(settings_icon)
 
-    def configure_app(self, app):
-        """UI changes to be made to the PyDMApplication"""
+    def configure_app(self, app: QApplication) -> None:
+        """UI changes to be made to the PyDMApplication. Hides navigation
+        & status bars, sets up file IO, sets up shortcuts & menus.
+
+        Parameters
+        ----------
+        app : QApplication
+            The instance of the QApplication.
+
+        Returns
+        -------
+        None
+            Applies application-wide configuration.
+        """
         # Hide navigation bar by default (can be shown in menu bar)
         app.main_window.toggle_nav_bar(False)
         app.main_window.ui.actionShow_Navigation_Bar.setChecked(False)
@@ -299,7 +437,19 @@ class TraceDisplay(Display):
         menu_bar.insertMenu(first_menu, trace_menu)
 
     def construct_trace_menu(self, parent: QMenuBar) -> QMenu:
-        """Create the menu for the application."""
+        """Create the menu for the application. This includes actions for
+        file IO, saving to the E-Log, opening tools, and setting the app theme.
+
+        Parameters
+        ----------
+        parent : QMenuBar
+            The menu bar that the Trace menu will be a part of.
+
+        Returns
+        -------
+        QMenu
+            The Trace menu consisting of actions for configuring the app.
+        """
         menu = QMenu("Trace", parent)
         save = menu.addAction("Save", self.file_handler.save_file)
         save.setShortcut(QKeySequence("Ctrl+S"))
@@ -332,7 +482,13 @@ class TraceDisplay(Display):
         return menu
 
     def toggle_theme(self):
-        """Toggle between dark and light mode."""
+        """Toggle between dark and light mode.
+
+        Returns
+        -------
+        None
+            Applies the selected theme and refreshes the UI.
+        """
         if self.is_dark_mode:
             self.theme_manager.set_theme(Theme.LIGHT)
             self.theme_action.setText("Switch to Dark Mode")
@@ -352,7 +508,13 @@ class TraceDisplay(Display):
     @Slot()
     def save_plot_image(self) -> None:
         """Saves current plot as an image. Opens file dialog to allow user to
-        set custom location."""
+        set custom location.
+
+        Returns
+        -------
+        None
+            Writes the exported image to disk when a path is selected.
+        """
         exporter = ImageExporter(self.plot.plotItem)
         default_filename = datetime.now().strftime(f"{getuser()}_trace_%Y%m%d_%H%M%S.png")
         usr_home_dir = os.path.expanduser("~")
@@ -373,7 +535,11 @@ class TraceDisplay(Display):
     def elog_button_clicked(self) -> bool:
         """Takes a snapshot of the plot and posts it to the Elog API.
 
-        :return: True if the post was successful, False otherwise."""
+        Returns
+        -------
+        bool
+            True if the post was successful, False otherwise.
+        """
         # Test if API is reachable
         status_code, _ = get_user()
         if status_code != 200:
@@ -437,7 +603,13 @@ class TraceDisplay(Display):
 
     @Slot()
     def fetch_archive(self) -> None:
-        """Triggers a fetch to the archive"""
+        """Trigger a fetch of data from the EPICS Archiver Appliance.
+
+        Returns
+        -------
+        None
+            Queues a data request if one is not already pending.
+        """
         if not (self.plot._archive_request_queued):
             logger.info("Requesting data from archiver")
             self.plot.requestDataFromArchiver()
@@ -446,7 +618,19 @@ class TraceDisplay(Display):
 
     @Slot(tuple)
     def set_plot_timerange(self, timerange: tuple[float, float]) -> None:
-        """Set the plot's timerange to the given start and end datetimes."""
+        """Set the plot's timerange to the given start and end datetimes.
+
+        Parameters
+        ----------
+        timerange : tuple[float, float]
+            The new time range for the plot to show. Index 0 is the
+            timestamp on the left side of the plot, index 1 on the right.
+
+        Returns
+        -------
+        None
+            Sets the x-axis view range of the plot.
+        """
         self.disable_auto_scroll_button.click()
         self.plot.setXRange(*timerange)
         logger.debug(f"Plot timerange set to {timerange[0]} - {timerange[1]}")
@@ -455,10 +639,27 @@ class TraceDisplay(Display):
     @Slot(float)
     @Slot(QAbstractButton, float)
     def set_auto_scroll_span(self, arg1=None, arg2=None) -> None:
-        """Slot to be called when a timespan setting button is pressed.
-        This will enable autoscrolling along the x-axis and disable mouse
-        controls. If the "Cursor" button is pressed, then autoscrolling is
-        disabled and mouse controls are enabled."""
+        """Update the auto-scroll timespan based on UI interaction or input.
+
+        This enables autoscrolling of the x-axis for the selected span and
+        disables manual mouse controls. When the special "Disable AutoScroll"
+        button is selected, autoscrolling is turned off and mouse controls are
+        re-enabled.
+
+        Parameters
+        ----------
+        arg1 : QAbstractButton | float | int | None, optional
+            The toggled timespan button or an explicit timespan value in
+            seconds. If None, the currently checked button is used.
+        arg2 : float | None, optional
+            The checked state flag passed by Qt when connected to a button
+            toggled signal; ignored unless `arg1` is a button.
+
+        Returns
+        -------
+        None
+            Applies the autoscroll configuration to the plot.
+        """
         if isinstance(arg1, QAbstractButton):
             if not arg2:
                 return
@@ -480,7 +681,18 @@ class TraceDisplay(Display):
 
     @Slot(int)
     def set_auto_scroll_interval(self, inteval: int) -> None:
-        """Set the auto scroll interval for the plot"""
+        """Set the auto-scroll refresh interval for the plot.
+
+        Parameters
+        ----------
+        inteval : int
+            The refresh interval in milliseconds.
+
+        Returns
+        -------
+        None
+            Updates the plot's autoscroll refresh rate.
+        """
         timespan = self.timespan_buttons.checkedId()
         enable_scroll = timespan != DISABLE_AUTO_SCROLL
 
@@ -489,6 +701,21 @@ class TraceDisplay(Display):
     @Slot(bool)
     @Slot(bool, float)
     def autoScroll(self, enable: bool, timespan: float = None):
+        """Enable or disable autoscroll, optionally specifying a timespan.
+
+        Parameters
+        ----------
+        enable : bool
+            Whether autoscroll should be enabled.
+        timespan : float | None, optional
+            The x-axis span, in seconds, to keep visible while autoscrolling.
+            If None, uses the currently selected timespan button.
+
+        Returns
+        -------
+        None
+            Configures autoscroll on the underlying plot widget.
+        """
         if timespan is None:
             timespan = self.timespan_buttons.checkedId()
             if timespan < 0:
@@ -499,7 +726,13 @@ class TraceDisplay(Display):
 
     @staticmethod
     def git_version():
-        """Get the current git tag for the project"""
+        """Get the current git tag for the project.
+
+        Returns
+        -------
+        str
+            The output of `git describe --tags`, or an empty string on failure.
+        """
         project_directory = __file__.rsplit("/", 1)[0]
         git_cmd = subprocess.run(
             f"cd {project_directory} && git describe --tags", text=True, shell=True, capture_output=True
@@ -507,7 +740,23 @@ class TraceDisplay(Display):
         return git_cmd.stdout.strip()
 
     def parse_cli_args(self, args, macros):
-        """"""
+        """Parse CLI-style arguments and macros into startup configuration.
+
+        Parameters
+        ----------
+        args : list[str] | None
+            Argument vector to parse. Unknown options are ignored.
+        macros : dict | None
+            PyDM-style macro substitutions. Values for `INPUT_FILE`, `PV`, or
+            `PVS` here are merged with CLI options.
+
+        Returns
+        -------
+        tuple[str, list[str]]
+            A tuple of `(input_file, startup_pvs)` where `input_file` is the
+            selected configuration file path (or empty string) and
+            `startup_pvs` is a de-duplicated list of PV/formula strings to add.
+        """
         args = args or []
         macros = macros or {}
 
@@ -605,11 +854,29 @@ class TraceDisplay(Display):
 
 
 class BreakerLabel(QLabel):
+    """A simple visual separator label used in the footer area.
+
+    Displays a bold vertical bar character to separate adjacent labels.
+
+    """
+
     breaker_font = QFont()
     breaker_font.setBold(True)
     breaker_font.setPointSize(12)
 
     def __init__(self, parent):
+        """Create a breaker label.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget that will own this label.
+
+        Returns
+        -------
+        None
+            Initializes the label and applies styling.
+        """
         super().__init__(parent)
         self.setText("|")
         self.setFont(self.breaker_font)

@@ -23,9 +23,14 @@ class IOTimeParser:
         '-8h', '-1w 08:00')
 
         Parameters
-        ---------
+        ----------
         input_str : str
+            String to be checked if in relative time format
 
+        Returns
+        -------
+        bool
+            True if the provided string is in relative time format
         """
         found = cls.full_relative_re.fullmatch(input_str)
         return bool(found)
@@ -34,6 +39,16 @@ class IOTimeParser:
     def is_absolute(cls, input_str: str) -> bool:
         """Check if the given string is an absolute time (e.g.
         '2024-07-16 08:00')
+
+        Parameters
+        ----------
+        input_str : str
+            String to be checked if in absolute time format
+
+        Returns
+        -------
+        bool
+            True if the provided string is in absolute time format
         """
         found = cls.full_absolute_re.fullmatch(input_str)
         return bool(found)

@@ -8,10 +8,22 @@ from qtpy.QtWidgets import QFileDialog, QMessageBox
 from pydm.widgets.archiver_time_plot import PyDMArchiverTimePlot
 
 from config import logger, save_file_dir
-from file_io import IOTimeParser, TraceFileConverter
+from file_io import TraceFileConverter
+from utilities import IOTimeParser
 
 
 class TraceFileHandler(QObject):
+    """Manage import/export of Trace save files and update the plot/UI.
+
+    This QObject coordinates file dialogs, format conversion, and plot updates
+    for Trace configuration files. It uses `TraceFileConverter` to read and
+    write various supported formats (``.trc`` native, ``.xml`` from Java
+    Archive Viewer, and ``.stp`` from StripTool), validates the archiver URL,
+    parses time ranges via `IOTimeParser`, and emits signals that other
+    components consume to update axes, curves, plot settings, and the x-axis
+    range.
+    """
+
     axes_signal = Signal(list)
     curves_signal = Signal(list)
     plot_settings_signal = Signal(dict)
@@ -22,6 +34,13 @@ class TraceFileHandler(QObject):
     def __init__(self, plot: PyDMArchiverTimePlot, parent=None):
         """Initialize the File IO Manager, which is responsible for managing
         the import and export of Trace save files
+
+        Parameters
+        ----------
+        plot : PyDMArchiverTimePlot
+            Target plot whose configuration and data are exported/imported.
+        parent : QObject | None, optional
+            Parent QObject for Qt ownership, by default None.
         """
         super().__init__(parent)
         self.plot = plot

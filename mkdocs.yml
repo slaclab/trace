@@ -45,6 +45,14 @@ plugins:
       handlers:
         python:
           paths: [trace]
+          options:
+            docstring_style: numpy
+            members_order: source
+            show_root_toc_entry: false
+            show_symbol_type_toc: true
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
   - git-revision-date-localized:
       exclude:
         - index.md
@@ -74,6 +82,7 @@ markdown_extensions:
           - images/
   - pymdownx.highlight
   - pymdownx.superfences
+  - pymdownx.blocks.caption
 
 # Page Tree
 nav:
@@ -100,18 +109,19 @@ nav:
     - reference/index.md
     - reference/trace.md
     - Widgets:
-      - reference/widgets/index.md
       - Control Panel: reference/widgets/control_panel.md
       - Settings Popups: reference/widgets/settings_popups.md
+      - Formula Dialog: reference/widgets/formula_dialog.md
       - Archive Search: reference/widgets/archive_search.md
       - Data Insight Tool: reference/widgets/data_insight_tool.md
       - E-Log Post Modal: reference/widgets/elog_post_modal.md
       - Helper Widgets: reference/widgets/helper_widgets.md
     - File IO:
-      - reference/file_io/index.md
       - File Converter: reference/file_io/trace_file_convert.md
       - File Handler: reference/file_io/file_handler.md
-      - Time Parser: reference/file_io/time_parser.md
     - Services:
-      - reference/services/index.md
       - E-Log Service: reference/services/elog_client.md
+      - Theme Manager: reference/services/theme_manager.md
+    - Utilities:
+      - Formula Validation: reference/utilities/formula_validation.md
+      - Time Parser: reference/utilities/time_parser.md

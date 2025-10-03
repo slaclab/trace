@@ -41,6 +41,20 @@ conda env update -f environment.yml
 ```
 
 
+## Environment Setup
+
+Trace references a couple of environment variables that can be used for configuring some interactions.
+
+Below is a table describing the environment variables that need to be set.
+
+| Variable | What is it used for? |
+| ----- | ----- |
+| PYDM_ARCHIVER_URL | The base URL for the Archiver Appliance Data Plugin |
+| SWAPPS_TRACE_ELOG_API_URL | The base URL for the E-Log API |
+| SWAPPS_TRACE_ELOG_API_KEY | Your API key for authenticating with the E-Log system |
+
+
+
 ## Running Trace
 
 The main startup file for trace is located at `trace/main.py`.
