@@ -37,14 +37,26 @@ jobs:
       - name: Build Docs
         run: mkdocs build --strict --verbose
 
+      - name: Upload Built Docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-docs
+          path: ./site
+
   deploy:
     needs: build  # Ensures that the deploy step only runs after the build
     if: github.event_name == 'push'  # Only run deploy on push events
     runs-on: ubuntu-latest
 
     steps:
+      - name: Download Built Docs
+        uses: actions/download-artifact@v5
+        with:
+          name: built-docs
+          path: ./site
+
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site  # Ensure this is the correct output directory for mkdocs
+          publish_dir: ./site
