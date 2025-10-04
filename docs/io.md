@@ -1,40 +1,57 @@
 # Import & Export
 
-Trace allows users to export their current configuration of the application into a save file so that it can be imported later. The exported files include the archiver URL used, plot's configuration, the X-axis' time range, all of the Y-axes, and all of the traces.
+Trace allows users to save their current configuration and import it later. This includes the archiver URL, plot configuration, time range, Y-axes, and all traces.
 
-The importing and exporting features can be found in the menu bar at the top of the application under the Action menu. Alternatively, users can export their current configuration with `Ctrl+S` or import a file with `Ctrl+L`.
+## Quick Access
 
-Files can also be imported on startup using the `-i` flag followed by the path to the file. Find more information on application arguments [here].
+- **Save**: `Ctrl+S` or Trace menu → Save
+- **Save As**: `Ctrl+Shift+S` or Trace menu → Save As...
+- **Open**: `Ctrl+O` or Trace menu → Open Trace Config...
+- **Command Line**: Use the `-i` flag to import files on startup
 
-  [here]: arguments.md
+For more information on command-line arguments, see [Application Arguments](arguments.md).
 
+## Supported File Formats
 
+Trace supports three file formats for importing:
 
-## Save Files
+| Format | Extension | Import | Export | Notes |
+|--------|-----------|--------|--------|-------|
+| Trace | `.trc` | ✅ | ✅ | Native JSON format |
+| Java Archive Viewer | `.xml` | ✅ | ❌ | Converts to `.trc` on save |
+| StripTool | `.stp` | ✅ | ❌ | Converts to `.trc` on save |
 
-Trace's save files are in JSON format as to be human readable/writeable and they use their own file extension: `.trc`.
+### Converting Legacy Files
 
+For bulk conversion of Java Archive Viewer and StripTool files to Trace format, use the [CLI file converter tool](tools/file_converter.md).
 
-### Java Save Files
+## File Format Details
 
-Save files for the Java-based Archive Viewer can also be imported into Trace. They can be found in the import tool's file selection tool along with Trace's save files. Users can show only Java Archive Viewer files by changing the file format filter at the bottom of the dialog window.
+### Trace Files (`.trc`)
 
-Trace will not save new files in the Java-based Archive Viewer's format, only as `.trc` files.
+Trace's native format uses JSON for human readability and editability. These files contain only Trace-specific properties and can be used to:
 
-Files can be converted en masse from the Java-based file format to Trace's formate using the [CLI file converter tool].
+- Configure Trace's appearance
+- Define data to load on startup
+- Share configurations between users
 
-  [CLI file converter tool]: tools/file_converter.md
+### Java Archive Viewer Files (`.xml`)
 
+Legacy files from the Java-based Archive Viewer can be imported directly. When saving changes, they are automatically converted to Trace format.
 
-### StripTool Save Files
+**To import**: Use the file dialog and select "Java Archive Viewer files (*.xml)" from the format filter.
 
-Save files for the StripTool can be converted using the same tool or imported directly into Trace. They can be found in the import tool's file selection tool alongside Trace's save files and the Java Archive Viewer's save files. Users can show only StripTool files by changing the file format filter at the bottom of the dialog window.
+### StripTool Files (`.stp`)
 
-Trace will not save new files in the Java-based Archive Viewer's format, only as `.trc` files.
+StripTool configuration files can be imported or converted using the CLI tool. When saving changes, they are automatically converted to Trace format.
 
-Files can be converted en masse from the StripTool file format to Trace's formate using the file converter tool.
+**To import**: Use the file dialog and select "StripTool files (*.stp)" from the format filter.
 
+## Color Format
 
-### Note About Colors
+Colors in save files are represented as:
 
-Colors in the save file will typically be represented as RGB values in hexidecimal format. Since the string will be passed into a QColor when loaded, these strings can be names of colors as well e.g. "red", "blue", "white", etc.
+- **Hexadecimal RGB**: `#FF0000` (red)
+- **Color names**: `"red"`, `"blue"`, `"white"`, etc.
+
+Both formats are supported when loading files into Trace.

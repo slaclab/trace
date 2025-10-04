@@ -12,12 +12,17 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QDialogButtonBox,
 )
-from services.elog_client import get_logbooks
 
-from widgets.settings_components import SettingsTitle, SettingsRowItem
+from widgets import SettingsTitle, SettingsRowItem
+from services import get_logbooks
 
 
 class ElogPostModal(QDialog):
+    """Modal widget for creating a new E-Log entry.
+
+    This widget provides a comprehensive interface for creating a new E-Log entry.
+    """
+
     def __init__(
         self,
         parent: QWidget = None,
@@ -80,9 +85,9 @@ class ElogPostModal(QDialog):
         main_layout.addWidget(buttons)
 
     def on_submit(self) -> None:
-        """
-        Handles the submission of the dialog. This method is called when the user clicks the 'Send' button.
-        It retrieves the inputs, validates, and closes the dialog.
+        """Handles the submission of the dialog. This method is called
+        when the user clicks the 'Send' button. It retrieves the inputs,
+        validates, and closes the dialog.
         """
         title, _, logbooks, _ = self.get_inputs()
         if not title:
@@ -95,8 +100,12 @@ class ElogPostModal(QDialog):
         self.accept()
 
     def get_inputs(self) -> tuple[str, str, list[str], bool]:
-        """
-        Returns the inputs from the dialog as a tuple of (title, body, logbooks, attach_config).
+        """Returns the inputs from the dialog as a tuple.
+
+        Returns
+        -------
+        tuple[str, str, list[str], bool]
+            The inputs from the dialog (title, body, logbooks, attach_config)
         """
         title = self.title_edit.text().strip()
         body = self.body_edit.toPlainText().strip()
@@ -106,8 +115,21 @@ class ElogPostModal(QDialog):
 
     @classmethod
     def maybe_create(cls, parent: QWidget = None, image_bytes: bytes | None = None) -> "ElogPostModal | None":
-        """
-        Creates and shows the ElogPostModal dialog if the logbook list can be populated.
+        """Creates and shows the ElogPostModal dialog if the logbook list
+        can be populated. If the logbook list cannot be populated, an error
+        message is shown and None is returned.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            The parent widget
+        image_bytes : bytes, optional
+            The image bytes to be attached to the entry
+
+        Returns
+        -------
+        ElogPostModal | None
+            The ElogPostModal dialog if the logbook list can be populated, None otherwise
         """
         status_code, logbooks = get_logbooks()
         if status_code != 200:

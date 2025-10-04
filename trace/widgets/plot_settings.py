@@ -23,6 +23,13 @@ from widgets import ColorButton, SettingsTitle, SettingsRowItem, CurveColorPalet
 
 
 class PlotSettingsModal(QWidget):
+    """Modal widget for configuring plot settings including title, legend, mouse mode,
+    autoscroll interval, time range, crosshair, appearance, and gridlines.
+
+    This widget provides a comprehensive interface for customizing the appearance
+    and behavior of the PyDMArchiverTimePlot.
+    """
+
     auto_scroll_interval_change = Signal(int)
     grid_alpha_change = Signal(int)
     set_all_y_axis_gridlines = Signal(bool)
@@ -30,6 +37,15 @@ class PlotSettingsModal(QWidget):
     sig_curve_palette_changed = Signal(str, bool)
 
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot):
+        """Initialize the plot settings modal.
+
+        Parameters
+        ----------
+        parent : QWidget
+            The parent widget
+        plot : PyDMArchiverTimePlot
+            The plot widget to configure
+        """
         super().__init__(parent)
         self.setWindowFlag(Qt.Popup)
 
@@ -48,7 +64,7 @@ class PlotSettingsModal(QWidget):
         main_layout.addLayout(plot_title_row)
 
         self.legend_checkbox = QCheckBox(self)
-        self.legend_checkbox.checkStateChanged.connect(lambda check: self.plot.setShowLegend(bool(check)))
+        self.legend_checkbox.stateChanged.connect(self.set_show_legend)
         self.legend_checkbox.setChecked(True)  # legend on by default
         legend_row = SettingsRowItem(self, "Show Legend", self.legend_checkbox)
         main_layout.addLayout(legend_row)
@@ -83,7 +99,7 @@ class PlotSettingsModal(QWidget):
         main_layout.addLayout(end_dt_row)
 
         self.crosshair_checkbox = QCheckBox(self)
-        self.crosshair_checkbox.checkStateChanged.connect(lambda check: self.plot.enableCrosshair(check, 100, 100))
+        self.crosshair_checkbox.stateChanged.connect(self.set_crosshair)
         crosshair_row = SettingsRowItem(self, "Show Crosshair", self.crosshair_checkbox)
         main_layout.addLayout(crosshair_row)
 
@@ -110,12 +126,12 @@ class PlotSettingsModal(QWidget):
         main_layout.addLayout(axis_tick_font_size_row)
 
         self.x_grid_checkbox = QCheckBox(self)
-        self.x_grid_checkbox.checkStateChanged.connect(self.show_x_grid)
+        self.x_grid_checkbox.stateChanged.connect(self.show_x_grid)
         x_grid_row = SettingsRowItem(self, "  X Axis Gridline", self.x_grid_checkbox)
         main_layout.addLayout(x_grid_row)
 
         self.y_grid_checkbox = QCheckBox(self)
-        self.y_grid_checkbox.checkStateChanged.connect(self.show_y_grid)
+        self.y_grid_checkbox.stateChanged.connect(self.show_y_grid)
         y_grid_row = SettingsRowItem(self, "  All Y Axis Gridlines", self.y_grid_checkbox)
         main_layout.addLayout(y_grid_row)
 
@@ -138,27 +154,51 @@ class PlotSettingsModal(QWidget):
 
     @property
     def auto_scroll_interval(self):
+        """Get the autoscroll interval in milliseconds."""
         interval = self.as_interval_spinbox.value()
         interval *= 1000  # Convert to milliseconds
         return interval
 
     @property
     def x_grid_visible(self):
+        """Check if X-axis gridlines are visible."""
         return self.x_grid_checkbox.isChecked()
 
     @property
     def gridline_opacity(self):
+        """Get the current gridline opacity value (0-255)."""
         opacity = self.grid_opacity_slider.value()
         return opacity
 
     def show(self):
+        """Show the modal positioned relative to its parent widget."""
         parent_pos = self.parent().rect().bottomRight()
         global_pos = self.parent().mapToGlobal(parent_pos)
         self.move(global_pos)
         super().show()
 
     @Slot(int)
+    @Slot(Qt.CheckState)
+    def set_show_legend(self, state: int | Qt.CheckState) -> None:
+        """Set the legend visibility based on checkbox state.
+
+        Parameters
+        ----------
+        state : int or Qt.CheckState
+            The checkbox state
+        """
+        checked = Qt.CheckState(state) == Qt.Checked
+        self.plot.setShowLegend(checked)
+
+    @Slot(int)
     def set_axis_tick_font_size(self, size: int) -> None:
+        """Set the font size for all axis tick labels.
+
+        Parameters
+        ----------
+        size : int
+            The font size in pixels
+        """
         font = QFont()
         font.setPixelSize(size)
 
@@ -197,6 +237,19 @@ class PlotSettingsModal(QWidget):
         self.plot.plotItem.setXRange(*proc_range, padding=0)
         self.plot.plotItem.vb.blockSignals(False)
 
+    @Slot(int)
+    @Slot(Qt.CheckState)
+    def set_crosshair(self, state: int | Qt.CheckState) -> None:
+        """Enable or disable the crosshair on the plot.
+
+        Parameters
+        ----------
+        state : int or Qt.CheckState
+            The checkbox state
+        """
+        checked = Qt.CheckState(state) == Qt.Checked
+        self.plot.enableCrosshair(checked, 100, 100)
+
     @Slot(object, object)
     def set_axis_datetimes(self, _: ViewBox = None, time_range: tuple[float, float] = None) -> None:
         """Slot used to update the QDateTimeEdits on the Axis tab. This
@@ -225,32 +278,70 @@ class PlotSettingsModal(QWidget):
             qdt.blockSignals(False)
 
     @Slot(int)
-    def show_x_grid(self, visible: int):
-        """Slot to show or hide the X-Axis gridlines."""
+    @Slot(Qt.CheckState)
+    def show_x_grid(self, state: int | Qt.CheckState) -> None:
+        """Show or hide the X-Axis gridlines.
+
+        Parameters
+        ----------
+        state : int or Qt.CheckState
+            The checkbox state
+        """
+        visible = Qt.CheckState(state) == Qt.Checked
         opacity = self.gridline_opacity
-        self.set_plot_gridlines(bool(visible), opacity)
+        self.set_plot_gridlines(visible, opacity)
 
     @Slot(int)
-    def show_y_grid(self, visible: int):
-        visible = bool(visible)
+    @Slot(Qt.CheckState)
+    def show_y_grid(self, state: int | Qt.CheckState) -> None:
+        """Show or hide all Y-axis gridlines.
+
+        Parameters
+        ----------
+        state : int or Qt.CheckState
+            The checkbox state
+        """
+        visible = Qt.CheckState(state) == Qt.Checked
         self.set_all_y_axis_gridlines.emit(visible)
 
     @Slot(int)
     def change_gridline_opacity(self, opacity: int):
-        """Slot to change the opacity of the gridlines for both X and Y axes."""
+        """Change the opacity of the gridlines for both X and Y axes.
+
+        Parameters
+        ----------
+        opacity : int
+            The opacity value (0-255)
+        """
         visible = self.x_grid_visible
         self.set_plot_gridlines(visible, opacity)
 
     def set_plot_gridlines(self, visible: bool, opacity: int):
-        """Helper function to set the plot's gridlines visibility and opacity. Updates both X and Y axes."""
+        """Set the plot's gridlines visibility and opacity for both X and Y axes.
+
+        Parameters
+        ----------
+        visible : bool
+            Whether gridlines should be visible
+        opacity : int
+            The opacity value (0-255)
+        """
         normalized_opacity = opacity / 255
         self.plot.setShowXGrid(visible, normalized_opacity)
         self.grid_alpha_change.emit(opacity)
 
     @Slot(dict)
     def plot_setup(self, config: dict):
-        """Read in the full config dictionary. For each config preset, set the widgets to match the value, which will
-        send signals out that will actually cause the plot to change."""
+        """Configure the plot settings from a configuration dictionary.
+
+        This method reads configuration values and updates the corresponding
+        widgets, which will emit signals to update the plot.
+
+        Parameters
+        ----------
+        config : dict
+            Configuration dictionary containing plot settings
+        """
         if "title" in config:
             self.plot_title_line_edit.setText(str(config["title"]))
         if "legend" in config:

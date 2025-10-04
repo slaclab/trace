@@ -112,10 +112,11 @@ class ArchiveResultsTableModel(QAbstractTableModel):
 
 
 class ArchiveSearchWidget(QWidget):
-    """
-    The ArchiveSearchWidget is a display widget for showing the results of a PV search using an instance of the
-    EPICS archiver appliance. Currently the only type of search supported is for PV names matching an input search
-    string, though this can be extended in the future.
+    """Widget for searching and selecting PVs from the EPICS archiver appliance.
+
+    This widget provides a search interface for finding PVs by name patterns
+    using the archiver appliance. Users can search for PVs and add them to
+    the plot by selecting them from the results table.
 
     Parameters
     ----------
@@ -125,7 +126,14 @@ class ArchiveSearchWidget(QWidget):
 
     append_PVs_requested = Signal(list)
 
-    def __init__(self, parent: QObject = None) -> None:
+    def __init__(self, parent: QObject = None):
+        """Initialize the archive search widget.
+
+        Parameters
+        ----------
+        parent : QObject, optional
+            The parent object
+        """
         super().__init__(parent=parent)
 
         self.network_manager = QNetworkAccessManager()
@@ -182,9 +190,13 @@ class ArchiveSearchWidget(QWidget):
         self.setLayout(self.main_layout)
 
     def selectedPVs(self) -> list[str]:
-        """Figure out based on which indexes were selected, the list of PVs (by string name)
-        The user was hoping to insert into the table. Concatenate them into string form i.e.
-        <pv1>, <pv2>, <pv3>"""
+        """Get the list of selected PVs from the results table.
+
+        Returns
+        -------
+        list[str]
+            List of selected PV names
+        """
         indices = self.results_view.selectedIndexes()
         pv_list = []
         for index in indices:
@@ -192,10 +204,16 @@ class ArchiveSearchWidget(QWidget):
         return pv_list
 
     def startDragAction(self, supported_actions) -> None:
-        """
-        The method to be called when a user initiates a drag action for one of the results in the table. The current
-        reason for this functionality is the ability to drag a PV name onto a plot to automatically start drawing
-        data for that PV
+        """Handle drag action for PV names.
+
+        This method is called when a user initiates a drag action for one of
+        the results in the table. It allows dragging PV names onto a plot to
+        automatically start drawing data for that PV.
+
+        Parameters
+        ----------
+        supported_actions : Qt.DropActions
+            The supported drop actions, unused
         """
         drag = QDrag(self)
         mime_data = QMimeData()
@@ -204,15 +222,23 @@ class ArchiveSearchWidget(QWidget):
         drag.exec_()
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
-        """Special key press tracker. If enter or return is pressed the request
-        archiver info.
+        """Handle key press events for search submission.
+
+        Parameters
+        ----------
+        e : QKeyEvent
+            The key press event
         """
         if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
             self.request_archiver_info()
         return super().keyPressEvent(e)
 
     def request_archiver_info(self) -> None:
-        """Send the search request to the archiver appliance based on the search string typed into the text box"""
+        """Send a search request to the archiver appliance.
+
+        Converts the search text to a regex pattern and queries the archiver
+        appliance for matching PV names.
+        """
         search_text = self.search_box.text()
         search_text = search_text.replace("?", ".")
         search_text = search_text.replace("*", ".*")
@@ -223,7 +249,13 @@ class ArchiveSearchWidget(QWidget):
         self.loading_label.show()
 
     def populate_results_list(self, reply: QNetworkReply) -> None:
-        """Slot called when the archiver appliance returns search results. Will populate the table with the results"""
+        """Handle the response from the archiver appliance search.
+
+        Parameters
+        ----------
+        reply : QNetworkReply
+            The network reply containing search results
+        """
         self.loading_label.hide()
         if reply.error() == QNetworkReply.NoError:
             self.results_table_model.clear()

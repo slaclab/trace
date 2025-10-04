@@ -6,15 +6,11 @@ from qtpy.QtWidgets import QCheckBox
 
 
 class ToggleSwitch(QCheckBox):
-    """
-    A custom toggle switch widget that looks like a modern mobile switch.
+    """A custom toggle switch widget that looks like a modern mobile switch.
     This widget extends QCheckBox to create a toggle switch with animated
     transition between on and off states. The switch consists of a rounded
     rectangle track and a circular knob that moves horizontally.
-    Parameters
-    ----------
-    parent : QWidget, optional
-        The parent widget.
+
     Attributes
     ----------
     TRACK_OFF : QColor
@@ -33,8 +29,8 @@ class ToggleSwitch(QCheckBox):
     MARGIN = 2
 
     def __init__(self, text: str = "", parent: Optional[Any] = None, color: Optional[QColor] = None) -> None:
-        """
-        Initialize the toggle switch widget.
+        """Initialize the toggle switch widget.
+
         Parameters
         ----------
         text : str, optional
@@ -57,8 +53,8 @@ class ToggleSwitch(QCheckBox):
         self._track_on_color = color if color is not None else self.TRACK_ON
 
     def getOffset(self) -> int:
-        """
-        Get the current horizontal offset of the knob.
+        """Get the current horizontal offset of the knob.
+
         Returns
         -------
         int
@@ -67,8 +63,8 @@ class ToggleSwitch(QCheckBox):
         return self._x
 
     def setOffset(self, x: int) -> None:
-        """
-        Set the horizontal offset of the knob and update the widget.
+        """Set the horizontal offset of the knob and update the widget.
+
         Parameters
         ----------
         x : int
@@ -80,8 +76,7 @@ class ToggleSwitch(QCheckBox):
     offset = Property(int, fget=getOffset, fset=setOffset)
 
     def nextCheckState(self) -> None:
-        """
-        Handle the toggle state change and animate the knob movement.
+        """Handle the toggle state change and animate the knob movement.
         This method is called when the checkbox state changes and
         manages the animation of the knob from one position to another.
         """
@@ -95,9 +90,7 @@ class ToggleSwitch(QCheckBox):
         self._anim.start()
 
     def setChecked(self, checked: bool) -> None:
-        """
-        Override setChecked to handle programmatic state changes with animation.
-        """
+        """Override setChecked to handle programmatic state changes with animation."""
         if self.isChecked() != checked:
             super().setChecked(checked)
             start = self._x
@@ -108,9 +101,7 @@ class ToggleSwitch(QCheckBox):
             self._anim.start()
 
     def setCheckState(self, state) -> None:
-        """
-        Override setCheckState to handle Qt.CheckState enums properly in PySide6.
-        """
+        """Override setCheckState to handle Qt.CheckState enums properly in PySide6."""
         if isinstance(state, int):
             checked = state != 0
         else:
@@ -119,8 +110,7 @@ class ToggleSwitch(QCheckBox):
         self.setChecked(checked)
 
     def setColor(self, color: QColor) -> None:
-        """
-        Set the color for the "on" state of the toggle switch.
+        """Set the color for the "on" state of the toggle switch.
 
         Parameters
         ----------
@@ -131,8 +121,7 @@ class ToggleSwitch(QCheckBox):
         self.update()
 
     def getColor(self) -> QColor:
-        """
-        Get the current "on" state color.
+        """Get the current "on" state color.
 
         Returns
         -------
@@ -142,8 +131,8 @@ class ToggleSwitch(QCheckBox):
         return self._track_on_color
 
     def paintEvent(self, _: Any) -> None:
-        """
-        Paint the toggle switch with the appropriate colors and position.
+        """Paint the toggle switch with the appropriate colors and position.
+
         Parameters
         ----------
         _ : QPaintEvent
@@ -163,14 +152,15 @@ class ToggleSwitch(QCheckBox):
         p.drawEllipse(knob_rect)
 
     def hitButton(self, pos: Any) -> bool:
-        """
-        Determine if the given position is on the button.
-        This is overridden to make the entire widget clickable, not just
-        the standard checkbox indicator area.
+        """Determine if the given position is on the button. This is
+        overridden to make the entire widget clickable, not just the
+        standard checkbox indicator area.
+
         Parameters
         ----------
         pos : QPoint
             The position to test.
+
         Returns
         -------
         bool
