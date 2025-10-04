@@ -53,6 +53,7 @@ class ControlPanel(QtWidgets.QWidget):
         self.key_gen = self._generate_curve_key()
         next(self.key_gen)  # Prime the generator
 
+        self.curve_palette = "default"
         if self.theme_manager:
             self.theme_manager.theme_changed.connect(self.on_theme_changed)
 
@@ -287,6 +288,41 @@ class ControlPanel(QtWidgets.QWidget):
         else:
             logger.warning("No axes available to return the last AxisItem.")
             return None
+
+    def set_curve_palette(self, palette_name: str, apply: bool = False) -> None:
+        """
+        Set the default palette for new curves.
+
+        Parameters:
+            palette_name (str): name of selected palette
+            apply (bool): If true, apply palette to exiting curves
+        """
+        self.curve_palette = palette_name
+        if apply:
+            for index, curve in enumerate(self.curve_item_dict.keys()):
+                color = ColorButton.index_color(index, palette=self.curve_palette)
+                curve.color = color
+                self.curve_item_dict[curve]["curveItem"].on_color_changed(color)
+
+    @property
+    def curve_item_dict(self):
+        """
+        Returns dictionary of curves on plot with associated pvname, axisItem, and curveItem
+        """
+        plot_curves = {}
+        for i in range(self.axis_list.count() - 1):  # -1 for stretch
+            axis_item = self.axis_list.itemAt(i).widget()
+            if hasattr(axis_item, "layout"):
+                for j in range(axis_item.layout().count()):
+                    widget = axis_item.layout().itemAt(j).widget()
+                    if hasattr(widget, "source"):
+                        curve = widget.source
+                        plot_curves[curve] = {}
+                        plot_curves[curve]["name"] = curve.name()
+                        plot_curves[curve]["axisItem"] = axis_item
+                        plot_curves[curve]["curveItem"] = widget
+
+        return plot_curves
 
     @QtCore.Slot()
     def add_curve(self, pv: str = None) -> "CurveItem":
@@ -570,7 +606,8 @@ class AxisItem(QtWidgets.QWidget):
         CurveItem
             The created CurveItem widget.
         """
-        color = ColorButton.index_color(len(self.plot._curves))
+        palette = self.control_panel.curve_palette
+        color = ColorButton.index_color(len(self.plot._curves), palette=palette)
         args = {
             "y_channel": pv,
             "name": pv,
@@ -616,7 +653,7 @@ class AxisItem(QtWidgets.QWidget):
             logger.error(f"Invalid formula '{formula}': {e}")
             raise
 
-        color = ColorButton.index_color(len(self.plot._curves))
+        color = ColorButton.index_color((len(self.plot._curves)), palette=self.control_panel.curve_palette)
         formula_curve_item = self.plot.addFormulaChannel(
             formula=formula, name=formula, pvs=var_dict, color=color, useArchiveData=True, yAxisName=self.source.name
         )
@@ -747,7 +784,19 @@ class AxisItem(QtWidgets.QWidget):
     def show_settings_modal(self):
         if self.settings_modal is None:
             self.settings_modal = AxisSettingsModal(self.settings_button, self.plot, self.source)
+            self.settings_modal.sig_curve_palette_changed.connect(self.set_curve_palette)
         self.settings_modal.show()
+
+    def set_curve_palette(self, palette_name: str, apply: bool = True):
+        """Set colors of all curves on this axisItem according to selected palette"""
+        if apply:
+            for j in range(self.layout().count()):
+                widget = self.layout().itemAt(j).widget()
+                if hasattr(widget, "source"):
+                    curve = widget.source
+                    color = ColorButton.index_color(j - 1, palette=palette_name)
+                    curve.color = color
+                    self.find_curve_item_for_curve(curve).on_color_changed(color)
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
         if event.possibleActions() & QtCore.Qt.MoveAction:

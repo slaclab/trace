@@ -24,8 +24,10 @@ if not save_file_dir.is_dir():
     save_file_dir = Path.home()
     logger.warning(f"Setting save_file_dir to home: {save_file_dir}")
 
-# Set default color palette
-color_palette = [QColor(hex_code) for hex_code in loaded_json["colors"]]
+# Set color palettes from loaded json file
+color_palette: dict[str, list[QColor]] = {}
+for name, hex_codes in loaded_json["color_palettes"].items():
+    color_palette[name] = [QColor(hex_code) for hex_code in hex_codes]
 
 # Set the default thread count for numexpr
 # 8 is determined to be a safe default for most systems according to numxerpr documentation

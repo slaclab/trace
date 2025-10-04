@@ -1,12 +1,12 @@
-from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import QWidget, QCheckBox, QComboBox, QVBoxLayout
+from qtpy.QtCore import Qt, Slot, Signal
+from qtpy.QtWidgets import QWidget, QCheckBox, QComboBox, QPushButton, QVBoxLayout
 
 from pydm.display import Display
 from pydm.widgets import PyDMArchiverTimePlot
 from pydm.widgets.baseplot import BasePlotAxisItem
 
 from config import logger
-from widgets import SettingsTitle, SettingsRowItem
+from widgets import SettingsTitle, SettingsRowItem, CurveColorPaletteModal
 
 
 class AxisSettingsModal(QWidget):
@@ -16,6 +16,8 @@ class AxisSettingsModal(QWidget):
     This widget provides an interface for customizing the appearance and behavior
     of a single axis on the plot.
     """
+
+    sig_curve_palette_changed = Signal(str, bool)
 
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot, axis: BasePlotAxisItem):
         """Initialize the axis settings modal.
@@ -58,6 +60,13 @@ class AxisSettingsModal(QWidget):
         self.grid_checkbox.stateChanged.connect(self.show_grid)
         y_grid_row = SettingsRowItem(self, "Y Axis Gridline", self.grid_checkbox)
         main_layout.addLayout(y_grid_row)
+
+        self.palette_modal = CurveColorPaletteModal(self)
+        self.curve_palette_button = QPushButton("Select")
+        self.curve_palette_button.clicked.connect(self.palette_modal.show)
+        self.palette_modal.sig_palette_changed.connect(self.sig_curve_palette_changed.emit)
+        palette_row = SettingsRowItem(self, "Curve Palette", self.curve_palette_button)
+        main_layout.addLayout(palette_row)
 
         self.trace_display = self.parent()
         while self.trace_display is not None and not isinstance(self.trace_display, Display):
