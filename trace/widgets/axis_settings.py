@@ -16,8 +16,8 @@ class AxisSettingsModal(QWidget):
     This widget provides an interface for customizing the appearance and behavior
     of a single axis on the plot.
     """
-    sig_curve_palette_changed = Signal(str, bool)
 
+    sig_curve_palette_changed = Signal(str, bool)
 
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot, axis: BasePlotAxisItem):
         """Initialize the axis settings modal.

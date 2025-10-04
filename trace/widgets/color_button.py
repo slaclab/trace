@@ -98,7 +98,7 @@ class ColorButton(QPushButton):
         """Returns the color in the color palette at index. If the
         requested index is larger than the size of the color palette, then
         the palette is cycled through again, but darker by a factor of 35%.
-        If palette str is not a key in color_palette dict from trace/config, 
+        If palette str is not a key in color_palette dict from trace/config,
         it will be replaced with 'default'
 
         Parameters
