@@ -8,11 +8,13 @@ from widgets.color_button import ColorButton
 DEF_COLOR = QColor("black")
 
 
-TEST_PALETTE = [
-    QColor(255, 0, 0),  # Red
-    QColor(0, 255, 0),  # Green
-    QColor(0, 0, 255),  # Blue
-]
+TEST_PALETTE = {
+    "default": [
+        QColor(255, 0, 0),  # Red
+        QColor(0, 255, 0),  # Green
+        QColor(0, 0, 255),  # Blue
+    ]
+}
 
 
 @pytest.fixture
@@ -26,7 +28,7 @@ def color_btn(qapp):
     yield ColorButton(color=DEF_COLOR)
 
 
-@pytest.mark.parametrize("test_color", [*TEST_PALETTE])
+@pytest.mark.parametrize("test_color", [*TEST_PALETTE["default"]])
 def test_color_change(qtbot, color_btn, test_color):
     """Test that setting the button's color does change the button's color,
     stylesheet, and emit the color_change signal.
@@ -143,10 +145,10 @@ def test_random_color(monkeypatch, random_values, expected_hsl):
 @pytest.mark.parametrize(
     "index, expected_base_color, expected_dark_factor",
     [
-        (0, TEST_PALETTE[0], 100),  # Index 0 -> first color, no darkening
-        (3, TEST_PALETTE[0], 135),  # Index 3 -> first color, one level of darkening
-        (5, TEST_PALETTE[2], 135),  # Index 5 -> third color, one level of darkening
-        (7, TEST_PALETTE[1], 170),  # Index 7 -> second color, two levels of darkening
+        (0, TEST_PALETTE["default"][0], 100),  # Index 0 -> first color, no darkening
+        (3, TEST_PALETTE["default"][0], 135),  # Index 3 -> first color, one level of darkening
+        (5, TEST_PALETTE["default"][2], 135),  # Index 5 -> third color, one level of darkening
+        (7, TEST_PALETTE["default"][1], 170),  # Index 7 -> second color, two levels of darkening
     ],
 )
 def test_index_color(monkeypatch, index, expected_base_color, expected_dark_factor):

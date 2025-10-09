@@ -200,6 +200,7 @@ class TraceDisplay(Display):
         self.plot_settings.set_all_y_axis_gridlines.connect(self.plot.setShowYGrid)
         self.plot_settings.set_all_y_axis_gridlines.connect(self.set_all_y_axis_gridlines.emit)
         self.plot_settings.disable_autoscroll.connect(self.disable_auto_scroll_button.click)
+        self.plot_settings.sig_curve_palette_changed.connect(self.set_curve_palette)
         self.settings_button.clicked.connect(self.plot_settings.show)
 
         return plot_side_widget
@@ -394,6 +395,16 @@ class TraceDisplay(Display):
         settings_icon = self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY)
         if settings_icon:
             self.settings_button.setIcon(settings_icon)
+
+    def set_curve_palette(self, palette_name: str, apply: bool = False):
+        """
+        Set color palette for adding new curves
+
+        Args:
+            palette_name (str): name of the selected palette, from trace/config.color_palette
+            apply (bool): boolean indicator of whether to apply palette to existing curves.
+        """
+        self.control_panel.set_curve_palette(palette_name=palette_name, apply=apply)
 
     def configure_app(self, app: QApplication) -> None:
         """UI changes to be made to the PyDMApplication. Hides navigation

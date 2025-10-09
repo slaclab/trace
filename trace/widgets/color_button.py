@@ -94,18 +94,24 @@ class ColorButton(QPushButton):
         return color
 
     @staticmethod
-    def index_color(index: int) -> QColor:
+    def index_color(index: int, palette: str = "default") -> QColor:
         """Returns the color in the color palette at index. If the
         requested index is larger than the size of the color palette, then
         the palette is cycled through again, but darker by a factor of 35%.
+        If palette str is not a key in color_palette dict from trace/config,
+        it will be replaced with 'default'
 
         Parameters
         ----------
         index : int
             Requested index of color palette
+        palette : str
+            Name of selected palette
         """
-        modded_index = index % len(color_palette)
-        color = color_palette[modded_index]
+        if palette not in color_palette:
+            palette = "default"
+        modded_index = index % len(color_palette[palette])
+        color = color_palette[palette][modded_index]
 
-        dark_factor = (index // len(color_palette)) * 35
+        dark_factor = (index // len(color_palette[palette])) * 35
         return color.darker(100 + dark_factor)

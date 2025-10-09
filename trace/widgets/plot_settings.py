@@ -10,6 +10,7 @@ from qtpy.QtWidgets import (
     QCheckBox,
     QComboBox,
     QLineEdit,
+    QPushButton,
     QSizePolicy,
     QVBoxLayout,
     QDateTimeEdit,
@@ -18,7 +19,7 @@ from qtpy.QtWidgets import (
 from pydm.widgets import PyDMArchiverTimePlot
 
 from config import logger
-from widgets import ColorButton, SettingsTitle, SettingsRowItem
+from widgets import ColorButton, SettingsTitle, SettingsRowItem, CurveColorPaletteModal
 
 
 class PlotSettingsModal(QWidget):
@@ -33,6 +34,7 @@ class PlotSettingsModal(QWidget):
     grid_alpha_change = Signal(int)
     set_all_y_axis_gridlines = Signal(bool)
     disable_autoscroll = Signal()
+    sig_curve_palette_changed = Signal(str, bool)
 
     def __init__(self, parent: QWidget, plot: PyDMArchiverTimePlot):
         """Initialize the plot settings modal.
@@ -109,6 +111,13 @@ class PlotSettingsModal(QWidget):
         background_row = SettingsRowItem(self, "  Background Color", self.background_button)
         main_layout.addLayout(background_row)
 
+        self.palette_modal = CurveColorPaletteModal(self)
+        self.curve_palette_button = QPushButton("Select")
+        self.curve_palette_button.clicked.connect(self.palette_modal.show)
+        self.palette_modal.sig_palette_changed.connect(self.sig_curve_palette_changed.emit)
+        palette_row = SettingsRowItem(self, "  Curve Palette", self.curve_palette_button)
+        main_layout.addLayout(palette_row)
+
         axis_tick_font_size_spinbox = QSpinBox(self)
         axis_tick_font_size_spinbox.setValue(12)
         axis_tick_font_size_spinbox.setSuffix(" pt")
@@ -139,6 +148,9 @@ class PlotSettingsModal(QWidget):
         plot_viewbox = self.plot.plotItem.vb
         plot_viewbox.sigXRangeChanged.connect(self.set_axis_datetimes)
         plot_viewbox.sigRangeChangedManually.connect(lambda *_: self.set_axis_datetimes())
+
+    def set_default_curve_palette(self):
+        self.sig_curve_palette_changed.emit(self.curve_palette_button.currentText())
 
     @property
     def auto_scroll_interval(self):
