@@ -2415,7 +2415,7 @@ function ensures that the color is bright.</p>
 
 
 <h3 id="widgets.color_button.ColorButton.index_color" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">index_color</span><span class="p">(</span><span class="n">index</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">index_color</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
@@ -2428,7 +2428,9 @@ function ensures that the color is bright.</p>
 
         <p>Returns the color in the color palette at index. If the
 requested index is larger than the size of the color palette, then
-the palette is cycled through again, but darker by a factor of 35%.</p>
+the palette is cycled through again, but darker by a factor of 35%.
+If palette str is not a key in color_palette dict from trace/config,
+it will be replaced with 'default'</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2458,6 +2460,22 @@ the palette is cycled through again, but darker by a factor of 35%.</p>
                 <em>required</em>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>palette</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of selected palette</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;default&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -2479,21 +2497,33 @@ the palette is cycled through again, but darker by a factor of 35%.</p>
 <span class="normal">108</span>
 <span class="normal">109</span>
 <span class="normal">110</span>
-<span class="normal">111</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">index_color</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QColor</span><span class="p">:</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">index_color</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">palette</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QColor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the color in the color palette at index. If the</span>
 <span class="sd">    requested index is larger than the size of the color palette, then</span>
 <span class="sd">    the palette is cycled through again, but darker by a factor of 35%.</span>
+<span class="sd">    If palette str is not a key in color_palette dict from trace/config,</span>
+<span class="sd">    it will be replaced with &#39;default&#39;</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    index : int</span>
 <span class="sd">        Requested index of color palette</span>
+<span class="sd">    palette : str</span>
+<span class="sd">        Name of selected palette</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">modded_index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">color_palette</span><span class="p">)</span>
-    <span class="n">color</span> <span class="o">=</span> <span class="n">color_palette</span><span class="p">[</span><span class="n">modded_index</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">palette</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">color_palette</span><span class="p">:</span>
+        <span class="n">palette</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span>
+    <span class="n">modded_index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">color_palette</span><span class="p">[</span><span class="n">palette</span><span class="p">])</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">color_palette</span><span class="p">[</span><span class="n">palette</span><span class="p">][</span><span class="n">modded_index</span><span class="p">]</span>
 
-    <span class="n">dark_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">index</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="n">color_palette</span><span class="p">))</span> <span class="o">*</span> <span class="mi">35</span>
+    <span class="n">dark_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">index</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="n">color_palette</span><span class="p">[</span><span class="n">palette</span><span class="p">]))</span> <span class="o">*</span> <span class="mi">35</span>
     <span class="k">return</span> <span class="n">color</span><span class="o">.</span><span class="n">darker</span><span class="p">(</span><span class="mi">100</span> <span class="o">+</span> <span class="n">dark_factor</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
