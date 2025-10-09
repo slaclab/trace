@@ -28,7 +28,7 @@ def color_btn(qapp):
     yield ColorButton(color=DEF_COLOR)
 
 
-@pytest.mark.parametrize("test_color", [*TEST_PALETTE])
+@pytest.mark.parametrize("test_color", [*TEST_PALETTE["default"]])
 def test_color_change(qtbot, color_btn, test_color):
     """Test that setting the button's color does change the button's color,
     stylesheet, and emit the color_change signal.
