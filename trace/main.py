@@ -3,6 +3,7 @@ import argparse
 import subprocess
 from socket import gethostname
 from getpass import getuser
+from pathlib import Path
 from datetime import datetime
 
 from qtpy.QtGui import QFont, QColor, QImage, QKeySequence
@@ -332,13 +333,13 @@ class TraceDisplay(Display):
 
         return footer_widget
 
-    @Slot(str)
-    def set_file_indicator(self, file_path: str) -> None:
+    @Slot(Path)
+    def set_file_indicator(self, file_path: Path) -> None:
         """Set the file indicator label to the given file path.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Path
             The file path to set the label to.
 
         Returns
@@ -348,7 +349,7 @@ class TraceDisplay(Display):
         """
         if not file_path:
             return
-        filename = os.path.basename(file_path)
+        filename = file_path.name
         if hasattr(self, "file_label") and self.file_label is not None:
             self.file_label.setText(filename)
         else:
