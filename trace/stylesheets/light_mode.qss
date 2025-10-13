@@ -1,7 +1,6 @@
 /* Global Styles */
 QWidget {
     background-color: #FAFAFA;
-    font-family: "Arial, sans-serif";
     font-size: 10px;
     color: #202020;
 }
