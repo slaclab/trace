@@ -57,6 +57,14 @@ The Plot Settings modal showing all available configuration options
 - **Usage**: Click the color button to open a color picker
 - **Note**: Changes are applied immediately
 
+### Curve Palette
+- **Purpose**: Set the color palette for new curves added to the plot
+- **Default**: Default Palette
+- **Usage**: Click the 'Select' button to open a window to view and select palettes
+- **Note**: 
+  - Selected palette will be used to set color of new curves
+  - 'Apply to current' will reapply selected palette to existing curves
+
 ### Axis Tick Font Size
 - **Purpose**: Control the size of axis tick labels
 - **Default**: 12 points
