@@ -788,7 +788,7 @@ class TraceDisplay(Display):
             QMessageBox.warning(
                 self,
                 "Error",
-                f"Unable to open the {site_name}. Please visit:\n{url}",
+                f"Unable to open the {site_name}. Please visit:\n{url.url()}",
             )
 
     @staticmethod
