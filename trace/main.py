@@ -225,6 +225,28 @@ class TraceDisplay(Display):
         tool_layout.setContentsMargins(0, 0, 0, 0)
         toolbar_widget.setLayout(tool_layout)
 
+        if FEEDBACK_FORM_URL:
+            feedback_btn = QPushButton()
+            icon = self.theme_manager.create_icon("ph.chat-circle-text", IconColors.PRIMARY)
+            feedback_btn.setIcon(icon)
+            feedback_btn.setIconSize(QSize(25, 25))
+            feedback_btn.setFixedSize(QSize(25, 25))
+            feedback_btn.setFlat(True)
+            feedback_btn.setToolTip("Provide Feedback / Report Bugs")
+            feedback_btn.clicked.connect(self.open_feedback_page)
+            tool_layout.addWidget(feedback_btn)
+
+        if DOCUMENTATION_URL:
+            documentation_btn = QPushButton()
+            icon = self.theme_manager.create_icon("ph.question", IconColors.PRIMARY)
+            documentation_btn.setIcon(icon)
+            documentation_btn.setIconSize(QSize(25, 25))
+            documentation_btn.setFixedSize(QSize(25, 25))
+            documentation_btn.setFlat(True)
+            documentation_btn.setToolTip("Open Documentation")
+            documentation_btn.clicked.connect(self.open_documentation_page)
+            tool_layout.addWidget(documentation_btn)
+
         tool_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         tool_layout.addSpacerItem(tool_spacer)
 
