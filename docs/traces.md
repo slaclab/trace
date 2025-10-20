@@ -22,11 +22,6 @@ Traces can also be added using the [PV Search tool].
 
   [PV Search tool]: tools/search.md
 
-When adding new traces, they will be attached to the last y-axis in the configuration section.
-If no axes exist, a new one will be created for the new trace.
-
-
-### :material-wrench: Planned for Future Development
 
 When adding new traces, they will be attached to a y-axis with the same unit.
 If no such axis exists, a new one will be created for the channel's unit.

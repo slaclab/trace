@@ -1,6 +1,8 @@
 {
     "save_file_dir": "$PHYSICS_DATA/Trace/",
     "datetime_pv": "SIOC:SYS0:AL00:TOD",
+    "documentation_url": "https://slaclab.github.io/trace/",
+    "feedback_form_url": "https://forms.office.com/r/7EtmhWZTfJ",
     "color_palettes": {
         "default": [
             "#008CF9", "#006E00", "#B80058",
@@ -15,8 +17,8 @@
             "#17becf"
         ],
         "light": [
-            "#8dd3c7", "#bebada", 
-            "#fb8072", "#80b1d3", "#fdb462", 
+            "#8dd3c7", "#bebada",
+            "#fb8072", "#80b1d3", "#fdb462",
             "#b3de69", "#fccde5", "#d9d9d9",
             "#bc80bd", "#ccebc5", "#ffed6f"
         ],

@@ -7,7 +7,7 @@ from qtpy.QtGui import QColor
 
 config_file = Path(__file__).parent / "config.json"
 with config_file.open() as f:
-    loaded_json = load(f)
+    loaded_json: dict = load(f)
 
 light_stylesheet = Path(__file__).parent / "stylesheets/light_mode.qss"
 dark_stylesheet = Path(__file__).parent / "stylesheets/dark_mode.qss"
@@ -15,6 +15,9 @@ dark_stylesheet = Path(__file__).parent / "stylesheets/dark_mode.qss"
 logger = getLogger("")
 
 datetime_pv = loaded_json["datetime_pv"]
+
+DOCUMENTATION_URL = loaded_json.get("documentation_url")
+FEEDBACK_FORM_URL = loaded_json.get("feedback_form_url")
 
 # Set default save file directory
 # If the directory does not exist, set it to the home directory

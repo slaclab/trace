@@ -6,8 +6,8 @@ from getpass import getuser
 from pathlib import Path
 from datetime import datetime
 
-from qtpy.QtGui import QFont, QColor, QImage, QKeySequence
-from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice, QSettings
+from qtpy.QtGui import QFont, QColor, QImage, QKeySequence, QDesktopServices
+from qtpy.QtCore import Qt, QUrl, Slot, QSize, Signal, QBuffer, QIODevice, QSettings
 from qtpy.QtWidgets import (
     QMenu,
     QLabel,
@@ -32,7 +32,7 @@ from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 from pydm.utilities.macro import parse_macro_string
 
-from config import logger, datetime_pv
+from config import DOCUMENTATION_URL, FEEDBACK_FORM_URL, logger, datetime_pv
 from file_io import PathAction, TraceFileHandler
 from widgets import ControlPanel, ElogPostModal, DataInsightTool, PlotSettingsModal
 from services import Theme, IconColors, ThemeManager, get_user, post_entry
@@ -224,6 +224,28 @@ class TraceDisplay(Display):
         tool_layout = QHBoxLayout()
         tool_layout.setContentsMargins(0, 0, 0, 0)
         toolbar_widget.setLayout(tool_layout)
+
+        if FEEDBACK_FORM_URL:
+            feedback_btn = QPushButton()
+            icon = self.theme_manager.create_icon("ph.chat-circle-text", IconColors.PRIMARY)
+            feedback_btn.setIcon(icon)
+            feedback_btn.setIconSize(QSize(25, 25))
+            feedback_btn.setFixedSize(QSize(25, 25))
+            feedback_btn.setFlat(True)
+            feedback_btn.setToolTip("Provide Feedback / Report Bugs")
+            feedback_btn.clicked.connect(self.open_feedback_page)
+            tool_layout.addWidget(feedback_btn)
+
+        if DOCUMENTATION_URL:
+            documentation_btn = QPushButton()
+            icon = self.theme_manager.create_icon("ph.question", IconColors.PRIMARY)
+            documentation_btn.setIcon(icon)
+            documentation_btn.setIconSize(QSize(25, 25))
+            documentation_btn.setFixedSize(QSize(25, 25))
+            documentation_btn.setFlat(True)
+            documentation_btn.setToolTip("Open Documentation")
+            documentation_btn.clicked.connect(self.open_documentation_page)
+            tool_layout.addWidget(documentation_btn)
 
         tool_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         tool_layout.addSpacerItem(tool_spacer)
@@ -448,6 +470,9 @@ class TraceDisplay(Display):
         trace_menu = self.construct_trace_menu(menu_bar)
         menu_bar.insertMenu(first_menu, trace_menu)
 
+        help_menu = self.construct_help_menu(menu_bar)
+        menu_bar.addMenu(help_menu)
+
     def construct_trace_menu(self, parent: QMenuBar) -> QMenu:
         """Create the menu for the application. This includes actions for
         file IO, saving to the E-Log, opening tools, and setting the app theme.
@@ -490,6 +515,27 @@ class TraceDisplay(Display):
             self.theme_action = menu.addAction("Switch to Dark Mode", self.toggle_theme)
 
         self.theme_action.setShortcut(QKeySequence("Ctrl+T"))
+
+        return menu
+
+    def construct_help_menu(self, parent: QMenuBar) -> QMenu:
+        """Create the help menu for the application. This includes actions
+        for opening the documentation and feedback pages.
+
+        Parameters
+        ----------
+        parent : QMenuBar
+            The menu bar that the Help menu will be a part of.
+
+        Returns
+        -------
+        QMenu
+            The Help menu consisting of actions for accessing help resources.
+        """
+        menu = QMenu("Help", parent)
+
+        menu.addAction("Open Documentation...", self.open_documentation_page)
+        menu.addAction("Provide Feedback / Report Bugs...", self.open_feedback_page)
 
         return menu
 
@@ -735,6 +781,39 @@ class TraceDisplay(Display):
 
         refresh_interval = self.plot_settings.auto_scroll_interval
         self.plot.setAutoScroll(enable, timespan, refresh_rate=refresh_interval)
+
+    @Slot()
+    def open_feedback_page(self) -> None:
+        """Open the form for providing feedback or reporting bugs in the
+        default browser.
+        """
+        feedback_url = QUrl(FEEDBACK_FORM_URL)
+        site_name = "Trace feedback page"
+        self.open_url_in_browser(feedback_url, site_name)
+
+    @Slot()
+    def open_documentation_page(self) -> None:
+        """Open the Trace documentation webpage in the default browser."""
+        doc_url = QUrl(DOCUMENTATION_URL)
+        site_name = "Trace documentation page"
+        self.open_url_in_browser(doc_url, site_name)
+
+    def open_url_in_browser(self, url: QUrl, site_name: str = "website") -> None:
+        """Open the given URL in the default web browser.
+
+        Parameters
+        ----------
+        url : QUrl
+            The URL to open.
+        site_name : str, optional
+            The name of the site for error messages, by default "website".
+        """
+        if not QDesktopServices.openUrl(url):
+            QMessageBox.warning(
+                self,
+                "Error",
+                f"Unable to open the {site_name}. Please visit:\n{url.url()}",
+            )
 
     @staticmethod
     def git_version():
