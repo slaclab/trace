@@ -470,6 +470,9 @@ class TraceDisplay(Display):
         trace_menu = self.construct_trace_menu(menu_bar)
         menu_bar.insertMenu(first_menu, trace_menu)
 
+        help_menu = self.construct_help_menu(menu_bar)
+        menu_bar.addMenu(help_menu)
+
     def construct_trace_menu(self, parent: QMenuBar) -> QMenu:
         """Create the menu for the application. This includes actions for
         file IO, saving to the E-Log, opening tools, and setting the app theme.
@@ -512,6 +515,27 @@ class TraceDisplay(Display):
             self.theme_action = menu.addAction("Switch to Dark Mode", self.toggle_theme)
 
         self.theme_action.setShortcut(QKeySequence("Ctrl+T"))
+
+        return menu
+
+    def construct_help_menu(self, parent: QMenuBar) -> QMenu:
+        """Create the help menu for the application. This includes actions
+        for opening the documentation and feedback pages.
+
+        Parameters
+        ----------
+        parent : QMenuBar
+            The menu bar that the Help menu will be a part of.
+
+        Returns
+        -------
+        QMenu
+            The Help menu consisting of actions for accessing help resources.
+        """
+        menu = QMenu("Help", parent)
+
+        menu.addAction("Open Documentation...", self.open_documentation_page)
+        menu.addAction("Provide Feedback / Report Bugs...", self.open_feedback_page)
 
         return menu
 
