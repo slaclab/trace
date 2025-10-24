@@ -240,49 +240,6 @@ class TraceDisplay(Display):
 
         return toolbar_widget
 
-    def parse_time_input(self) -> None:
-        """
-        Parse user entered time input. Allows user to add 'm' 'h', 'd', 'w', or 'M'
-        to the end of a float timescale to select minutes, hours, days, weeks, or months.
-        Timescale multiplier is set accordingly, and if the remaining entry can be
-        converted to a float, the timescale is changed accordingly.
-
-        Parameters
-        ----------
-        None
-            Gets time setting from user entered text on GUI
-
-        Returns
-        -------
-        None
-            Calls set_auto_scroll_span with float arg timescale
-
-        """
-
-        MULTIPLIERS = {"m": 60, "h": 3600, "d": 86400, "w": 604800, "M": 2628300}
-
-        time_str = self.timespan_lineEdit.text()
-
-        if time_str == "":
-            return
-
-        if time_str[0] == "-":
-            time_str = time_str[1:]
-
-        final_char = time_str[-1]
-        if final_char not in MULTIPLIERS:
-            return
-
-        try:
-            time = float(time_str[:-1])
-        except ValueError:
-            return
-
-        multiplier = MULTIPLIERS.get(final_char)
-
-        time_sec = time * multiplier
-        self.set_auto_scroll_span(time_sec)
-
     def build_timespan_buttons(self, parent: QWidget) -> QWidget:
         """Build the timespan buttons for the toolbar. This includes buttons
         for users to set enable autoscrolling for various timespans.
@@ -382,6 +339,49 @@ class TraceDisplay(Display):
         footer_layout.addWidget(self.time_label)
 
         return footer_widget
+
+    def parse_time_input(self) -> None:
+        """
+        Parse user entered time input. Allows user to add 'm' 'h', 'd', 'w', or 'M'
+        to the end of a float timescale to select minutes, hours, days, weeks, or months.
+        Timescale multiplier is set accordingly, and if the remaining entry can be
+        converted to a float, the timescale is changed accordingly.
+
+        Parameters
+        ----------
+        None
+            Gets time setting from user entered text on GUI
+
+        Returns
+        -------
+        None
+            Calls set_auto_scroll_span with float arg timescale
+
+        """
+
+        MULTIPLIERS = {"m": 60, "h": 3600, "d": 86400, "w": 604800, "M": 2628300}
+
+        time_str = self.timespan_lineEdit.text()
+
+        if time_str == "":
+            return
+
+        if time_str[0] == "-":
+            time_str = time_str[1:]
+
+        final_char = time_str[-1]
+        if final_char not in MULTIPLIERS:
+            return
+
+        try:
+            time = float(time_str[:-1])
+        except ValueError:
+            return
+
+        multiplier = MULTIPLIERS.get(final_char)
+
+        time_sec = time * multiplier
+        self.set_auto_scroll_span(time_sec)
 
     @Slot(Path)
     def set_file_indicator(self, file_path: Path) -> None:
