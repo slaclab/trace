@@ -17,6 +17,13 @@ load_dotenv()
 ELOG_API_URL = os.getenv("SWAPPS_TRACE_ELOG_API_URL")
 ELOG_API_KEY = os.getenv("SWAPPS_TRACE_ELOG_API_KEY")
 
+# Configure proxy if specified in environment
+ELOG_PROXY_URL = os.getenv("SWAPPS_TRACE_ELOG_PROXY_URL")
+if ELOG_PROXY_URL:
+    os.environ['HTTP_PROXY'] = ELOG_PROXY_URL
+    os.environ['HTTPS_PROXY'] = ELOG_PROXY_URL
+    logger.info(f"ELOG client using proxy: {ELOG_PROXY_URL}")
+
 
 def get_user() -> tuple[int, dict | Exception]:
     """
