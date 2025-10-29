@@ -31,9 +31,13 @@ if ELOG_PROXY_URL:
         except requests.exceptions.ProxyError as e:
             logger.error(f"Proxy connection failed: {ELOG_PROXY_URL} is not accessible - {e}")
         except requests.exceptions.ConnectionError as e:
-            logger.error(f"Connection failed through proxy {ELOG_PROXY_URL}. Check network connectivity and proxy configuration - {e}")
+            logger.error(
+                f"Connection failed through proxy {ELOG_PROXY_URL}. Check network connectivity and proxy configuration - {e}"
+            )
         except requests.exceptions.Timeout as e:
-            logger.error(f"Connection timeout through proxy {ELOG_PROXY_URL}. The proxy or server may be slow or unresponsive - {e}")
+            logger.error(
+                f"Connection timeout through proxy {ELOG_PROXY_URL}. The proxy or server may be slow or unresponsive - {e}"
+            )
         except requests.exceptions.RequestException as e:
             logger.error(f"Proxy connection test failed for {ELOG_PROXY_URL}: {e}")
     else:
