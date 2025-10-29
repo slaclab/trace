@@ -52,6 +52,7 @@ Below is a table describing the environment variables that need to be set.
 | PYDM_ARCHIVER_URL | The base URL for the Archiver Appliance Data Plugin |
 | SWAPPS_TRACE_ELOG_API_URL | The base URL for the E-Log API |
 | SWAPPS_TRACE_ELOG_API_KEY | Your API key for authenticating with the E-Log system |
+| SWAPPS_TRACE_ELOG_PROXY_URL | Proxy URL for environments that require proxy access to ELOG API | 
 
 
 
