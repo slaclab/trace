@@ -35,7 +35,14 @@ from pydm.utilities.macro import parse_macro_string
 from config import logger, datetime_pv
 from file_io import PathAction, TraceFileHandler
 from widgets import ControlPanel, ElogPostModal, DataInsightTool, PlotSettingsModal
-from services import Theme, IconColors, ThemeManager, get_user, post_entry
+from services import (
+    Theme,
+    IconColors,
+    ThemeManager,
+    get_user,
+    post_entry,
+    test_proxy_connection,
+)
 
 DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
 
@@ -552,6 +559,17 @@ class TraceDisplay(Display):
         bool
             True if the post was successful, False otherwise.
         """
+        # Test proxy connection first if proxy is configured
+        proxy_success, proxy_error = test_proxy_connection()
+        if not proxy_success:
+            error_dialog = QMessageBox()
+            error_dialog.setIcon(QMessageBox.Warning)
+            error_dialog.setWindowTitle("Proxy Connection Failed")
+            error_dialog.setText(proxy_error)
+            error_dialog.setStandardButtons(QMessageBox.Ok)
+            error_dialog.exec_()
+            return False
+
         # Test if API is reachable
         status_code, _ = get_user()
         if status_code != 200:
