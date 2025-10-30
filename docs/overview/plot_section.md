@@ -28,6 +28,13 @@ For instance, toggling the 1h button will result in the last hour of data being 
 
 
 
+## Time Span LineEdit
+
+Next to the time span buttons is a LineEdit where the user can enter any timescale as an int or float, with the last character specified as
+'m', 'h', 'd', 'w', or 'M' to specify minutes, hours, days, weeks, or months. Entering a timescale here and hitting the return key will
+result in the specified timescale being displayed on the plot. For example, entering '1h' will display the last hour of data, '2w' will display the last two weeks.
+
+
 ## Plot Settings
 
 Users can change the settings of the plot using the settings button in the top left corner of the plot marked with a :octicons-gear-24: icon.

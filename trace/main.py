@@ -14,6 +14,7 @@ from qtpy.QtWidgets import (
     QDialog,
     QWidget,
     QMenuBar,
+    QLineEdit,
     QSplitter,
     QFileDialog,
     QHBoxLayout,
@@ -231,6 +232,12 @@ class TraceDisplay(Display):
         timespan_buttons = self.build_timespan_buttons(toolbar_widget)
         tool_layout.addWidget(timespan_buttons)
 
+        self.timespan_lineEdit = QLineEdit()
+        self.timespan_lineEdit.returnPressed.connect(self.parse_time_input)
+        self.timespan_lineEdit.setFixedWidth(120)
+        self.timespan_lineEdit.setPlaceholderText("Enter timescale")
+        tool_layout.addWidget(self.timespan_lineEdit)
+
         return toolbar_widget
 
     def build_timespan_buttons(self, parent: QWidget) -> QWidget:
@@ -332,6 +339,38 @@ class TraceDisplay(Display):
         footer_layout.addWidget(self.time_label)
 
         return footer_widget
+
+    def parse_time_input(self) -> None:
+        """
+        Parse user entered time input. Allows user to add 'm' 'h', 'd', 'w', or 'M'
+        to the end of a float timescale to select minutes, hours, days, weeks, or months.
+        Timescale multiplier is set accordingly, and if the remaining entry can be
+        converted to a float, the timescale is changed accordingly.
+        """
+
+        MULTIPLIERS = {"m": 60, "h": 3600, "d": 86400, "w": 604800, "M": 2628300}
+
+        time_str = self.timespan_lineEdit.text()
+
+        if time_str == "":
+            return
+
+        if time_str[0] == "-":
+            time_str = time_str[1:]
+
+        final_char = time_str[-1]
+        if final_char not in MULTIPLIERS:
+            return
+
+        try:
+            time = float(time_str[:-1])
+        except ValueError:
+            return
+
+        multiplier = MULTIPLIERS.get(final_char)
+
+        time_sec = time * multiplier
+        self.set_auto_scroll_span(time_sec)
 
     @Slot(Path)
     def set_file_indicator(self, file_path: Path) -> None:
