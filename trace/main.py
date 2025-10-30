@@ -346,17 +346,6 @@ class TraceDisplay(Display):
         to the end of a float timescale to select minutes, hours, days, weeks, or months.
         Timescale multiplier is set accordingly, and if the remaining entry can be
         converted to a float, the timescale is changed accordingly.
-
-        Parameters
-        ----------
-        None
-            Gets time setting from user entered text on GUI
-
-        Returns
-        -------
-        None
-            Calls set_auto_scroll_span with float arg timescale
-
         """
 
         MULTIPLIERS = {"m": 60, "h": 3600, "d": 86400, "w": 604800, "M": 2628300}
