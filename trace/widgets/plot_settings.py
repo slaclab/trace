@@ -197,10 +197,10 @@ class PlotSettingsModal(QWidget):
         Parameters
         ----------
         size : int
-            The font size in pixels
+            The font size in points
         """
         font = QFont()
-        font.setPixelSize(size)
+        font.setPointSize(size)
 
         all_axes = self.plot.plotItem.getAxes()
         for axis in all_axes:
