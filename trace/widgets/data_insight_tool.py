@@ -56,16 +56,12 @@ def list_to_ascii(val:list[int])->str:
     """"""
     characters = map(chr, list(val))
     string = "".join(characters)
-    # string = string.encode("ascii", "ignore").decode("ascii")
     string = string.replace('\u0000', "")
-    print(f"({string})")
     return string
 
 def list_to_ascii_row(row):
     """"""
     row["Value"] = list_to_ascii(row["Value"])
-    # row["Value"] = row["Value"].str.encode('ascii', 'ignore').str.decode('ascii')
-    print(f"({row["Value"]})")
     return row
 
 
