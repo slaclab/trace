@@ -23,13 +23,13 @@ from qtpy.QtNetwork import QNetworkReply, QNetworkRequest, QNetworkAccessManager
 from qtpy.QtWidgets import (
     QLabel,
     QWidget,
+    QCheckBox,
     QComboBox,
     QFileDialog,
     QHBoxLayout,
     QMessageBox,
     QPushButton,
     QVBoxLayout,
-    QCheckBox,
 )
 
 from pydm.widgets.archiver_time_plot import (
@@ -52,12 +52,14 @@ if not logger.hasHandlers():
     logger.setLevel("DEBUG")
     handler.setLevel("DEBUG")
 
-def list_to_ascii(val:list[int])->str:
+
+def list_to_ascii(val: list[int]) -> str:
     """converts a list of integers into an ascii string"""
     characters = map(chr, list(val))
     string = "".join(characters)
-    string = string.replace('\u0000', "")
+    string = string.replace("\u0000", "")
     return string
+
 
 def list_to_ascii_row(row):
     """converts the Value column of a dataframe row from list to ascii string"""
@@ -371,14 +373,14 @@ class DataVisualizationModel(QAbstractTableModel):
     def val_as_str(self) -> bool:
         """weather or not to show the value column as a string or raw data"""
         return self._val_as_str
-    
+
     @val_as_str.setter
-    def val_as_str(self, val_as_str:bool):
+    def val_as_str(self, val_as_str: bool):
         """set the value column to display as string or raw data"""
         if val_as_str != self._val_as_str:
             self._val_as_str = val_as_str
-            start = self.index(0,1)
-            end = self.index(self.rowCount(),1)
+            start = self.index(0, 1)
+            end = self.index(self.rowCount(), 1)
             self.dataChanged.emit(start, end)
 
 
@@ -483,7 +485,7 @@ class DataInsightTool(QWidget):
         if combobox_ind < 0 or self.pv_select_box.count() <= combobox_ind:
             combobox_ind = self.pv_select_box.currentIndex()
         return self.plot.curveAtIndex(combobox_ind)
-    
+
     def set_val_as_str(self) -> None:
         """set the val_as_str flag on the self.data_vis_model based off of the self.val_as_str_checkbox
         then emit the dataChanged signal from the data_vis_model for the value column"""
@@ -491,7 +493,6 @@ class DataInsightTool(QWidget):
             self.data_vis_model.val_as_str = True
         else:
             self.data_vis_model.val_as_str = False
-        
 
     @Slot()
     def update_pv_select_box(self) -> None:
