@@ -29,6 +29,7 @@ from qtpy.QtWidgets import (
     QMessageBox,
     QPushButton,
     QVBoxLayout,
+    QCheckBox,
 )
 
 from pydm.widgets.archiver_time_plot import (
@@ -100,6 +101,7 @@ class DataVisualizationModel(QAbstractTableModel):
         self.unit = None
         self.description = None
         self.caget_thread = None
+        self._val_as_str = False
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.recieve_archive_reply)
@@ -122,6 +124,9 @@ class DataVisualizationModel(QAbstractTableModel):
             return None
         elif role == Qt.DisplayRole:
             val = self.df.iat[index.row(), index.column()]
+            if index.column() == 1 and self.val_as_str:
+                characters = map(chr, list(val))
+                val = "".join(characters)
             return str(val)
         return None
 
@@ -348,6 +353,20 @@ class DataVisualizationModel(QAbstractTableModel):
             with file_path.open("w") as file:
                 json.dump(export_dict, file, indent=2)
 
+    @property
+    def val_as_str(self) -> bool:
+        """weather or not to show the value column as a string or raw data"""
+        return self._val_as_str
+    
+    @val_as_str.setter
+    def val_as_str(self, val_as_str:bool):
+        """set the value column to display as string or raw data"""
+        if val_as_str != self._val_as_str:
+            self._val_as_str = val_as_str
+            start = self.index(0,1)
+            end = self.index(self.rowCount(),1)
+            self.dataChanged.emit(start, end)
+
 
 class DataInsightTool(QWidget):
     """The Data Insight Tool is a standalone widget that allows users to display
@@ -408,6 +427,11 @@ class DataInsightTool(QWidget):
         self.meta_data_label = QLabel()
         self.metadata_layout.addWidget(self.meta_data_label, alignment=Qt.AlignLeft)
 
+        self.val_as_str_checkbox = QCheckBox()
+        self.val_as_str_checkbox.setText("Value As String")
+        self.metadata_layout.addWidget(self.val_as_str_checkbox)
+        self.val_as_str_checkbox.toggled.connect(self.set_val_as_str)
+
         self.refresh_button = QPushButton("Refresh Data")
         self.metadata_layout.addWidget(self.refresh_button, alignment=Qt.AlignRight)
         self.main_layout.addLayout(self.metadata_layout)
@@ -445,6 +469,15 @@ class DataInsightTool(QWidget):
         if combobox_ind < 0 or self.pv_select_box.count() <= combobox_ind:
             combobox_ind = self.pv_select_box.currentIndex()
         return self.plot.curveAtIndex(combobox_ind)
+    
+    def set_val_as_str(self) -> None:
+        """set the val_as_str flag on the self.data_vis_model based off of the self.val_as_str_checkbox
+        then emit the dataChanged signal from the data_vis_model for the value column"""
+        if self.val_as_str_checkbox.isChecked():
+            self.data_vis_model.val_as_str = True
+        else:
+            self.data_vis_model.val_as_str = False
+        
 
     @Slot()
     def update_pv_select_box(self) -> None:
