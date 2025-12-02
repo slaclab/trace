@@ -52,6 +52,22 @@ if not logger.hasHandlers():
     logger.setLevel("DEBUG")
     handler.setLevel("DEBUG")
 
+def list_to_ascii(val:list[int])->str:
+    """"""
+    characters = map(chr, list(val))
+    string = "".join(characters)
+    # string = string.encode("ascii", "ignore").decode("ascii")
+    string = string.replace('\u0000', "")
+    print(f"({string})")
+    return string
+
+def list_to_ascii_row(row):
+    """"""
+    row["Value"] = list_to_ascii(row["Value"])
+    # row["Value"] = row["Value"].str.encode('ascii', 'ignore').str.decode('ascii')
+    print(f"({row["Value"]})")
+    return row
+
 
 class CAGetThread(QThread):
     """Thread for making a CA get request to the given address. This is used
@@ -125,8 +141,7 @@ class DataVisualizationModel(QAbstractTableModel):
         elif role == Qt.DisplayRole:
             val = self.df.iat[index.row(), index.column()]
             if index.column() == 1 and self.val_as_str:
-                characters = map(chr, list(val))
-                val = "".join(characters)
+                val = list_to_ascii(val)
             return str(val)
         return None
 
@@ -334,8 +349,11 @@ class DataVisualizationModel(QAbstractTableModel):
 
         header_dict = {"Address": self.address, "Unit": self.unit, "Description": self.description}
 
-        export_df = self.df.copy()
+        export_df = self.df.copy(deep=True)
         export_df["Datetime"] = export_df["Datetime"].astype("int64") / 1e9
+
+        if self.val_as_str:
+            export_df = export_df.apply(list_to_ascii_row, axis=1)
 
         if extension == ".csv":
             file_header = "".join([f"{k}: {v}\n" for k, v in header_dict.items()])
@@ -385,6 +403,7 @@ class DataInsightTool(QWidget):
         self.data_vis_model.reply_recieved.connect(self.loading_label.hide)
         self.data_vis_model.description_changed.connect(self.set_meta_data)
         self.export_button.clicked.connect(self.export_data_to_file)
+        self.val_as_str_checkbox.toggled.connect(self.set_val_as_str)
         self.pv_select_box.currentIndexChanged.connect(self.get_data)
         self.refresh_button.clicked.connect(self.get_data)
 
@@ -430,7 +449,6 @@ class DataInsightTool(QWidget):
         self.val_as_str_checkbox = QCheckBox()
         self.val_as_str_checkbox.setText("Value As String")
         self.metadata_layout.addWidget(self.val_as_str_checkbox)
-        self.val_as_str_checkbox.toggled.connect(self.set_val_as_str)
 
         self.refresh_button = QPushButton("Refresh Data")
         self.metadata_layout.addWidget(self.refresh_button, alignment=Qt.AlignRight)
