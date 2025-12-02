@@ -53,14 +53,14 @@ if not logger.hasHandlers():
     handler.setLevel("DEBUG")
 
 def list_to_ascii(val:list[int])->str:
-    """"""
+    """converts a list of integers into an ascii string"""
     characters = map(chr, list(val))
     string = "".join(characters)
     string = string.replace('\u0000', "")
     return string
 
 def list_to_ascii_row(row):
-    """"""
+    """converts the Value column of a dataframe row from list to ascii string"""
     row["Value"] = list_to_ascii(row["Value"])
     return row
 
