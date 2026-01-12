@@ -337,9 +337,26 @@ class ControlPanel(QtWidgets.QWidget):
             return last_axis.add_formula_curve(pv)
         else:
             curve = last_axis.add_curve(pv)
-            curve.move_to_axis_from_unit()  # Move to axis based on unit
+            self.move_to_axis_from_unit(curve)  # Move to axis based on unit
 
             return curve
+
+    def move_to_axis_from_unit(self, curve: "CurveItem") -> None:
+        """
+        Detect curve units and automatically move curve to an axis matching its unit
+
+        Parameters
+        ----------
+        curve : CurveItem
+        """
+        if not isinstance(curve, CurveItem):
+            return
+        if not curve.is_formula_curve():
+            unit = curve.source.units
+            if unit:
+                self.move_curve_to_axis(curve, unit)
+            else:
+                curve.source.unitSignal.connect(lambda unit: self.move_curve_to_axis(curve, unit))
 
     def clear_all(self) -> None:
         """Clear all axes and curves from the plot and control panel."""
@@ -609,6 +626,11 @@ class AxisItem(QtWidgets.QWidget):
         CurveItem
             The created CurveItem widget.
         """
+
+        # Avoid adding duplicate PVs
+        if pv in self.get_curve_names():
+            return None
+
         palette = self.control_panel.curve_palette
         color = ColorButton.index_color(len(self.plot._curves), palette=palette)
         args = {
@@ -624,6 +646,20 @@ class AxisItem(QtWidgets.QWidget):
         plot_curve_item = self.plot.addYChannel(**args)
 
         return self.make_curve_widget(plot_curve_item)
+
+    def get_curves(self) -> list["CurveItem"]:
+        """Returns a list of CurveItems on this axis"""
+        curves = []
+        for i in range(self.layout().count() - 1, -1, -1):
+            item = self.layout().itemAt(i).widget()
+            if isinstance(item, CurveItem):
+                curves.append(item)
+
+        return curves
+
+    def get_curve_names(self) -> list[str]:
+        """Returns a list of curve names on this axis"""
+        return [curve.source.name() for curve in self.get_curves()]
 
     def add_formula_curve(self, formula: str) -> "CurveItem":
         """Create a new FormulaCurveItem for the given formula and add it
@@ -955,15 +991,6 @@ class CurveItem(QtWidgets.QWidget):
         self.control_panel.curve_dict[self.variable_name] = self.source
 
         self.setup_layout()
-
-    def move_to_axis_from_unit(self):
-        """Automatically move curve to axis based on unit"""
-        if not self.is_formula_curve():
-            unit = self.source.units
-            if unit:
-                self.control_panel.move_curve_to_axis(self, unit)
-            else:
-                self.source.unitSignal.connect(lambda unit: self.control_panel.move_curve_to_axis(self, unit))
 
     @property
     def plot(self):
