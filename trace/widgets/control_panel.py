@@ -235,7 +235,7 @@ class ControlPanel(QtWidgets.QWidget):
             List of PV names to add as curves
         """
         for pv in pvs:
-            self.add_curve(pv)
+            self.add_curve(pv, duplicate=False)
 
     def add_empty_axis(self, name: str = "") -> "AxisItem":
         logger.debug("Adding new empty axis to the plot")
@@ -325,7 +325,7 @@ class ControlPanel(QtWidgets.QWidget):
         return plot_curves
 
     @QtCore.Slot()
-    def add_curve(self, pv: str = None) -> "CurveItem":
+    def add_curve(self, pv: str = None, duplicate: bool = True) -> "CurveItem":
         if pv is None and self.sender():
             pv = self.sender().text()
 
@@ -336,10 +336,29 @@ class ControlPanel(QtWidgets.QWidget):
         if pv.startswith("f://"):
             return last_axis.add_formula_curve(pv)
         else:
+            curves = self.curve_item_dict
+            if pv in [curves[curve]["name"] for curve in curves]:
+                logger.debug(f"Tried adding {pv} but curve for PV '{pv}' already exists.")
+                if duplicate:
+                    logger.debug(f"Adding duplicate curve to new axis for PV '{pv}'.")
+                    return self.add_curve_to_new_axis(pv)
+                else:
+                    logger.debug(f"Not adding duplicate curve for PV '{pv}'.")
+                    return None
+
             curve = last_axis.add_curve(pv)
             self.move_to_axis_from_unit(curve)  # Move to axis based on unit
 
             return curve
+
+    def add_curve_to_new_axis(self, pv: str) -> "CurveItem":
+        """
+        Add curve to a new, empty axis. Used to avoid adding duplicate curves to the same axis.
+        """
+        if not pv:
+            return None
+        axis_item = self.add_empty_axis()
+        return axis_item.add_curve(pv)
 
     def move_to_axis_from_unit(self, curve: "CurveItem") -> None:
         """
@@ -626,10 +645,6 @@ class AxisItem(QtWidgets.QWidget):
         CurveItem
             The created CurveItem widget.
         """
-
-        # Avoid adding duplicate PVs
-        if pv in self.get_curve_names():
-            return None
 
         palette = self.control_panel.curve_palette
         color = ColorButton.index_color(len(self.plot._curves), palette=palette)
