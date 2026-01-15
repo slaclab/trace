@@ -326,6 +326,13 @@ class ControlPanel(QtWidgets.QWidget):
 
     @QtCore.Slot()
     def add_curve(self, pv: str = None, duplicate: bool = True) -> "CurveItem":
+        """
+        Add curve to the plot. New curves are added to the last axis by default, then sorted by unit.
+
+        Parameters:
+            pv (str): EPICS PV or formula string
+            duplicate (bool): If True, duplicate PVs will be added on a new axis. If False, skip duplicates.
+        """
         if pv is None and self.sender():
             pv = self.sender().text()
 
@@ -336,14 +343,15 @@ class ControlPanel(QtWidgets.QWidget):
         if pv.startswith("f://"):
             return last_axis.add_formula_curve(pv)
         else:
+            # Check for duplicate PVs. If pv already exists, either add to new axis or skip
+            # depending on 'duplicate' flag
             curves = self.curve_item_dict
             if pv in [curves[curve]["name"] for curve in curves]:
-                logger.debug(f"Tried adding {pv} but curve for PV '{pv}' already exists.")
                 if duplicate:
                     logger.debug(f"Adding duplicate curve to new axis for PV '{pv}'.")
                     return self.add_curve_to_new_axis(pv)
                 else:
-                    logger.debug(f"Not adding duplicate curve for PV '{pv}'.")
+                    logger.debug(f"Skipping duplicate curve for PV '{pv}'.")
                     return None
 
             curve = last_axis.add_curve(pv)
@@ -354,6 +362,10 @@ class ControlPanel(QtWidgets.QWidget):
     def add_curve_to_new_axis(self, pv: str) -> "CurveItem":
         """
         Add curve to a new, empty axis. Used to avoid adding duplicate curves to the same axis.
+
+        Parameters
+        ----------
+        pv (str): EPICS PV name
         """
         if not pv:
             return None
