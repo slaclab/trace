@@ -2,7 +2,7 @@
 
 The Plot Settings modal allows you to customize the appearance and behavior of your plot. These settings are saved with Trace configuration files (`.trc`) and can be shared between users.
 
-Access the Plot Settings by clicking the gear icon (:octicons-gear-16:) in the top-right corner of the plot area.
+Access the Plot Settings by clicking the gear icon (:octicons-gear-16:) in the top-left corner of the plot area.
 
 <figure markdown="span">
   ![Plot Settings Modal](images/plot_settings_modal.png){ width=300 }
