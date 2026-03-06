@@ -99,6 +99,7 @@ class ControlPanel(QtWidgets.QWidget):
         self.curve_list_changed.connect(self.formula_dialog.curve_model.refresh)
 
         self.update_icons()
+        QTimer.singleShot(0, self.pv_line_edit.setFocus)
 
     def update_icons(self) -> None:
         """Update all icons based on current theme."""
