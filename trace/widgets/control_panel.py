@@ -78,6 +78,29 @@ class ControlPanel(QtWidgets.QWidget):
         pv_plot_button.clicked.connect(self.add_curve_from_line_edit)
         pv_plotter_layout.addWidget(pv_plot_button)
 
+        # Style the plot button with blue accent color
+        if self.theme_manager:
+            blue_color = self.theme_manager.get_icon_color(IconColors.ACCENT)
+            pv_plot_button.setStyleSheet(
+                f"""
+                QPushButton {{
+                    background-color: {blue_color};
+                    color: white;
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                }}
+                QPushButton:hover {{
+                    background-color: {blue_color};
+                    opacity: 0.8;
+                }}
+                QPushButton:pressed {{
+                    background-color: {blue_color};
+                    opacity: 0.6;
+                }}
+            """
+            )
+
         self.axis_list = QtWidgets.QVBoxLayout()
         frame = QtWidgets.QFrame()
         frame.setLayout(self.axis_list)
