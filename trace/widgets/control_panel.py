@@ -85,10 +85,6 @@ class ControlPanel(QtWidgets.QWidget):
                 f"""
                 QPushButton {{
                     background-color: {blue_color};
-                    color: white;
-                    border: none;
-                    padding: 5px 10px;
-                    border-radius: 4px;
                 }}
                 QPushButton:hover {{
                     background-color: {blue_color};
