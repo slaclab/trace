@@ -81,7 +81,7 @@ class ControlPanel(QtWidgets.QWidget):
         # Style the plot button with blue accent color
         if self.theme_manager:
             blue_color = self.theme_manager.get_icon_color(IconColors.ACCENT)
-            text_color = "white"
+            text_color = "#FFFFFF"
             pv_plot_button.setStyleSheet(
                 f"""
                 QPushButton {{
