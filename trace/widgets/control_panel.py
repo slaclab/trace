@@ -88,16 +88,6 @@ class ControlPanel(QtWidgets.QWidget):
                     background-color: {blue_color};
                     color: {text_color};
                 }}
-                QPushButton:hover {{
-                    background-color: {blue_color};
-                    color: {text_color};
-                    opacity: 0.8;
-                }}
-                QPushButton:pressed {{
-                    background-color: {blue_color};
-                    color: {text_color};
-                    opacity: 0.6;
-                }}
             """
             )
 
