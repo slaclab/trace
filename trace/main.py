@@ -28,6 +28,7 @@ from qtpy.QtWidgets import (
     QAbstractButton,
 )
 from pyqtgraph.exporters import ImageExporter
+from pyqtgraph.graphicsItems.LegendItem import ItemSample
 
 from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
@@ -39,6 +40,17 @@ from widgets import ControlPanel, ElogPostModal, DataInsightTool, PlotSettingsMo
 from services import Theme, IconColors, ThemeManager, get_user, post_entry
 
 DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
+
+
+class _LegendSample(ItemSample):
+    """Legend sample that does not toggle curve visibility on click.
+
+    Trace manages curve visibility through the control panel toggles,
+    so legend clicks should not independently change visibility state.
+    """
+
+    def mouseClickEvent(self, event):
+        event.accept()
 
 
 class TraceDisplay(Display):
@@ -183,6 +195,7 @@ class TraceDisplay(Display):
             cache_data=False,
             show_all=False,
         )
+        self.plot._legend.sampleType = _LegendSample
 
         multi_axis_plot = self.plot.plotItem
         multi_axis_plot.vb.menu = None
@@ -785,10 +798,17 @@ class TraceDisplay(Display):
             The output of `git describe --tags`, or an empty string on failure.
         """
         project_directory = __file__.rsplit("/", 1)[0]
-        git_cmd = subprocess.run(
-            f"cd {project_directory} && git describe --tags", text=True, shell=True, capture_output=True
-        )
-        return git_cmd.stdout.strip()
+        try:
+            git_cmd = subprocess.run(
+                f"cd {project_directory} && git describe --tags",
+                text=True,
+                shell=True,
+                capture_output=True,
+                timeout=5,
+            )
+            return git_cmd.stdout.strip()
+        except subprocess.TimeoutExpired:
+            return ""
 
     def parse_cli_args(self, args, macros):
         """Parse CLI-style arguments and macros into startup configuration.
