@@ -401,9 +401,13 @@ class ControlPanel(QtWidgets.QWidget):
             if axis_item is None:
                 axis_item = self.add_empty_axis(axis_name)
 
-            pv_name = curve_dict.get("channel", "")
-            del curve_dict["channel"]  # Remove channel key to avoid conflicts with y_channel
-            axis_item.add_curve(pv_name, curve_dict)
+            if "channel" in curve_dict:
+                pv_name = curve_dict.get("channel", "")
+                del curve_dict["channel"]  # Remove channel key to avoid conflicts with y_channel
+                axis_item.add_curve(pv_name, curve_dict)
+            elif "formula" in curve_dict:
+                formula = curve_dict.get("formula", "f://")
+                axis_item.add_formula_curve(formula)
         self.plot.redrawPlot()
         self.axis_list.itemAt(self.axis_list.count() - 2).widget()
 
