@@ -18,7 +18,8 @@ def file_handler(qapp):
     """
     mock_plot = Mock()
     with patch.dict(environ, {"PYDM_ARCHIVER_URL": DUMMY_ARCHIVER_URL}):
-        yield TraceFileHandler(mock_plot)
+        with patch("file_io.file_handler.QMessageBox.warning", return_value=Mock()):
+            yield TraceFileHandler(mock_plot)
 
 
 def test_open_file_curves_signal_includes_formulas(file_handler, get_test_file, qtbot):
@@ -39,7 +40,7 @@ def test_open_file_curves_signal_includes_formulas(file_handler, get_test_file, 
     curves_signal is emitted once with a list whose length equals the number
     of regular curves plus the number of formulas in the file.
     """
-    test_file = get_test_file("test_file_formula.trc")
+    test_file = get_test_file("test_file.trc")
 
     with patch.dict(environ, {"PYDM_ARCHIVER_URL": DUMMY_ARCHIVER_URL}):
         with qtbot.wait_signal(file_handler.curves_signal) as blocker:
@@ -67,7 +68,7 @@ def test_open_file_formula_entries_have_formula_key(file_handler, get_test_file,
     Exactly one entry in curves_signal has a 'formula' key, and its value
     matches the formula string from the test file.
     """
-    test_file = get_test_file("test_file_formula.trc")
+    test_file = get_test_file("test_file.trc")
 
     with patch.dict(environ, {"PYDM_ARCHIVER_URL": DUMMY_ARCHIVER_URL}):
         with qtbot.wait_signal(file_handler.curves_signal) as blocker:
@@ -97,7 +98,7 @@ def test_open_file_regular_curve_entries_have_channel_key(file_handler, get_test
     Exactly two entries in curves_signal have a 'channel' key, corresponding
     to the regular PV curves in the test file.
     """
-    test_file = get_test_file("test_file_formula.trc")
+    test_file = get_test_file("test_file.trc")
 
     with patch.dict(environ, {"PYDM_ARCHIVER_URL": DUMMY_ARCHIVER_URL}):
         with qtbot.wait_signal(file_handler.curves_signal) as blocker:
@@ -127,7 +128,7 @@ def test_open_file_formulas_appended_after_curves(file_handler, get_test_file, q
     The first entries in curves_signal have 'channel' keys (regular curves),
     and the last entries have 'formula' keys (formula curves).
     """
-    test_file = get_test_file("test_file_formula.trc")
+    test_file = get_test_file("test_file.trc")
 
     with patch.dict(environ, {"PYDM_ARCHIVER_URL": DUMMY_ARCHIVER_URL}):
         with qtbot.wait_signal(file_handler.curves_signal) as blocker:
@@ -158,7 +159,7 @@ def test_open_file_formula_properties_match_trc_file(file_handler, get_test_file
     The formula entry in curves_signal has the correct formula string, name,
     color, yAxisName, lineWidth, and curveDict matching the test file.
     """
-    test_file = get_test_file("test_file_formula.trc")
+    test_file = get_test_file("test_file.trc")
 
     with patch.dict(environ, {"PYDM_ARCHIVER_URL": DUMMY_ARCHIVER_URL}):
         with qtbot.wait_signal(file_handler.curves_signal) as blocker:
