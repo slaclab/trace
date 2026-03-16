@@ -336,7 +336,10 @@ class ControlPanel(QtWidgets.QWidget):
         if pv.startswith("f://"):
             return last_axis.add_formula_curve(pv)
         else:
-            return last_axis.add_curve(pv)
+            curve = last_axis.add_curve(pv)
+            curve.move_to_axis_from_unit()  # Move to axis based on unit
+
+            return curve
 
     def clear_all(self) -> None:
         """Clear all axes and curves from the plot and control panel."""
@@ -950,10 +953,17 @@ class CurveItem(QtWidgets.QWidget):
 
         self.variable_name = self.control_panel.key_gen.send(self.source)
         self.control_panel.curve_dict[self.variable_name] = self.source
-        if not self.is_formula_curve():
-            self.source.unitSignal.connect(lambda unit: self.control_panel.move_curve_to_axis(self, unit))
 
         self.setup_layout()
+
+    def move_to_axis_from_unit(self):
+        """Automatically move curve to axis based on unit"""
+        if not self.is_formula_curve():
+            unit = self.source.units
+            if unit:
+                self.control_panel.move_curve_to_axis(self, unit)
+            else:
+                self.source.unitSignal.connect(lambda unit: self.control_panel.move_curve_to_axis(self, unit))
 
     @property
     def plot(self):
