@@ -91,10 +91,11 @@ class DataVisualizationModel(QAbstractTableModel):
 
     reply_recieved = Signal()
     description_changed = Signal()
+    _df_columns = ["Datetime", "Value", "Severity", "Source"]
 
     def __init__(self, parent: QObject = None) -> None:
         super().__init__(parent)
-        self.df = pd.DataFrame(columns=["Datetime", "Value", "Severity", "Source"])
+        self.df = pd.DataFrame(columns=self._df_columns)
 
         self.address = None
         self.unit = None
@@ -172,6 +173,11 @@ class DataVisualizationModel(QAbstractTableModel):
         left_ts = max(x_range[0], curve_range[0])
         right_ts = min(x_range[1], curve_range[1])
 
+        # Reset data model to empty state
+        self.beginResetModel()
+        self.df = pd.DataFrame(columns=self._df_columns)
+        self.endResetModel()
+
         # Populate the model with live data if it is shown on the plot
         if (curve_range[0] <= x_range[1]) and (x_range[0] <= curve_range[1]):
             self.set_live_data(curve_item, (left_ts, right_ts))
@@ -201,18 +207,18 @@ class DataVisualizationModel(QAbstractTableModel):
         data = curve_item.data_buffer[:, -data_n:]
         indices = np.where((x_range[0] <= data[0]) & (data[0] <= x_range[1]))[0]
 
-        convert_data = {"Datetime": [], "Value": [], "Severity": []}
-        convert_data["Datetime"] = data[0, indices]
-        convert_data["Value"] = data[1, indices]
-        convert_data["Severity"] = ["NaN"] * indices.size
-        convert_data["Source"] = ["Live"] * indices.size
+        live_df = pd.DataFrame(
+            {
+                "Datetime": [datetime.fromtimestamp(ts) for ts in data[0, indices]],
+                "Value": data[1, indices],
+                "Severity": ["NaN"] * indices.size,
+                "Source": ["Live"] * indices.size,
+            }
+        )
 
-        live_df = pd.DataFrame(convert_data)
-        live_df["Datetime"] = live_df["Datetime"].apply(datetime.fromtimestamp)
-
-        self.beginResetModel()
-        self.df = live_df
-        self.endResetModel()
+        self.beginInsertRows(QModelIndex(), 0, live_df.shape[0] - 1)
+        self.df = pd.concat([live_df, self.df])
+        self.endInsertRows()
 
     def request_archive_data(self, pv_name: str, x_range: list[int] | tuple[int, int]) -> None:
         """Request data from the Archiver Appliance for the given PV and time range.
@@ -282,24 +288,19 @@ class DataVisualizationModel(QAbstractTableModel):
         data_dict : dict
             Dictionary containing all data to be added to the model's dataframe
         """
-        convert_data = {"Datetime": [], "Value": [], "Severity": []}
-        for point in data_dict[0]["data"]:
-            ts = point["secs"] + (point["nanos"] * 1e-9)
-            convert_data["Datetime"].append(datetime.fromtimestamp(ts))
-            convert_data["Value"].append(point["val"])
-            convert_data["Severity"].append(SEVERITY_MAP[point["severity"]])
-        convert_data["Source"] = ["Archive"] * len(data_dict[0]["data"])
-        archive_df = pd.DataFrame(convert_data)
+        points = data_dict[0]["data"]
+        archive_df = pd.DataFrame(
+            {
+                "Datetime": [datetime.fromtimestamp(p["secs"] + p["nanos"] * 1e-9) for p in points],
+                "Value": [p["val"] for p in points],
+                "Severity": [SEVERITY_MAP[p["severity"]] for p in points],
+                "Source": ["Archive"] * len(points),
+            }
+        )
 
-        if self.df.empty:
-            self.beginResetModel()
-            self.df = archive_df
-            self.endResetModel()
-        else:
-            self.beginInsertRows(QModelIndex(), 0, archive_df.shape[0] - 1)
-            self.df = pd.concat([archive_df, self.df])
-            self.endInsertRows()
-        self.layoutChanged.emit()
+        self.beginInsertRows(QModelIndex(), 0, archive_df.shape[0] - 1)
+        self.df = pd.concat([archive_df, self.df])
+        self.endInsertRows()
 
     def export_data(self, file_path: Path, extension: str) -> None:
         """Export the model's data to the given file. Adds metadata to the top of
