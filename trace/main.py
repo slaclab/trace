@@ -460,7 +460,6 @@ class TraceDisplay(Display):
             self.settings_button.setIcon(settings_icon)
 
     def on_archive_request_started(self) -> None:
-        self._archive_status_label.hide()
         self._archive_status_timer.stop()
         self._archive_status_timer.start(2000)
 
