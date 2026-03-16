@@ -1,3 +1,4 @@
+import os
 from os import getenv
 from pathlib import Path
 from unittest import mock
@@ -9,6 +10,8 @@ from pydm.application import PyDMApplication
 
 from main import TraceDisplay
 from config import logger
+
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 
 @pytest.fixture
