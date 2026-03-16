@@ -367,6 +367,8 @@ class DataInsightTool(QWidget):
 
         self.layout_init()
 
+        self.unopened = True
+
         self.data_vis_model.reply_recieved.connect(self.loading_label.hide)
         self.data_vis_model.description_changed.connect(self.set_meta_data)
         self.export_button.clicked.connect(self.export_data_to_file)
@@ -422,6 +424,12 @@ class DataInsightTool(QWidget):
         self.main_layout.addWidget(self.data_table)
 
         self.setLayout(self.main_layout)
+
+    def show(self):
+        if self.unopened and self.pv_select_box.count() >= 1:
+            self.unopened = False
+            self.get_data()
+        super().show()
 
     def set_meta_data(self) -> None:
         """Populate the meta_data_label with the curve's unit (if any) and description."""
