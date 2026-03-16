@@ -27,13 +27,13 @@ class SettingsTitle(QLabel):
         text : str
             The title text to display
         size : int, optional
-            Custom font size in pixels
+            Custom font size in points
         """
         super().__init__(text=text, parent=parent)
         bold_font = QFont()
         bold_font.setBold(True)
         if size is not None:
-            bold_font.setPixelSize(size)
+            bold_font.setPointSize(size)
         self.setFont(bold_font)
 
 
