@@ -4155,7 +4155,11 @@ plot's curves, and set all new curves based on the provided curve data.</p>
 <span class="normal">408</span>
 <span class="normal">409</span>
 <span class="normal">410</span>
-<span class="normal">411</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_curves</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curves</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_curves</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curves</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Given a list of dictionaries containing curve data, clear the</span>
 <span class="sd">    plot&#39;s curves, and set all new curves based on the provided curve data.</span>
 
@@ -4174,9 +4178,13 @@ plot's curves, and set all new curves based on the provided curve data.</p>
         <span class="k">if</span> <span class="n">axis_item</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">axis_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_empty_axis</span><span class="p">(</span><span class="n">axis_name</span><span class="p">)</span>
 
-        <span class="n">pv_name</span> <span class="o">=</span> <span class="n">curve_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;channel&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">del</span> <span class="n">curve_dict</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span>  <span class="c1"># Remove channel key to avoid conflicts with y_channel</span>
-        <span class="n">axis_item</span><span class="o">.</span><span class="n">add_curve</span><span class="p">(</span><span class="n">pv_name</span><span class="p">,</span> <span class="n">curve_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;channel&quot;</span> <span class="ow">in</span> <span class="n">curve_dict</span><span class="p">:</span>
+            <span class="n">pv_name</span> <span class="o">=</span> <span class="n">curve_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;channel&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">curve_dict</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span>  <span class="c1"># Remove channel key to avoid conflicts with y_channel</span>
+            <span class="n">axis_item</span><span class="o">.</span><span class="n">add_curve</span><span class="p">(</span><span class="n">pv_name</span><span class="p">,</span> <span class="n">curve_dict</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;formula&quot;</span> <span class="ow">in</span> <span class="n">curve_dict</span><span class="p">:</span>
+            <span class="n">formula</span> <span class="o">=</span> <span class="n">curve_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;formula&quot;</span><span class="p">,</span> <span class="s2">&quot;f://&quot;</span><span class="p">)</span>
+            <span class="n">axis_item</span><span class="o">.</span><span class="n">add_formula_curve</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">redrawPlot</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">axis_list</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_list</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -4251,11 +4259,7 @@ named after a curve's unit.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">417</span>
 <span class="normal">418</span>
 <span class="normal">419</span>
 <span class="normal">420</span>
@@ -4270,7 +4274,11 @@ named after a curve's unit.</p>
 <span class="normal">429</span>
 <span class="normal">430</span>
 <span class="normal">431</span>
-<span class="normal">432</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">move_curve_to_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_item</span><span class="p">:</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">,</span> <span class="n">target_axis_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">move_curve_to_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_item</span><span class="p">:</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">,</span> <span class="n">target_axis_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove a given CurveItem from its current AxisItem and add it to</span>
 <span class="sd">    the AxisItem with the given target axis name. If no such AxisItem</span>
 <span class="sd">    exists, a new one will be created. Intended to be used for Axes</span>
@@ -4398,11 +4406,7 @@ reordering and moving curves between axes.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">454</span>
 <span class="normal">455</span>
 <span class="normal">456</span>
 <span class="normal">457</span>
@@ -4479,7 +4483,11 @@ reordering and moving curves between axes.</p>
 <span class="normal">528</span>
 <span class="normal">529</span>
 <span class="normal">530</span>
-<span class="normal">531</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">plot_axis_item</span><span class="p">:</span> <span class="n">BasePlotAxisItem</span><span class="p">,</span> <span class="n">control_panel</span><span class="p">:</span> <span class="n">ControlPanel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">theme_manager</span><span class="p">:</span> <span class="n">ThemeManager</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the axis item widget.</span>
@@ -4615,11 +4623,7 @@ reordering and moving curves between axes.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">533</span>
-<span class="normal">534</span>
-<span class="normal">535</span>
-<span class="normal">536</span>
-<span class="normal">537</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">537</span>
 <span class="normal">538</span>
 <span class="normal">539</span>
 <span class="normal">540</span>
@@ -4632,7 +4636,11 @@ reordering and moving curves between axes.</p>
 <span class="normal">547</span>
 <span class="normal">548</span>
 <span class="normal">549</span>
-<span class="normal">550</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_icons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_icons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update all icons based on current theme&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">theme_manager</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expanded</span><span class="p">:</span>
@@ -4672,13 +4680,13 @@ reordering and moving curves between axes.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">556</span>
 <span class="normal">557</span>
-<span class="normal">558</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_theme_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theme</span><span class="p">:</span> <span class="n">Theme</span><span class="p">):</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_theme_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theme</span><span class="p">:</span> <span class="n">Theme</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle theme changes by updating icons&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">update_icons</span><span class="p">()</span>
 
@@ -4762,11 +4770,7 @@ it to this AxisItem.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">573</span>
 <span class="normal">574</span>
 <span class="normal">575</span>
 <span class="normal">576</span>
@@ -4786,7 +4790,11 @@ it to this AxisItem.</p>
 <span class="normal">590</span>
 <span class="normal">591</span>
 <span class="normal">592</span>
-<span class="normal">593</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_curve_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot_curve_item</span><span class="p">:</span> <span class="n">ArchivePlotCurveItem</span> <span class="o">|</span> <span class="n">FormulaCurveItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">:</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_curve_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot_curve_item</span><span class="p">:</span> <span class="n">ArchivePlotCurveItem</span> <span class="o">|</span> <span class="n">FormulaCurveItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a CurveItem widget for the given plot curve item and add</span>
 <span class="sd">    it to this AxisItem.</span>
 
@@ -4905,11 +4913,7 @@ by default None</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">595</span>
-<span class="normal">596</span>
-<span class="normal">597</span>
-<span class="normal">598</span>
-<span class="normal">599</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">599</span>
 <span class="normal">600</span>
 <span class="normal">601</span>
 <span class="normal">602</span>
@@ -4937,7 +4941,11 @@ by default None</p>
 <span class="normal">624</span>
 <span class="normal">625</span>
 <span class="normal">626</span>
-<span class="normal">627</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel_args</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">:</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel_args</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new ArchivePlotCurveItem for the given PV and add it</span>
 <span class="sd">    to this AxisItem. Also creates a CurveItem widget for it.</span>
 
@@ -5047,11 +5055,7 @@ to this AxisItem. Also creates a CurveItem widget for it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">633</span>
 <span class="normal">634</span>
 <span class="normal">635</span>
 <span class="normal">636</span>
@@ -5084,7 +5088,11 @@ to this AxisItem. Also creates a CurveItem widget for it.</p>
 <span class="normal">663</span>
 <span class="normal">664</span>
 <span class="normal">665</span>
-<span class="normal">666</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_formula_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formula</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">:</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_formula_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formula</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new FormulaCurveItem for the given formula and add it</span>
 <span class="sd">    to this AxisItem. Also creates a CurveItem widget for it.</span>
 
@@ -5144,18 +5152,18 @@ to this AxisItem. Also creates a CurveItem widget for it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">672</span>
 <span class="normal">673</span>
 <span class="normal">674</span>
 <span class="normal">675</span>
 <span class="normal">676</span>
 <span class="normal">677</span>
 <span class="normal">678</span>
-<span class="normal">679</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
 <span class="nd">@Slot</span><span class="p">(</span><span class="n">FormulaCurveItem</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">auto_hide_invalid_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formula_curve</span><span class="p">:</span> <span class="n">FormulaCurveItem</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Automatically hide a formula when it becomes invalid&quot;&quot;&quot;</span>
@@ -5189,11 +5197,7 @@ to this AxisItem. Also creates a CurveItem widget for it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">749</span>
 <span class="normal">750</span>
 <span class="normal">751</span>
 <span class="normal">752</span>
@@ -5204,7 +5208,11 @@ to this AxisItem. Also creates a CurveItem widget for it.</p>
 <span class="normal">757</span>
 <span class="normal">758</span>
 <span class="normal">759</span>
-<span class="normal">760</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_curve_item_for_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_curve</span><span class="p">):</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_curve_item_for_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_curve</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the CurveItem widget that corresponds to a given curve&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()):</span>
         <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span>
@@ -5242,16 +5250,16 @@ to this AxisItem. Also creates a CurveItem widget for it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">794</span>
-<span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">798</span>
 <span class="normal">799</span>
 <span class="normal">800</span>
 <span class="normal">801</span>
 <span class="normal">802</span>
-<span class="normal">803</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_curve_palette</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">palette_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">apply</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="normal">803</span>
+<span class="normal">804</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_curve_palette</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">palette_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">apply</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set colors of all curves on this axisItem according to selected palette&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">apply</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()):</span>
@@ -5335,11 +5343,7 @@ from this axis., by default False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">833</span>
-<span class="normal">834</span>
-<span class="normal">835</span>
-<span class="normal">836</span>
-<span class="normal">837</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">837</span>
 <span class="normal">838</span>
 <span class="normal">839</span>
 <span class="normal">840</span>
@@ -5356,7 +5360,11 @@ from this axis., by default False.</p>
 <span class="normal">851</span>
 <span class="normal">852</span>
 <span class="normal">853</span>
-<span class="normal">854</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_curve_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_item</span><span class="p">:</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">,</span> <span class="n">delete_curve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_curve_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_item</span><span class="p">:</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">,</span> <span class="n">delete_curve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes the given CurveItem from the AxisItem and plot&#39;s axis.</span>
 <span class="sd">    This is required for moving a CurveItem to a new AxisItem. Can</span>
 <span class="sd">    delete the CurveItem and curve if specified. This will remove it</span>
@@ -5431,11 +5439,7 @@ from this axis., by default False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">856</span>
-<span class="normal">857</span>
-<span class="normal">858</span>
-<span class="normal">859</span>
-<span class="normal">860</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">860</span>
 <span class="normal">861</span>
 <span class="normal">862</span>
 <span class="normal">863</span>
@@ -5454,7 +5458,11 @@ from this axis., by default False.</p>
 <span class="normal">876</span>
 <span class="normal">877</span>
 <span class="normal">878</span>
-<span class="normal">879</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_curve_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_item</span><span class="p">:</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">879</span>
+<span class="normal">880</span>
+<span class="normal">881</span>
+<span class="normal">882</span>
+<span class="normal">883</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_curve_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curve_item</span><span class="p">:</span> <span class="s2">&quot;CurveItem&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add an existing CurveItem to this AxisItem.</span>
 
 <span class="sd">    Parameters</span>
@@ -5500,12 +5508,12 @@ from this axis., by default False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">881</span>
-<span class="normal">882</span>
-<span class="normal">883</span>
-<span class="normal">884</span>
-<span class="normal">885</span>
-<span class="normal">886</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clear_curves</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">885</span>
+<span class="normal">886</span>
+<span class="normal">887</span>
+<span class="normal">888</span>
+<span class="normal">889</span>
+<span class="normal">890</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clear_curves</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Clear all curves from this axis item.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span>
@@ -5603,11 +5611,7 @@ curves between axes and formula editing for formula curves.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">937</span>
-<span class="normal">938</span>
-<span class="normal">939</span>
-<span class="normal">940</span>
-<span class="normal">941</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">941</span>
 <span class="normal">942</span>
 <span class="normal">943</span>
 <span class="normal">944</span>
@@ -5624,7 +5628,11 @@ curves between axes and formula editing for formula curves.</p>
 <span class="normal">955</span>
 <span class="normal">956</span>
 <span class="normal">957</span>
-<span class="normal">958</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis_item</span><span class="p">:</span> <span class="n">AxisItem</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">ArchivePlotCurveItem</span> <span class="o">|</span> <span class="n">FormulaCurveItem</span><span class="p">):</span>
+<span class="normal">958</span>
+<span class="normal">959</span>
+<span class="normal">960</span>
+<span class="normal">961</span>
+<span class="normal">962</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis_item</span><span class="p">:</span> <span class="n">AxisItem</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">ArchivePlotCurveItem</span> <span class="o">|</span> <span class="n">FormulaCurveItem</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the curve item widget.</span>
 
 <span class="sd">    Parameters</span>
@@ -5722,14 +5730,14 @@ curves between axes and formula editing for formula curves.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">960</span>
-<span class="normal">961</span>
-<span class="normal">962</span>
-<span class="normal">963</span>
-<span class="normal">964</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">964</span>
 <span class="normal">965</span>
 <span class="normal">966</span>
-<span class="normal">967</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">move_to_axis_from_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">967</span>
+<span class="normal">968</span>
+<span class="normal">969</span>
+<span class="normal">970</span>
+<span class="normal">971</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">move_to_axis_from_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Automatically move curve to axis based on unit&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_formula_curve</span><span class="p">():</span>
         <span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">units</span>
@@ -5759,11 +5767,7 @@ curves between axes and formula editing for formula curves.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 982</span>
-<span class="normal"> 983</span>
-<span class="normal"> 984</span>
-<span class="normal"> 985</span>
-<span class="normal"> 986</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 986</span>
 <span class="normal"> 987</span>
 <span class="normal"> 988</span>
 <span class="normal"> 989</span>
@@ -5814,7 +5818,11 @@ curves between axes and formula editing for formula curves.</p>
 <span class="normal">1034</span>
 <span class="normal">1035</span>
 <span class="normal">1036</span>
-<span class="normal">1037</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
+<span class="normal">1040</span>
+<span class="normal">1041</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Setup the layout and widgets for the CurveItem.&quot;&quot;&quot;</span>
     <span class="n">curve_layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QHBoxLayout</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">curve_layout</span><span class="p">)</span>
@@ -5892,11 +5900,7 @@ curves between axes and formula editing for formula curves.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1039</span>
-<span class="normal">1040</span>
-<span class="normal">1041</span>
-<span class="normal">1042</span>
-<span class="normal">1043</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1043</span>
 <span class="normal">1044</span>
 <span class="normal">1045</span>
 <span class="normal">1046</span>
@@ -5905,7 +5909,11 @@ curves between axes and formula editing for formula curves.</p>
 <span class="normal">1049</span>
 <span class="normal">1050</span>
 <span class="normal">1051</span>
-<span class="normal">1052</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup_line_edit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">1052</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span>
+<span class="normal">1055</span>
+<span class="normal">1056</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup_line_edit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the line edit with appropriate behavior for formula vs regular curves&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_formula_curve</span><span class="p">():</span>
         <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">formula</span>
@@ -5941,11 +5949,7 @@ curves between axes and formula editing for formula curves.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1054</span>
-<span class="normal">1055</span>
-<span class="normal">1056</span>
-<span class="normal">1057</span>
-<span class="normal">1058</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1058</span>
 <span class="normal">1059</span>
 <span class="normal">1060</span>
 <span class="normal">1061</span>
@@ -5955,7 +5959,11 @@ curves between axes and formula editing for formula curves.</p>
 <span class="normal">1065</span>
 <span class="normal">1066</span>
 <span class="normal">1067</span>
-<span class="normal">1068</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
+<span class="normal">1068</span>
+<span class="normal">1069</span>
+<span class="normal">1070</span>
+<span class="normal">1071</span>
+<span class="normal">1072</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Slot</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">update_icons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update all icons based on current theme&quot;&quot;&quot;</span>
     <span class="n">handle_icon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theme_manager</span><span class="o">.</span><span class="n">create_icon</span><span class="p">(</span><span class="s2">&quot;ph.dots-six-vertical&quot;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
@@ -5992,11 +6000,7 @@ curves between axes and formula editing for formula curves.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1070</span>
-<span class="normal">1071</span>
-<span class="normal">1072</span>
-<span class="normal">1073</span>
-<span class="normal">1074</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1074</span>
 <span class="normal">1075</span>
 <span class="normal">1076</span>
 <span class="normal">1077</span>
@@ -6020,7 +6024,11 @@ curves between axes and formula editing for formula curves.</p>
 <span class="normal">1095</span>
 <span class="normal">1096</span>
 <span class="normal">1097</span>
-<span class="normal">1098</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">show_invalid_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="normal">1098</span>
+<span class="normal">1099</span>
+<span class="normal">1100</span>
+<span class="normal">1101</span>
+<span class="normal">1102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">show_invalid_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Show or hide the invalid formula icon overlaid on the line edit&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_formula_curve</span><span class="p">():</span>
         <span class="k">return</span>
@@ -6071,10 +6079,10 @@ curves between axes and formula editing for formula curves.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1119</span>
-<span class="normal">1120</span>
-<span class="normal">1121</span>
-<span class="normal">1122</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@QtCore</span><span class="o">.</span><span class="n">Slot</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1123</span>
+<span class="normal">1124</span>
+<span class="normal">1125</span>
+<span class="normal">1126</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@QtCore</span><span class="o">.</span><span class="n">Slot</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">on_color_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle color change from settings modal&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">update_color_toggle</span><span class="p">()</span>
@@ -6100,11 +6108,11 @@ curves between axes and formula editing for formula curves.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1124</span>
-<span class="normal">1125</span>
-<span class="normal">1126</span>
-<span class="normal">1127</span>
-<span class="normal">1128</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_color_toggle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1128</span>
+<span class="normal">1129</span>
+<span class="normal">1130</span>
+<span class="normal">1131</span>
+<span class="normal">1132</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_color_toggle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the color toggle when the curve color changes&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;active_toggle&quot;</span><span class="p">):</span>
         <span class="n">curve_color</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;color_string&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -6154,15 +6162,15 @@ curves between axes and formula editing for formula curves.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1140</span>
-<span class="normal">1141</span>
-<span class="normal">1142</span>
-<span class="normal">1143</span>
-<span class="normal">1144</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1144</span>
 <span class="normal">1145</span>
 <span class="normal">1146</span>
 <span class="normal">1147</span>
-<span class="normal">1148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_formula_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">1148</span>
+<span class="normal">1149</span>
+<span class="normal">1150</span>
+<span class="normal">1151</span>
+<span class="normal">1152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_formula_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if this is a formula curve.</span>
 
 <span class="sd">    Returns</span>
@@ -6193,11 +6201,7 @@ curves between axes and formula editing for formula curves.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>trace/widgets/control_panel.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1150</span>
-<span class="normal">1151</span>
-<span class="normal">1152</span>
-<span class="normal">1153</span>
-<span class="normal">1154</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1154</span>
 <span class="normal">1155</span>
 <span class="normal">1156</span>
 <span class="normal">1157</span>
@@ -6254,7 +6258,11 @@ curves between axes and formula editing for formula curves.</p>
 <span class="normal">1208</span>
 <span class="normal">1209</span>
 <span class="normal">1210</span>
-<span class="normal">1211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">1211</span>
+<span class="normal">1212</span>
+<span class="normal">1213</span>
+<span class="normal">1214</span>
+<span class="normal">1215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle formula updates when user edits the formula text.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_updating_formula&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updating_formula</span><span class="p">:</span>
         <span class="k">return</span>
