@@ -3,6 +3,7 @@ from os import getenv
 from pathlib import Path
 from unittest import mock
 
+import numpy as np
 import pytest
 from qtpy.QtWidgets import QMenu
 
@@ -12,6 +13,32 @@ from main import TraceDisplay
 from config import logger
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+
+@pytest.fixture
+def make_curve():
+    """Fixture providing a factory for curve mocks that behave like TimePlotCurveItem.
+
+    Returns
+    -------
+    A function make_curve(timestamps, values, min_x=None, max_x=None) that returns
+    a MagicMock with data_buffer, points_accumulated, min_x, max_x, address, and units
+    set from the given arguments.
+    """
+
+    def _make_curve(timestamps, values, min_x=None, max_x=None):
+        ts = np.array(timestamps, dtype=float)
+        vals = np.array(values, dtype=float)
+        curve = mock.MagicMock()
+        curve.data_buffer = np.vstack([ts, vals])
+        curve.points_accumulated = len(ts)
+        curve.min_x.return_value = min_x if min_x is not None else (ts[0] if len(ts) else 0.0)
+        curve.max_x.return_value = max_x if max_x is not None else (ts[-1] if len(ts) else 0.0)
+        curve.address = "FAKE:PV"
+        curve.units = "eV"
+        return curve
+
+    return _make_curve
 
 
 @pytest.fixture
