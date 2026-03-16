@@ -465,9 +465,9 @@ class DataInsightTool(QWidget):
         """
         self.pv_select_box.blockSignals(True)
         self.pv_select_box.clear()
-        self.pv_select_box.blockSignals(False)
         curve_names = [c.address for c in self.plot._curves if isinstance(c, ArchivePlotCurveItem)]
         self.pv_select_box.addItems(curve_names)
+        self.pv_select_box.blockSignals(False)
 
     @Slot()
     def export_data_to_file(self) -> None:
