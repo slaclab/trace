@@ -7,7 +7,7 @@ from pathlib import Path
 from datetime import datetime
 
 from qtpy.QtGui import QFont, QColor, QImage, QKeySequence
-from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice, QSettings, QTimer
+from qtpy.QtCore import Qt, Slot, QSize, QTimer, Signal, QBuffer, QIODevice, QSettings
 from qtpy.QtWidgets import (
     QMenu,
     QLabel,
