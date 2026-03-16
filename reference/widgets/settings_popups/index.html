@@ -2934,7 +2934,7 @@ dialogs with optional custom font size.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Custom font size in pixels</p>
+                <p>Custom font size in points</p>
               </div>
             </td>
             <td>
@@ -2980,13 +2980,13 @@ dialogs with optional custom font size.</p>
 <span class="sd">    text : str</span>
 <span class="sd">        The title text to display</span>
 <span class="sd">    size : int, optional</span>
-<span class="sd">        Custom font size in pixels</span>
+<span class="sd">        Custom font size in points</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">)</span>
     <span class="n">bold_font</span> <span class="o">=</span> <span class="n">QFont</span><span class="p">()</span>
     <span class="n">bold_font</span><span class="o">.</span><span class="n">setBold</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">bold_font</span><span class="o">.</span><span class="n">setPixelSize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">bold_font</span><span class="o">.</span><span class="n">setPointSize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="n">bold_font</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
                   </details>
@@ -3982,7 +3982,7 @@ and behavior of the PyDMArchiverTimePlot.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The font size in pixels</p>
+                <p>The font size in points</p>
               </div>
             </td>
             <td>
@@ -4016,10 +4016,10 @@ and behavior of the PyDMArchiverTimePlot.</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    size : int</span>
-<span class="sd">        The font size in pixels</span>
+<span class="sd">        The font size in points</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">font</span> <span class="o">=</span> <span class="n">QFont</span><span class="p">()</span>
-    <span class="n">font</span><span class="o">.</span><span class="n">setPixelSize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">font</span><span class="o">.</span><span class="n">setPointSize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
 
     <span class="n">all_axes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plotItem</span><span class="o">.</span><span class="n">getAxes</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">all_axes</span><span class="p">:</span>
