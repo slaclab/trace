@@ -216,6 +216,9 @@ class DataVisualizationModel(QAbstractTableModel):
             }
         )
 
+        if live_df.empty:
+            return
+
         self.beginInsertRows(QModelIndex(), 0, live_df.shape[0] - 1)
         self.df = pd.concat([live_df, self.df]) if not self.df.empty else live_df
         self.endInsertRows()
