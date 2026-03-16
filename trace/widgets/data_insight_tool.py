@@ -217,7 +217,7 @@ class DataVisualizationModel(QAbstractTableModel):
         )
 
         self.beginInsertRows(QModelIndex(), 0, live_df.shape[0] - 1)
-        self.df = pd.concat([live_df, self.df])
+        self.df = pd.concat([live_df, self.df]) if not self.df.empty else live_df
         self.endInsertRows()
 
     def request_archive_data(self, pv_name: str, x_range: list[int] | tuple[int, int]) -> None:
@@ -299,7 +299,7 @@ class DataVisualizationModel(QAbstractTableModel):
         )
 
         self.beginInsertRows(QModelIndex(), 0, archive_df.shape[0] - 1)
-        self.df = pd.concat([archive_df, self.df])
+        self.df = pd.concat([archive_df, self.df]) if not self.df.empty else archive_df
         self.endInsertRows()
 
     def export_data(self, file_path: Path, extension: str) -> None:
