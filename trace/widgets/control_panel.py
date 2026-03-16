@@ -622,6 +622,7 @@ class AxisItem(QtWidgets.QWidget):
             args.update(channel_args)
 
         plot_curve_item = self.plot.addYChannel(**args)
+        plot_curve_item.stepMode = "right"
 
         return self.make_curve_widget(plot_curve_item)
 
