@@ -6,6 +6,7 @@ Elog API client for posting entries and fetching user and logbook information.
 
 import os
 import json
+from typing import Optional
 from pathlib import Path
 
 import requests
@@ -16,6 +17,53 @@ from config import logger
 load_dotenv()
 ELOG_API_URL = os.getenv("SWAPPS_TRACE_ELOG_API_URL")
 ELOG_API_KEY = os.getenv("SWAPPS_TRACE_ELOG_API_KEY")
+
+# Configure proxy if specified in environment
+ELOG_PROXY_URL = os.getenv("SWAPPS_TRACE_ELOG_PROXY_URL")
+if ELOG_PROXY_URL:
+    os.environ["HTTP_PROXY"] = ELOG_PROXY_URL
+    os.environ["HTTPS_PROXY"] = ELOG_PROXY_URL
+    logger.info(f"ELOG client configured to use proxy: {ELOG_PROXY_URL}")
+
+
+def test_proxy_connection() -> tuple[bool, Optional[str]]:
+    """
+    Tests proxy connectivity if a proxy is configured.
+
+    :return: A tuple of (success, error_message). If successful, error_message is None.
+             If failed, error_message contains a detailed description of the failure.
+    """
+    if not ELOG_PROXY_URL:
+        # No proxy configured, consider this a success
+        return True, None
+
+    if not ELOG_API_URL:
+        return False, "ELOG API URL is not configured. Cannot test proxy connection."
+
+    error_msg = (
+        f"Failed to connect through proxy {ELOG_PROXY_URL}. "
+        f"Please check your network connection and proxy configuration."
+    )
+
+    try:
+        requests.head(ELOG_API_URL, timeout=2)
+        logger.info(f"Proxy connection test successful: {ELOG_PROXY_URL}")
+        return True, None
+    except requests.exceptions.ProxyError as e:
+        logger.error(f"Proxy connection test failed: {e}")
+        return False, error_msg
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Proxy connection test failed: {e}")
+        return False, error_msg
+    except requests.exceptions.Timeout as e:
+        error_msg = (
+            f"Connection timeout through proxy {ELOG_PROXY_URL}. " f"The proxy or server may be slow or unresponsive."
+        )
+        logger.error(f"Proxy connection test failed: {e}")
+        return False, error_msg
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Proxy connection test failed: {e}")
+        return False, error_msg
 
 
 def get_user() -> tuple[int, dict | Exception]:
