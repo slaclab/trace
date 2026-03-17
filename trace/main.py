@@ -7,7 +7,7 @@ from pathlib import Path
 from datetime import datetime
 
 from qtpy.QtGui import QFont, QColor, QImage, QKeySequence
-from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice, QSettings
+from qtpy.QtCore import Qt, Slot, QSize, QTimer, Signal, QBuffer, QIODevice, QSettings
 from qtpy.QtWidgets import (
     QMenu,
     QLabel,
@@ -183,6 +183,30 @@ class TraceDisplay(Display):
             cache_data=False,
             show_all=False,
         )
+
+        self._archive_status_label = QLabel("Fetching archive data...", self.plot)
+        self._archive_status_label.hide()
+        self._archive_status_label.setStyleSheet(
+            """
+            QLabel {
+                background-color: rgba(0, 0, 0, 140);
+                color: white;
+                padding: 6px 10px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            """
+        )
+        self._archive_status_label.adjustSize()
+        self._archive_status_label.move(20, 20)
+        self._archive_status_label.raise_()
+
+        self._archive_status_timer = QTimer(self)
+        self._archive_status_timer.setSingleShot(True)
+        self._archive_status_timer.timeout.connect(self.show_archive_status)
+
+        self.plot.archive_request_started.connect(self.on_archive_request_started)
+        self.plot.archive_request_finished.connect(self.on_archive_request_finished)
 
         multi_axis_plot = self.plot.plotItem
         multi_axis_plot.vb.menu = None
@@ -434,6 +458,21 @@ class TraceDisplay(Display):
         settings_icon = self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY)
         if settings_icon:
             self.settings_button.setIcon(settings_icon)
+
+    def on_archive_request_started(self) -> None:
+        self._archive_status_timer.stop()
+        self._archive_status_timer.start(2000)
+
+    def on_archive_request_finished(self) -> None:
+        self._archive_status_timer.stop()
+        self._archive_status_label.hide()
+
+    def show_archive_status(self) -> None:
+        if not self.plot._archive_request_queued:
+            return
+        self._archive_status_label.adjustSize()
+        self._archive_status_label.show()
+        self._archive_status_label.raise_()
 
     def set_curve_palette(self, palette_name: str, apply: bool = False):
         """
