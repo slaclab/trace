@@ -336,7 +336,10 @@ class ControlPanel(QtWidgets.QWidget):
         if pv.startswith("f://"):
             return last_axis.add_formula_curve(pv)
         else:
-            return last_axis.add_curve(pv)
+            curve = last_axis.add_curve(pv)
+            curve.move_to_axis_from_unit()  # Move to axis based on unit
+
+            return curve
 
     def clear_all(self) -> None:
         """Clear all axes and curves from the plot and control panel."""
@@ -401,9 +404,13 @@ class ControlPanel(QtWidgets.QWidget):
             if axis_item is None:
                 axis_item = self.add_empty_axis(axis_name)
 
-            pv_name = curve_dict.get("channel", "")
-            del curve_dict["channel"]  # Remove channel key to avoid conflicts with y_channel
-            axis_item.add_curve(pv_name, curve_dict)
+            if "channel" in curve_dict:
+                pv_name = curve_dict.get("channel", "")
+                del curve_dict["channel"]  # Remove channel key to avoid conflicts with y_channel
+                axis_item.add_curve(pv_name, curve_dict)
+            elif "formula" in curve_dict:
+                formula = curve_dict.get("formula", "f://")
+                axis_item.add_formula_curve(formula)
         self.plot.redrawPlot()
         self.axis_list.itemAt(self.axis_list.count() - 2).widget()
 
@@ -619,6 +626,7 @@ class AxisItem(QtWidgets.QWidget):
             args.update(channel_args)
 
         plot_curve_item = self.plot.addYChannel(**args)
+        plot_curve_item.stepMode = "right"
 
         return self.make_curve_widget(plot_curve_item)
 
@@ -950,10 +958,17 @@ class CurveItem(QtWidgets.QWidget):
 
         self.variable_name = self.control_panel.key_gen.send(self.source)
         self.control_panel.curve_dict[self.variable_name] = self.source
-        if not self.is_formula_curve():
-            self.source.unitSignal.connect(lambda unit: self.control_panel.move_curve_to_axis(self, unit))
 
         self.setup_layout()
+
+    def move_to_axis_from_unit(self):
+        """Automatically move curve to axis based on unit"""
+        if not self.is_formula_curve():
+            unit = self.source.units
+            if unit:
+                self.control_panel.move_curve_to_axis(self, unit)
+            else:
+                self.source.unitSignal.connect(lambda unit: self.control_panel.move_curve_to_axis(self, unit))
 
     @property
     def plot(self):

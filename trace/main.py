@@ -7,13 +7,24 @@ from pathlib import Path
 from datetime import datetime
 
 from qtpy.QtGui import QFont, QColor, QImage, QKeySequence, QDesktopServices
-from qtpy.QtCore import Qt, QUrl, Slot, QSize, Signal, QBuffer, QIODevice, QSettings
+from qtpy.QtCore import (
+    Qt,
+    QUrl,
+    Slot,
+    QSize,
+    QTimer,
+    Signal,
+    QBuffer,
+    QIODevice,
+    QSettings,
+)
 from qtpy.QtWidgets import (
     QMenu,
     QLabel,
     QDialog,
     QWidget,
     QMenuBar,
+    QLineEdit,
     QSplitter,
     QFileDialog,
     QHBoxLayout,
@@ -183,6 +194,30 @@ class TraceDisplay(Display):
             show_all=False,
         )
 
+        self._archive_status_label = QLabel("Fetching archive data...", self.plot)
+        self._archive_status_label.hide()
+        self._archive_status_label.setStyleSheet(
+            """
+            QLabel {
+                background-color: rgba(0, 0, 0, 140);
+                color: white;
+                padding: 6px 10px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            """
+        )
+        self._archive_status_label.adjustSize()
+        self._archive_status_label.move(20, 20)
+        self._archive_status_label.raise_()
+
+        self._archive_status_timer = QTimer(self)
+        self._archive_status_timer.setSingleShot(True)
+        self._archive_status_timer.timeout.connect(self.show_archive_status)
+
+        self.plot.archive_request_started.connect(self.on_archive_request_started)
+        self.plot.archive_request_finished.connect(self.on_archive_request_finished)
+
         multi_axis_plot = self.plot.plotItem
         multi_axis_plot.vb.menu = None
         multi_axis_plot.sigXRangeChangedManually.connect(self.disable_auto_scroll_button.click)
@@ -252,6 +287,12 @@ class TraceDisplay(Display):
 
         timespan_buttons = self.build_timespan_buttons(toolbar_widget)
         tool_layout.addWidget(timespan_buttons)
+
+        self.timespan_lineEdit = QLineEdit()
+        self.timespan_lineEdit.returnPressed.connect(self.parse_time_input)
+        self.timespan_lineEdit.setFixedWidth(120)
+        self.timespan_lineEdit.setPlaceholderText("Enter timescale")
+        tool_layout.addWidget(self.timespan_lineEdit)
 
         return toolbar_widget
 
@@ -355,6 +396,38 @@ class TraceDisplay(Display):
 
         return footer_widget
 
+    def parse_time_input(self) -> None:
+        """
+        Parse user entered time input. Allows user to add 'm' 'h', 'd', 'w', or 'M'
+        to the end of a float timescale to select minutes, hours, days, weeks, or months.
+        Timescale multiplier is set accordingly, and if the remaining entry can be
+        converted to a float, the timescale is changed accordingly.
+        """
+
+        MULTIPLIERS = {"m": 60, "h": 3600, "d": 86400, "w": 604800, "M": 2628300}
+
+        time_str = self.timespan_lineEdit.text()
+
+        if time_str == "":
+            return
+
+        if time_str[0] == "-":
+            time_str = time_str[1:]
+
+        final_char = time_str[-1]
+        if final_char not in MULTIPLIERS:
+            return
+
+        try:
+            time = float(time_str[:-1])
+        except ValueError:
+            return
+
+        multiplier = MULTIPLIERS.get(final_char)
+
+        time_sec = time * multiplier
+        self.set_auto_scroll_span(time_sec)
+
     @Slot(Path)
     def set_file_indicator(self, file_path: Path) -> None:
         """Set the file indicator label to the given file path.
@@ -417,6 +490,21 @@ class TraceDisplay(Display):
         settings_icon = self.theme_manager.create_icon("msc.settings-gear", IconColors.PRIMARY)
         if settings_icon:
             self.settings_button.setIcon(settings_icon)
+
+    def on_archive_request_started(self) -> None:
+        self._archive_status_timer.stop()
+        self._archive_status_timer.start(2000)
+
+    def on_archive_request_finished(self) -> None:
+        self._archive_status_timer.stop()
+        self._archive_status_label.hide()
+
+    def show_archive_status(self) -> None:
+        if not self.plot._archive_request_queued:
+            return
+        self._archive_status_label.adjustSize()
+        self._archive_status_label.show()
+        self._archive_status_label.raise_()
 
     def set_curve_palette(self, palette_name: str, apply: bool = False):
         """

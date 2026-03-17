@@ -1,7 +1,6 @@
 /* Global Styles */
 QWidget {
     background-color: #FAFAFA;
-    font-size: 10px;
     color: #202020;
 }
 
@@ -168,7 +167,7 @@ QWidget[collapsible=true] {
 
 QLabel[sectionHeader=true] {
     font-weight: bold;
-    font-size: 11px;
+    font-size: 11pt;
     color: #E0E0E0;
 }
 
@@ -282,7 +281,7 @@ QToolTip {
     color: #FFFFFF;
     border: 1px solid #888888;
     padding: 4px;
-    font-size: 10px;
+    font-size: 10pt;
 }
 
 /* Scrollbars */

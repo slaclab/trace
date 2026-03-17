@@ -1,52 +1,37 @@
 {
     "archiver_url": "http://lcls-archapp.slac.stanford.edu",
     "plot": {
-        "refreshInterval": 0.0,
+        "refreshInterval": 1.0,
         "title": "",
         "xGrid": false,
         "yGrid": false,
         "opacity": 128,
         "backgroundColor": "#ffffff",
         "legend": false,
-        "crosshair": false,
         "mouseMode": 1
     },
     "time_axis": {
         "name": "Main Time Axis",
-        "start": "2024-09-04 11:03:44",
-        "end": "2024-09-04 12:03:44",
+        "start": "-1m",
+        "end": "now",
         "location": "bottom"
     },
     "y-axes": [
         {
             "name": "Axis 1",
             "orientation": "left",
-            "minRange": -1.3843656974520628e-09,
-            "maxRange": 4.752694382245206e-08,
+            "label": "Axis 1",
+            "minRange": 1.1067500225324897e-08,
+            "maxRange": 2.6286015399675106e-08,
             "autoRange": true,
             "logMode": false
         },
         {
-            "name": "Axis 2",
+            "name": "torr",
             "orientation": "left",
-            "minRange": 9.047133561624635e-10,
-            "maxRange": 1.3621653831337537e-08,
-            "autoRange": true,
-            "logMode": false
-        },
-        {
-            "name": "Axis 3",
-            "orientation": "left",
-            "minRange": 1.3015564414604301e-08,
-            "maxRange": 4.65547480853957e-08,
-            "autoRange": true,
-            "logMode": false
-        },
-        {
-            "name": "Axis 4",
-            "orientation": "left",
-            "minRange": -1.04,
-            "maxRange": 1.04,
+            "label": "torr",
+            "minRange": 1.0577346003248955e-09,
+            "maxRange": 1.6276249774675104e-08,
             "autoRange": true,
             "logMode": false
         }
@@ -55,25 +40,27 @@
         {
             "useArchiveData": true,
             "liveData": true,
+            "showExtensionLine": false,
             "channel": "KLYS:LI22:31:KVAC",
             "name": "KLYS:LI22:31:KVAC",
             "color": "#008cf9",
             "lineStyle": 1,
             "lineWidth": 1,
             "symbolSize": 10,
-            "yAxisName": "Axis 1",
+            "yAxisName": "torr",
             "thresholdColor": "white"
         },
         {
             "useArchiveData": true,
             "liveData": true,
+            "showExtensionLine": false,
             "channel": "KLYS:LI22:41:KVAC",
             "name": "KLYS:LI22:41:KVAC",
             "color": "#006e00",
             "lineStyle": 1,
             "lineWidth": 1,
             "symbolSize": 10,
-            "yAxisName": "Axis 1",
+            "yAxisName": "torr",
             "thresholdColor": "white"
         }
     ],
@@ -82,12 +69,12 @@
             "useArchiveData": true,
             "liveData": true,
             "plot_style": "Line",
-            "formula": "f://{A}+{B}",
+            "formula": "f://{x1}+{x2}",
             "curveDict": {
-                "A": "KLYS:LI22:31:KVAC",
-                "B": "KLYS:LI22:41:KVAC"
+                "x1": "KLYS:LI22:31:KVAC",
+                "x2": "KLYS:LI22:41:KVAC"
             },
-            "name": "f://{A}+{B}",
+            "name": "f://{x1}+{x2}",
             "color": "#b80058",
             "lineStyle": 1,
             "lineWidth": 1,

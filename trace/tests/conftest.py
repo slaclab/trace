@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+from qtpy.QtWidgets import QMenu
 
 from pydm.application import PyDMApplication
 
@@ -73,10 +74,15 @@ def qtrace(qtbot, qapp):
     ------
     An instance of TraceDisplay.
     """
-    trace = TraceDisplay()
+    # TraceDisplay.__init__ returns early when app.main_window is None (use_main_window=False).
+    # Patch it with a MagicMock so build_ui() and configure_app() run normally.
+    # construct_trace_menu is also patched because QMenu rejects a MagicMock parent.
+    with mock.patch.object(qapp, "main_window", mock.MagicMock()):
+        with mock.patch.object(TraceDisplay, "construct_trace_menu", return_value=QMenu()):
+            trace = TraceDisplay()
 
     # updateXAxis would be called on application render; necessary for testing X-Axis
-    trace.main_plot.updateXAxis(True)
+    trace.plot.updateXAxis(True)
     yield trace
 
     trace.close()

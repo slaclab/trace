@@ -1,5 +1,6 @@
 pydm
 pandas
+scipy
 pytest
 pytest-qt
 qtawesome
