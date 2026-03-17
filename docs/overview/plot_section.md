@@ -20,6 +20,16 @@ A box will be drawn between where the mouse button was pressed and where it was 
 
 
 
+## Feedback Form & Documentation Buttons
+
+Above the plotting section are a couple of buttons to assist users in using Trace.
+
+The leftmost button marked with a :material-chat-processing-outline: icon will open a feedback form where users can request features, report bugs, or provide general feedback. The button just to the right with a :octicons-question-16: icon can be used to open the documentation page for Trace.
+
+Both of these actions are also available under the Help menu in the menu bar at the top of the application.
+
+
+
 ## Time Span Buttons
 
 Above the plotting section are a few buttons for quickly toggling between common time spans (30s, 1m, 1h, 1w, 1M).
