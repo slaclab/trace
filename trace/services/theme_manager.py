@@ -9,6 +9,8 @@ from qtpy.QtWidgets import QPushButton, QApplication, QStyleFactory
 
 from config import dark_stylesheet, light_stylesheet
 
+ASSETS_DIR = str(light_stylesheet.parent.parent / "assets")
+
 type ColorHex = str
 type IconColorDict = dict[str, ColorHex]
 type ButtonIconInfo = tuple[str, QPushButton, str, str]
@@ -192,6 +194,7 @@ class ThemeManager(QObject):
             self.app.setPalette(self.light_palette)
             stylesheet = light_stylesheet.read_text()
 
+        stylesheet = stylesheet.replace('url("assets/', f'url("{ASSETS_DIR}/')
         self.app.main_window.setStyleSheet(stylesheet)
 
         settings = QSettings()

@@ -1106,6 +1106,23 @@ class CurveItem(QtWidgets.QWidget):
     def set_active(self, state: int | Qt.CheckState):
         checked = Qt.CheckState(state) == Qt.Checked
         self.source.setVisible(checked)
+        self._update_legend(checked)
+
+    def _update_legend(self, visible: bool) -> None:
+        """Update the legend entry for this curve to match its visibility.
+        Uses pyqtgraph's native removeItem/addItem since QGraphicsGridLayout
+        does not collapse hidden items."""
+        legend = self.plot._legend
+        if legend is None:
+            return
+        if not visible:
+            legend.removeItem(self.source)
+        else:
+            # Only re-add if not already in the legend
+            for sample, label in legend.items:
+                if sample.item is self.source:
+                    return
+            legend.addItem(self.source, self.source.name())
 
     def update_live_icon(self, connected: bool) -> None:
         self.live_connection_status.setVisible(not connected)
