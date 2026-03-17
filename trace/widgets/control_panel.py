@@ -78,6 +78,19 @@ class ControlPanel(QtWidgets.QWidget):
         pv_plot_button.clicked.connect(self.add_curve_from_line_edit)
         pv_plotter_layout.addWidget(pv_plot_button)
 
+        # Style the plot button with blue accent color
+        if self.theme_manager:
+            blue_color = self.theme_manager.get_icon_color(IconColors.ACCENT)
+            text_color = "#FFFFFF"
+            pv_plot_button.setStyleSheet(
+                f"""
+                QPushButton {{
+                    background-color: {blue_color};
+                    color: {text_color};
+                }}
+            """
+            )
+
         self.axis_list = QtWidgets.QVBoxLayout()
         frame = QtWidgets.QFrame()
         frame.setLayout(self.axis_list)
@@ -99,6 +112,7 @@ class ControlPanel(QtWidgets.QWidget):
         self.curve_list_changed.connect(self.formula_dialog.curve_model.refresh)
 
         self.update_icons()
+        QTimer.singleShot(0, self.pv_line_edit.setFocus)
 
     def update_icons(self) -> None:
         """Update all icons based on current theme."""
@@ -336,7 +350,10 @@ class ControlPanel(QtWidgets.QWidget):
         if pv.startswith("f://"):
             return last_axis.add_formula_curve(pv)
         else:
-            return last_axis.add_curve(pv)
+            curve = last_axis.add_curve(pv)
+            curve.move_to_axis_from_unit()  # Move to axis based on unit
+
+            return curve
 
     def clear_all(self) -> None:
         """Clear all axes and curves from the plot and control panel."""
@@ -401,9 +418,13 @@ class ControlPanel(QtWidgets.QWidget):
             if axis_item is None:
                 axis_item = self.add_empty_axis(axis_name)
 
-            pv_name = curve_dict.get("channel", "")
-            del curve_dict["channel"]  # Remove channel key to avoid conflicts with y_channel
-            axis_item.add_curve(pv_name, curve_dict)
+            if "channel" in curve_dict:
+                pv_name = curve_dict.get("channel", "")
+                del curve_dict["channel"]  # Remove channel key to avoid conflicts with y_channel
+                axis_item.add_curve(pv_name, curve_dict)
+            elif "formula" in curve_dict:
+                formula = curve_dict.get("formula", "f://")
+                axis_item.add_formula_curve(formula)
         self.plot.redrawPlot()
         self.axis_list.itemAt(self.axis_list.count() - 2).widget()
 
@@ -619,6 +640,7 @@ class AxisItem(QtWidgets.QWidget):
             args.update(channel_args)
 
         plot_curve_item = self.plot.addYChannel(**args)
+        plot_curve_item.stepMode = "right"
 
         return self.make_curve_widget(plot_curve_item)
 
@@ -950,10 +972,17 @@ class CurveItem(QtWidgets.QWidget):
 
         self.variable_name = self.control_panel.key_gen.send(self.source)
         self.control_panel.curve_dict[self.variable_name] = self.source
-        if not self.is_formula_curve():
-            self.source.unitSignal.connect(lambda unit: self.control_panel.move_curve_to_axis(self, unit))
 
         self.setup_layout()
+
+    def move_to_axis_from_unit(self):
+        """Automatically move curve to axis based on unit"""
+        if not self.is_formula_curve():
+            unit = self.source.units
+            if unit:
+                self.control_panel.move_curve_to_axis(self, unit)
+            else:
+                self.source.unitSignal.connect(lambda unit: self.control_panel.move_curve_to_axis(self, unit))
 
     @property
     def plot(self):
@@ -1091,6 +1120,23 @@ class CurveItem(QtWidgets.QWidget):
     def set_active(self, state: int | Qt.CheckState):
         checked = Qt.CheckState(state) == Qt.Checked
         self.source.setVisible(checked)
+        self._update_legend(checked)
+
+    def _update_legend(self, visible: bool) -> None:
+        """Update the legend entry for this curve to match its visibility.
+        Uses pyqtgraph's native removeItem/addItem since QGraphicsGridLayout
+        does not collapse hidden items."""
+        legend = self.plot._legend
+        if legend is None:
+            return
+        if not visible:
+            legend.removeItem(self.source)
+        else:
+            # Only re-add if not already in the legend
+            for sample, label in legend.items:
+                if sample.item is self.source:
+                    return
+            legend.addItem(self.source, self.source.name())
 
     def update_live_icon(self, connected: bool) -> None:
         self.live_connection_status.setVisible(not connected)

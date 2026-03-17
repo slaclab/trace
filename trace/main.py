@@ -6,8 +6,18 @@ from getpass import getuser
 from pathlib import Path
 from datetime import datetime
 
-from qtpy.QtGui import QFont, QColor, QImage, QKeySequence
-from qtpy.QtCore import Qt, Slot, QSize, Signal, QBuffer, QIODevice, QSettings
+from qtpy.QtGui import QFont, QColor, QImage, QKeySequence, QDesktopServices
+from qtpy.QtCore import (
+    Qt,
+    QUrl,
+    Slot,
+    QSize,
+    QTimer,
+    Signal,
+    QBuffer,
+    QIODevice,
+    QSettings,
+)
 from qtpy.QtWidgets import (
     QMenu,
     QLabel,
@@ -28,17 +38,36 @@ from qtpy.QtWidgets import (
     QAbstractButton,
 )
 from pyqtgraph.exporters import ImageExporter
+from pyqtgraph.graphicsItems.LegendItem import ItemSample
 
 from pydm import Display
 from pydm.widgets import PyDMLabel, PyDMArchiverTimePlot
 from pydm.utilities.macro import parse_macro_string
 
-from config import logger, datetime_pv
+from config import DOCUMENTATION_URL, FEEDBACK_FORM_URL, logger, datetime_pv
 from file_io import PathAction, TraceFileHandler
 from widgets import ControlPanel, ElogPostModal, DataInsightTool, PlotSettingsModal
-from services import Theme, IconColors, ThemeManager, get_user, post_entry
+from services import (
+    Theme,
+    IconColors,
+    ThemeManager,
+    get_user,
+    post_entry,
+    test_proxy_connection,
+)
 
 DISABLE_AUTO_SCROLL = -2  # Using -2 as invalid since QButtonGroups use -1 as invalid
+
+
+class _LegendSample(ItemSample):
+    """Legend sample that does not toggle curve visibility on click.
+
+    Trace manages curve visibility through the control panel toggles,
+    so legend clicks should not independently change visibility state.
+    """
+
+    def mouseClickEvent(self, event):
+        event.accept()
 
 
 class TraceDisplay(Display):
@@ -183,6 +212,31 @@ class TraceDisplay(Display):
             cache_data=False,
             show_all=False,
         )
+        self.plot._legend.sampleType = _LegendSample
+
+        self._archive_status_label = QLabel("Fetching archive data...", self.plot)
+        self._archive_status_label.hide()
+        self._archive_status_label.setStyleSheet(
+            """
+            QLabel {
+                background-color: rgba(0, 0, 0, 140);
+                color: white;
+                padding: 6px 10px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            """
+        )
+        self._archive_status_label.adjustSize()
+        self._archive_status_label.move(20, 20)
+        self._archive_status_label.raise_()
+
+        self._archive_status_timer = QTimer(self)
+        self._archive_status_timer.setSingleShot(True)
+        self._archive_status_timer.timeout.connect(self.show_archive_status)
+
+        self.plot.archive_request_started.connect(self.on_archive_request_started)
+        self.plot.archive_request_finished.connect(self.on_archive_request_finished)
 
         multi_axis_plot = self.plot.plotItem
         multi_axis_plot.vb.menu = None
@@ -225,6 +279,28 @@ class TraceDisplay(Display):
         tool_layout = QHBoxLayout()
         tool_layout.setContentsMargins(0, 0, 0, 0)
         toolbar_widget.setLayout(tool_layout)
+
+        if FEEDBACK_FORM_URL:
+            feedback_btn = QPushButton()
+            icon = self.theme_manager.create_icon("ph.chat-circle-text", IconColors.PRIMARY)
+            feedback_btn.setIcon(icon)
+            feedback_btn.setIconSize(QSize(25, 25))
+            feedback_btn.setFixedSize(QSize(25, 25))
+            feedback_btn.setFlat(True)
+            feedback_btn.setToolTip("Provide Feedback / Report Bugs")
+            feedback_btn.clicked.connect(self.open_feedback_page)
+            tool_layout.addWidget(feedback_btn)
+
+        if DOCUMENTATION_URL:
+            documentation_btn = QPushButton()
+            icon = self.theme_manager.create_icon("ph.question", IconColors.PRIMARY)
+            documentation_btn.setIcon(icon)
+            documentation_btn.setIconSize(QSize(25, 25))
+            documentation_btn.setFixedSize(QSize(25, 25))
+            documentation_btn.setFlat(True)
+            documentation_btn.setToolTip("Open Documentation")
+            documentation_btn.clicked.connect(self.open_documentation_page)
+            tool_layout.addWidget(documentation_btn)
 
         tool_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         tool_layout.addSpacerItem(tool_spacer)
@@ -435,6 +511,21 @@ class TraceDisplay(Display):
         if settings_icon:
             self.settings_button.setIcon(settings_icon)
 
+    def on_archive_request_started(self) -> None:
+        self._archive_status_timer.stop()
+        self._archive_status_timer.start(2000)
+
+    def on_archive_request_finished(self) -> None:
+        self._archive_status_timer.stop()
+        self._archive_status_label.hide()
+
+    def show_archive_status(self) -> None:
+        if not self.plot._archive_request_queued:
+            return
+        self._archive_status_label.adjustSize()
+        self._archive_status_label.show()
+        self._archive_status_label.raise_()
+
     def set_curve_palette(self, palette_name: str, apply: bool = False):
         """
         Set color palette for adding new curves
@@ -487,6 +578,9 @@ class TraceDisplay(Display):
         trace_menu = self.construct_trace_menu(menu_bar)
         menu_bar.insertMenu(first_menu, trace_menu)
 
+        help_menu = self.construct_help_menu(menu_bar)
+        menu_bar.addMenu(help_menu)
+
     def construct_trace_menu(self, parent: QMenuBar) -> QMenu:
         """Create the menu for the application. This includes actions for
         file IO, saving to the E-Log, opening tools, and setting the app theme.
@@ -529,6 +623,27 @@ class TraceDisplay(Display):
             self.theme_action = menu.addAction("Switch to Dark Mode", self.toggle_theme)
 
         self.theme_action.setShortcut(QKeySequence("Ctrl+T"))
+
+        return menu
+
+    def construct_help_menu(self, parent: QMenuBar) -> QMenu:
+        """Create the help menu for the application. This includes actions
+        for opening the documentation and feedback pages.
+
+        Parameters
+        ----------
+        parent : QMenuBar
+            The menu bar that the Help menu will be a part of.
+
+        Returns
+        -------
+        QMenu
+            The Help menu consisting of actions for accessing help resources.
+        """
+        menu = QMenu("Help", parent)
+
+        menu.addAction("Open Documentation...", self.open_documentation_page)
+        menu.addAction("Provide Feedback / Report Bugs...", self.open_feedback_page)
 
         return menu
 
@@ -591,6 +706,17 @@ class TraceDisplay(Display):
         bool
             True if the post was successful, False otherwise.
         """
+        # Test proxy connection first if proxy is configured
+        proxy_success, proxy_error = test_proxy_connection()
+        if not proxy_success:
+            error_dialog = QMessageBox()
+            error_dialog.setIcon(QMessageBox.Warning)
+            error_dialog.setWindowTitle("Proxy Connection Failed")
+            error_dialog.setText(proxy_error)
+            error_dialog.setStandardButtons(QMessageBox.Ok)
+            error_dialog.exec_()
+            return False
+
         # Test if API is reachable
         status_code, _ = get_user()
         if status_code != 200:
@@ -775,6 +901,39 @@ class TraceDisplay(Display):
         refresh_interval = self.plot_settings.auto_scroll_interval
         self.plot.setAutoScroll(enable, timespan, refresh_rate=refresh_interval)
 
+    @Slot()
+    def open_feedback_page(self) -> None:
+        """Open the form for providing feedback or reporting bugs in the
+        default browser.
+        """
+        feedback_url = QUrl(FEEDBACK_FORM_URL)
+        site_name = "Trace feedback page"
+        self.open_url_in_browser(feedback_url, site_name)
+
+    @Slot()
+    def open_documentation_page(self) -> None:
+        """Open the Trace documentation webpage in the default browser."""
+        doc_url = QUrl(DOCUMENTATION_URL)
+        site_name = "Trace documentation page"
+        self.open_url_in_browser(doc_url, site_name)
+
+    def open_url_in_browser(self, url: QUrl, site_name: str = "website") -> None:
+        """Open the given URL in the default web browser.
+
+        Parameters
+        ----------
+        url : QUrl
+            The URL to open.
+        site_name : str, optional
+            The name of the site for error messages, by default "website".
+        """
+        if not QDesktopServices.openUrl(url):
+            QMessageBox.warning(
+                self,
+                "Error",
+                f"Unable to open the {site_name}. Please visit:\n{url.url()}",
+            )
+
     @staticmethod
     def git_version():
         """Get the current git tag for the project.
@@ -785,10 +944,17 @@ class TraceDisplay(Display):
             The output of `git describe --tags`, or an empty string on failure.
         """
         project_directory = __file__.rsplit("/", 1)[0]
-        git_cmd = subprocess.run(
-            f"cd {project_directory} && git describe --tags", text=True, shell=True, capture_output=True
-        )
-        return git_cmd.stdout.strip()
+        try:
+            git_cmd = subprocess.run(
+                f"cd {project_directory} && git describe --tags",
+                text=True,
+                shell=True,
+                capture_output=True,
+                timeout=5,
+            )
+            return git_cmd.stdout.strip()
+        except subprocess.TimeoutExpired:
+            return ""
 
     def parse_cli_args(self, args, macros):
         """Parse CLI-style arguments and macros into startup configuration.
