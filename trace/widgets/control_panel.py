@@ -78,6 +78,19 @@ class ControlPanel(QtWidgets.QWidget):
         pv_plot_button.clicked.connect(self.add_curve_from_line_edit)
         pv_plotter_layout.addWidget(pv_plot_button)
 
+        # Style the plot button with blue accent color
+        if self.theme_manager:
+            blue_color = self.theme_manager.get_icon_color(IconColors.ACCENT)
+            text_color = "#FFFFFF"
+            pv_plot_button.setStyleSheet(
+                f"""
+                QPushButton {{
+                    background-color: {blue_color};
+                    color: {text_color};
+                }}
+            """
+            )
+
         self.axis_list = QtWidgets.QVBoxLayout()
         frame = QtWidgets.QFrame()
         frame.setLayout(self.axis_list)
@@ -99,6 +112,7 @@ class ControlPanel(QtWidgets.QWidget):
         self.curve_list_changed.connect(self.formula_dialog.curve_model.refresh)
 
         self.update_icons()
+        QTimer.singleShot(0, self.pv_line_edit.setFocus)
 
     def update_icons(self) -> None:
         """Update all icons based on current theme."""
