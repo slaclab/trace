@@ -76,10 +76,14 @@ def qtrace(qtbot, qapp):
     """
     # TraceDisplay.__init__ returns early when app.main_window is None (use_main_window=False).
     # Patch it with a MagicMock so build_ui() and configure_app() run normally.
-    # construct_trace_menu is also patched because QMenu rejects a MagicMock parent.
-    with mock.patch.object(qapp, "main_window", mock.MagicMock()):
-        with mock.patch.object(TraceDisplay, "construct_trace_menu", return_value=QMenu()):
-            trace = TraceDisplay()
+    # construct_trace_menu and construct_help_menu are also patched because QMenu
+    # rejects a MagicMock parent.
+    with (
+        mock.patch.object(qapp, "main_window", mock.MagicMock()),
+        mock.patch.object(TraceDisplay, "construct_trace_menu", return_value=QMenu()),
+        mock.patch.object(TraceDisplay, "construct_help_menu", return_value=QMenu()),
+    ):
+        trace = TraceDisplay()
 
     # updateXAxis would be called on application render; necessary for testing X-Axis
     trace.plot.updateXAxis(True)
