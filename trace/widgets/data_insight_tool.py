@@ -53,20 +53,6 @@ if not logger.hasHandlers():
     handler.setLevel("DEBUG")
 
 
-def list_to_ascii(val: list[int]) -> str:
-    """converts a list of integers into an ascii string"""
-    characters = map(chr, list(val))
-    string = "".join(characters)
-    string = string.replace("\u0000", "")
-    return string
-
-
-def list_to_ascii_row(row):
-    """converts the Value column of a dataframe row from list to ascii string"""
-    row["Value"] = list_to_ascii(row["Value"])
-    return row
-
-
 class CAGetThread(QThread):
     """Thread for making a CA get request to the given address. This is used
     to get the description of the curve.
@@ -116,7 +102,7 @@ class DataVisualizationModel(QAbstractTableModel):
         self.unit = None
         self.description = None
         self.caget_thread = None
-        self._val_as_str = False
+        self._decode_as_string = False
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.recieve_archive_reply)
@@ -139,8 +125,8 @@ class DataVisualizationModel(QAbstractTableModel):
             return None
         elif role == Qt.DisplayRole:
             val = self.df.iat[index.row(), index.column()]
-            if index.column() == 1 and self.val_as_str:
-                val = list_to_ascii(val)
+            if index.column() == 1 and self.decode_as_string:
+                val = self.list_to_ascii(val)
             return str(val)
         return None
 
@@ -148,6 +134,20 @@ class DataVisualizationModel(QAbstractTableModel):
         """Return data associated with the header"""
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.df.columns[section]
+
+    @property
+    def decode_as_string(self) -> bool:
+        """weather or not to show the value column as a string or raw data"""
+        return self._decode_as_string
+
+    @decode_as_string.setter
+    def decode_as_string(self, decode_as_string: bool):
+        """set the value column to display as string or raw data"""
+        if decode_as_string != self._decode_as_string:
+            self._decode_as_string = decode_as_string
+            start = self.index(0, 1)
+            end = self.index(self.rowCount(), 1)
+            self.dataChanged.emit(start, end)
 
     def set_description(self, description: str) -> None:
         """Set the description of the curve. This is called when the CAGetThread
@@ -285,7 +285,6 @@ class DataVisualizationModel(QAbstractTableModel):
         reply : QNetworkReply
             Reply to the network request made in request_archive_data
         """
-        self.reply_recieved.emit()
         if reply.error() == QNetworkReply.NoError:
             bytes_str = reply.readAll()
             try:
@@ -298,6 +297,7 @@ class DataVisualizationModel(QAbstractTableModel):
                 f"Request for data from archiver failed, request url: {reply.url()} retrieved header: "
                 f"{reply.header(QNetworkRequest.ContentTypeHeader)} error: {reply.error()}"
             )
+        self.reply_recieved.emit()
         reply.deleteLater()
 
     def set_archive_data(self, data_dict: dict) -> None:
@@ -354,8 +354,8 @@ class DataVisualizationModel(QAbstractTableModel):
         export_df = self.df.copy(deep=True)
         export_df["Datetime"] = export_df["Datetime"].astype("int64") / 1e9
 
-        if self.val_as_str:
-            export_df = export_df.apply(list_to_ascii_row, axis=1)
+        if self.decode_as_string:
+            export_df["Value"] = export_df["Value"].apply(self.list_to_ascii)
 
         if extension == ".csv":
             file_header = "".join([f"{k}: {v}\n" for k, v in header_dict.items()])
@@ -373,19 +373,19 @@ class DataVisualizationModel(QAbstractTableModel):
             with file_path.open("w") as file:
                 json.dump(export_dict, file, indent=2)
 
-    @property
-    def val_as_str(self) -> bool:
-        """weather or not to show the value column as a string or raw data"""
-        return self._val_as_str
+    def has_waveform_data(self) -> bool:
+        """Return True if any value in the Value column is a list or numpy array"""
+        return bool(self.df["Value"].apply(lambda v: isinstance(v, (list, np.ndarray))).any())
 
-    @val_as_str.setter
-    def val_as_str(self, val_as_str: bool):
-        """set the value column to display as string or raw data"""
-        if val_as_str != self._val_as_str:
-            self._val_as_str = val_as_str
-            start = self.index(0, 1)
-            end = self.index(self.rowCount(), 1)
-            self.dataChanged.emit(start, end)
+    @staticmethod
+    def list_to_ascii(val: list[int]) -> str:
+        """Convert a list of integers into an ASCII string, ignoring null characters"""
+        if not isinstance(val, (list, np.ndarray)):
+            return str(val)
+        characters = map(chr, list(val))
+        string = "".join(characters)
+        string = string.replace("\u0000", "")
+        return string
 
 
 class DataInsightTool(QWidget):
@@ -405,9 +405,10 @@ class DataInsightTool(QWidget):
         self.unopened = True
 
         self.data_vis_model.reply_recieved.connect(self.loading_label.hide)
+        self.data_vis_model.reply_recieved.connect(self.update_decode_as_string_visibility)
         self.data_vis_model.description_changed.connect(self.set_meta_data)
         self.export_button.clicked.connect(self.export_data_to_file)
-        self.val_as_str_checkbox.toggled.connect(self.set_val_as_str)
+        self.decode_as_string_checkbox.toggled.connect(self.set_decode_as_string)
         self.pv_select_box.currentIndexChanged.connect(self.get_data)
         self.refresh_button.clicked.connect(self.get_data)
 
@@ -450,9 +451,10 @@ class DataInsightTool(QWidget):
         self.meta_data_label = QLabel()
         self.metadata_layout.addWidget(self.meta_data_label, alignment=Qt.AlignLeft)
 
-        self.val_as_str_checkbox = QCheckBox()
-        self.val_as_str_checkbox.setText("Value As String")
-        self.metadata_layout.addWidget(self.val_as_str_checkbox)
+        self.decode_as_string_checkbox = QCheckBox()
+        self.decode_as_string_checkbox.setText("Decode As String")
+        self.decode_as_string_checkbox.hide()
+        self.metadata_layout.addWidget(self.decode_as_string_checkbox)
 
         self.refresh_button = QPushButton("Refresh Data")
         self.metadata_layout.addWidget(self.refresh_button, alignment=Qt.AlignRight)
@@ -498,13 +500,18 @@ class DataInsightTool(QWidget):
             combobox_ind = self.pv_select_box.currentIndex()
         return self.plot.curveAtIndex(combobox_ind)
 
-    def set_val_as_str(self) -> None:
-        """set the val_as_str flag on the self.data_vis_model based off of the self.val_as_str_checkbox
+    def set_decode_as_string(self) -> None:
+        """set the decode_as_string flag on the self.data_vis_model based off of the self.decode_as_string_checkbox
         then emit the dataChanged signal from the data_vis_model for the value column"""
-        if self.val_as_str_checkbox.isChecked():
-            self.data_vis_model.val_as_str = True
+        if self.decode_as_string_checkbox.isChecked():
+            self.data_vis_model.decode_as_string = True
         else:
-            self.data_vis_model.val_as_str = False
+            self.data_vis_model.decode_as_string = False
+
+    @Slot()
+    def update_decode_as_string_visibility(self) -> None:
+        """Show the decode_as_string_checkbox only when the model's Value column contains arrays"""
+        self.decode_as_string_checkbox.setVisible(self.data_vis_model.has_waveform_data())
 
     @Slot()
     def update_pv_select_box(self) -> None:
@@ -557,6 +564,7 @@ class DataInsightTool(QWidget):
         curve_item = self.combobox_to_curve(combobox_index)
         x_range = self.plot.getXAxis().range
 
+        self.decode_as_string_checkbox.hide()
         self.data_vis_model.set_all_data(curve_item, x_range)
         self.set_meta_data()
         self.loading_label.show()
