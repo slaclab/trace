@@ -249,7 +249,7 @@ class ControlPanel(QtWidgets.QWidget):
             List of PV names to add as curves
         """
         for pv in pvs:
-            self.add_curve(pv)
+            self.add_curve(pv, duplicate=False)
 
     def add_empty_axis(self, name: str = "") -> "AxisItem":
         logger.debug("Adding new empty axis to the plot")
@@ -339,7 +339,14 @@ class ControlPanel(QtWidgets.QWidget):
         return plot_curves
 
     @QtCore.Slot()
-    def add_curve(self, pv: str = None) -> "CurveItem":
+    def add_curve(self, pv: str = None, duplicate: bool = True) -> "CurveItem":
+        """
+        Add curve to the plot. New curves are added to the last axis by default, then sorted by unit.
+
+        Parameters:
+            pv (str): EPICS PV or formula string
+            duplicate (bool): If True, duplicate PVs will be added on a new axis. If False, skip duplicates.
+        """
         if pv is None and self.sender():
             pv = self.sender().text()
 
@@ -350,10 +357,51 @@ class ControlPanel(QtWidgets.QWidget):
         if pv.startswith("f://"):
             return last_axis.add_formula_curve(pv)
         else:
+            # Check for duplicate PVs. If pv already exists, either add to new axis or skip
+            # depending on 'duplicate' flag
+            curves = self.curve_item_dict
+            if pv in [curves[curve]["name"] for curve in curves]:
+                if duplicate:
+                    logger.debug(f"Adding duplicate curve to new axis for PV '{pv}'.")
+                    return self.add_curve_to_new_axis(pv)
+                else:
+                    logger.debug(f"Skipping duplicate curve for PV '{pv}'.")
+                    return None
+
             curve = last_axis.add_curve(pv)
-            curve.move_to_axis_from_unit()  # Move to axis based on unit
+            self.move_to_axis_from_unit(curve)  # Move to axis based on unit
 
             return curve
+
+    def add_curve_to_new_axis(self, pv: str) -> "CurveItem":
+        """
+        Add curve to a new, empty axis. Used to avoid adding duplicate curves to the same axis.
+
+        Parameters
+        ----------
+        pv (str): EPICS PV name
+        """
+        if not pv:
+            return None
+        axis_item = self.add_empty_axis()
+        return axis_item.add_curve(pv)
+
+    def move_to_axis_from_unit(self, curve: "CurveItem") -> None:
+        """
+        Detect curve units and automatically move curve to an axis matching its unit
+
+        Parameters
+        ----------
+        curve : CurveItem
+        """
+        if not isinstance(curve, CurveItem):
+            return
+        if not curve.is_formula_curve():
+            unit = curve.source.units
+            if unit:
+                self.move_curve_to_axis(curve, unit)
+            else:
+                curve.source.unitSignal.connect(lambda unit: self.move_curve_to_axis(curve, unit))
 
     def clear_all(self) -> None:
         """Clear all axes and curves from the plot and control panel."""
@@ -627,6 +675,7 @@ class AxisItem(QtWidgets.QWidget):
         CurveItem
             The created CurveItem widget.
         """
+
         palette = self.control_panel.curve_palette
         color = ColorButton.index_color(len(self.plot._curves), palette=palette)
         args = {
@@ -643,6 +692,20 @@ class AxisItem(QtWidgets.QWidget):
         plot_curve_item.stepMode = "right"
 
         return self.make_curve_widget(plot_curve_item)
+
+    def get_curves(self) -> list["CurveItem"]:
+        """Returns a list of CurveItems on this axis"""
+        curves = []
+        for i in range(self.layout().count() - 1, -1, -1):
+            item = self.layout().itemAt(i).widget()
+            if isinstance(item, CurveItem):
+                curves.append(item)
+
+        return curves
+
+    def get_curve_names(self) -> list[str]:
+        """Returns a list of curve names on this axis"""
+        return [curve.source.name() for curve in self.get_curves()]
 
     def add_formula_curve(self, formula: str) -> "CurveItem":
         """Create a new FormulaCurveItem for the given formula and add it
@@ -974,15 +1037,6 @@ class CurveItem(QtWidgets.QWidget):
         self.control_panel.curve_dict[self.variable_name] = self.source
 
         self.setup_layout()
-
-    def move_to_axis_from_unit(self):
-        """Automatically move curve to axis based on unit"""
-        if not self.is_formula_curve():
-            unit = self.source.units
-            if unit:
-                self.control_panel.move_curve_to_axis(self, unit)
-            else:
-                self.source.unitSignal.connect(lambda unit: self.control_panel.move_curve_to_axis(self, unit))
 
     @property
     def plot(self):
